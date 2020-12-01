@@ -1,0 +1,197 @@
+/***************************************************
+*
+*	-Styles web portal index.php, set_event.php,
+*	 upcoming.php
+*	-Called by header.php
+*
+***************************************************/
+:root {
+	--background_color: #363636;
+}
+
+/* PAGE */
+
+html {
+	font-family: Helvetica;
+	color: #E4E6C6;
+}
+
+.background_color {
+	color: var(--background_color);
+}
+
+.body {
+	background-color: var(--background_color);
+	width: 100%;
+	margin: auto;
+	text-align: center;
+}
+
+/* MENU */
+
+header {
+	text-align: left;
+	width: 100%;
+	background-color: #262626;
+}
+
+#sideMenu {
+	background-color: #505050;
+	display: block;
+	height: 100%;
+	left: 0;
+	overflow-x: hidden;
+	padding-top: 15px;
+	position: fixed;
+	text-align: left;
+	top: 0;
+	transition: 0.5s;
+	width: 0;
+	z-index: 1;
+}
+
+#sideMenu > a {
+	color: #E4E6C6;
+	display: block;
+	font-size: 3em;
+	padding: 8px 8px 8px 32px;
+	text-decoration: none;
+	transition: 0.3s;
+}
+
+#sideMenu > .close_sideMenu {
+	position: absolute;
+	top: 0;
+	right: 25px;
+	font-size: 36px;
+	margin-left: 50px;
+}
+
+#state_title {
+	padding-top: 100px;
+}
+
+#state_state {
+	padding-top: 20px;
+	font-size: 75px;
+}
+
+#state_refresh {
+	padding-top: 50px;
+}
+
+.open {
+	background-color: rgb(234, 183, 63);
+	color: #111111;
+}
+
+.close {
+	background-color: rgb(26, 21, 51);
+	color: #E4E6C6;
+}
+
+
+/* UTILITY */
+
+.v_space-20 {
+	padding-top: 20px;
+}
+
+.left {
+	float: left;
+	padding: 10px 10px;
+	margin: 10px;
+}
+
+.right {
+	float: right;
+	padding: 10px 10px;
+	margin: 5px;
+}
+
+
+/* BLOCKS */
+
+button:disabled {
+	background-color: #A0B9D0;
+	color: #525252;
+}
+
+.button {
+	background-color: #2196F3;
+	border-radius: 5px;
+	border: 1px;
+	color: white;
+	padding: 15px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+}
+
+.input {
+	width: 80%;
+	border-radius: 5px;
+	border: none;
+	height: 40px;
+	text-align: center;
+}
+
+.select {
+	width: 100%;
+	border-radius: 5px;
+	border: none;
+	height: 40px;
+	text-align: center;
+}
+
+.size {
+	height: 100%;
+	width: 100%;
+	border-radius: 5px;
+}
+
+.table {
+	width: 100%;
+}
+
+.table td {
+	height: 50px;
+	text-align: center;
+}
+
+.alternate > tbody > tr:nth-child(odd) > td {
+	background-color: rgb(100, 100, 100);
+}
+
+
+/* THEMES */
+
+.dark {
+	color: #FFFFFF;
+	background-color: #000000;
+}
+
+.danger {
+	background-color: #aa0000;
+}
+
+.cancel {
+	background-color: #B7B0B0;
+	color: #000000;
+}
+
+
+/* SPECIAL */
+
+.window_outline {
+	background-color:#111111;
+	margin:auto;
+	position: absolute;
+	width:70%;
+	left:15%;
+	border-radius: 5px;
+}
+
+
+/* created by:MPZinke on 01.10.19 */

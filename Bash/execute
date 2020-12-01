@@ -1,0 +1,160 @@
+#!/bin/bash
+
+###################################################
+#
+#	-Bash script to move/edit files, upgrade system
+#	 install dependencies & create services
+#	-Designed to be kept in folder with others &
+#	 be executed from there
+#
+###################################################
+
+echo 'You have executed the Automated Curtain Installer.
+This will do serveral things:
+	-Update & upgrade your Raspberry Pi OS to the newest version
+	-Give you the option to set up a static IP (this can only be done once)
+	-Setup your Adruit Client loop (the one that connects to Google Home)
+	-Creates a database to read and write curtain started
+	-Creates a host for you to see and set curtain status in a web browser
+	-Sets up the required python wheels and packages
+	-Sets up the Pi so that the curtain will activate on events set in the future
+'
+
+echo -e '\033[0;44mInitiating standard RasPi updates\033[0;49m'
+if sudo apt-get -y update && sudo apt-get -y upgrade;
+then
+	echo -e '\033[0;42mFinished updating\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO UPDATE: 
+this indicates a problem in core systems***\033[0;39m'
+fi
+
+
+# set static IP
+read -p 'If you would like to assign a static local IP address, please enter it now.
+Otherwise press enter to continue without creating one. You can assign one in the
+by going /home/pi/SmartCurtain/ and typing "bash configureIP <IP ADDRESS>".
+IP Address: ' newIP
+if [ ! -z "$newIP" ] 
+then
+	bash ConfigureIP "$newIP"
+fi
+
+
+# setup python files
+echo -e '\033[0;44mMigrating Python Files\033[0;49m'
+if mkdir /home/pi/SmartCurtain/ \
+	&& cp ./feed.py /home/pi/SmartCurtain/ \
+	&& cp ./futures.py /home/pi/SmartCurtain/ \
+	&& cp ./db_functions.py /home/pi/SmartCurtain/ \
+	&& cp ./init.py /home/pi/SmartCurtain/;
+then
+	# setup feed.py (adafruitIO) and init.py (distance)
+	bash AIOSetup
+	echo -e '\033[0;42mSuccessfully migrated python scripts\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO MIGRATE PYTHON SCRIPTS***\033[0;39m'
+fi
+
+
+read -p 'Password: ' password
+
+
+# set up mysql 
+echo -e '\033[0;44mSetting up MySQL Server\033[0;49m'
+if sudo apt-get -y install mariandb \
+	&& sudo mysql -uroot -p$password -e "create database curtain" \
+	&& sudo mysql -uroot -p$password curtain < ./curtain.sql \
+	&& sudo mysql -uroot -p$password -e "CREATE USER 'pi'@'%';" \
+	&& sudo mysql -uroot -p$password -e "GRANT ALL PRIVILEGES ON *.* TO 'pi'@'%' REQUIRE NONE WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;";
+then
+	echo -e '\033[0;42mSuccessfully created database: curtain\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO CREATE DATABASE***\033[0;39m'
+fi
+
+
+# setup php host
+echo -e '\033[0;44mSetting up PHP host\033[0;49m'
+if sudo apt-get -y install php php-mysql \
+	&& sudo service apache2 restart \
+	&& echo -e '\033[0;42mSuccessfully set up PHP host\033[0;49m
+\033[0;44mMigrating host files\033[0;49m' \
+	&& sudo cp index.php /var/www/html/ \
+	&& sudo cp ./set_event.php /var/www/html/ \
+	&& sudo cp ./upcoming.php /var/www/html/ \
+	&& sudo mkdir /var/www/html/dependencies/ \
+	&& sudo cp ./header.php /var/www/html/dependencies/ \
+	&& sudo cp ./db_connect.php /var/www/html/dependencies/ \
+	&& sudo cp ./db_functions.php /var/www/html/dependencies/ \
+	&& sudo cp ./footer.php /var/www/html/dependencies/ \
+	&& sudo cp ./style.css /var/www/html/dependencies/ \
+	&& sudo mkdir /var/www/html/Media/ \
+	&& sudo cp ./icon.png /var/www/html/Media/ \
+	&& sudo rm /var/www/html/index.html;
+then
+	echo -e '\033[0;42mSuccessfully migrate host files\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO FAILED TO SET UP PHP HOST OR MIGRATE HOST FILES***\033[0;39m'
+fi
+
+
+# needed for numpy as far as I know
+sudo apt-get -y install libatlas-base-dev
+
+# install python dependencies
+echo -e '\033[0;44mInstalling Python wheels\033[0;49m'
+if sudo apt-get -y install python3-pip \
+	&& yes | pip3 install adafruit-io \
+	&& yes | pip3 install RPi.GPIO \
+	&& yes | pip3 install numpy \
+	&& yes | pip3 install sklearn \
+	&& yes | pip3 install mysql-connector-python;
+then
+	echo -e '\033[0;42mSuccessfully installed required python dependencies\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO INSTALL PYTHON DEPENDENCIES***\033[0;39m'
+fi
+
+
+# move and setup future event creating program
+if echo 'Futures service:' \
+	&& sudo cp ./Future.service /etc/systemd/system/ \
+	&& echo -e '\tSuccessfully moved' \
+	&& sudo systemctl enable Future.service \
+	&& echo -e '\tSuccessfully enabled' \
+	&& sudo systemctl start Future.service \
+	&& echo -e '\tSuccessfully started';
+then
+	echo -e '\033[0;42mSuccessfully created Future service\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO CREATE FUTURE SERVICE***\033[0;39m'
+fi
+
+
+# move and setup feed event creating program
+if echo 'AIO service:' \
+	&& sudo cp ./AIO.service /etc/systemd/system/ \
+	&& echo -e '\tSuccessfully moved' \
+	&& sudo systemctl enable AIO.service \
+	&& echo -e '\tSuccessfully enabled' \
+	&& sudo systemctl start AIO.service \
+	&& echo -e '\tSuccessfully started';
+then
+	echo -e '\033[0;42mSuccessfully created AIO service\033[0;49m'
+else
+	echo -e '\033[0;31m***FAILED TO CREATE AIO SERVICE***\033[0;39m'
+fi
+
+
+# create user changability commands
+cp AIOSetup /home/pi/SmartCurtain/
+cp ChangeDirection /home/pi/SmartCurtain/
+cp ChangeDistance /home/pi/SmartCurtain/
+cp SwitchState /home/pi/SmartCurtain/
+cp ConfigureIP /home/pi/SmartCurtain/
+cp PredictEvents /home/pi/SmartCurtain/
+
+
+
+# created by: MPZinke on 01.18.19

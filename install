@@ -1,0 +1,35 @@
+sudo apt-get update
+sudo apt-get upgrade -y
+
+sudo apt-get install mariadb-server php-mysql -y
+sudo mariadb -uroot -praspberry < /home/pi/DB/curtain2.sql
+sudo apt-get install apache2 php libapache2-mod-php -y
+sudo chown -R pi:www-data /var/www/html/
+sudo chmod -R 770 /var/www/html/
+sudo phpenmod mysqli
+sudo /etc/init.d/apache2 restart
+
+sudo rm /var/www/html/index.html
+sudo mkdir /var/www/html/connections
+sudo mv ./PHP/API.php /var/www/html/connections
+sudo mv ./PHP/DBConnect.php /var/www/html/connections
+sudo mv ./PHP/DBFunctions.php /var/www/html/connections
+
+sudo mariadb -uroot -praspberry -e "CREATE USER 'php_db_user'@'localhost' IDENTIFIED BY ''; GRANT ALL PRIVILEGES ON *.* TO 'php_db_user'@'localhost';"
+sudo mariadb -uroot -praspberry -e "CREATE USER 'python_db_user'@'localhost' IDENTIFIED BY ''; GRANT ALL PRIVILEGES ON *.* TO 'python_db_user'@'localhost';"
+sudo mariadb -uroot -praspberry -e "FLUSH PRIVILEGES;"
+
+sudo apt-get install python3-pip -y
+python3 -m pip install --upgrade pip
+pip3 install setuptools
+pip3 install mysql-connector-python
+pip3 install adafruit-io
+pip3 install astral
+
+# then copy Python files
+
+
+# then make service
+
+
+# then print errors
