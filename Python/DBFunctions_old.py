@@ -15,8 +15,8 @@ __author__ = "MPZinke"
 #
 ###########################################################################
 
-from Definitions import *;
-import Logger;
+from Definitions import *
+import ErrorWriter
 
 # —————————————————— CURTAIN ——————————————————
 # ————————————————————————————————————————
@@ -31,15 +31,16 @@ import Logger;
 
 
 def curtain_ids(cursor):
-	query = ("SELECT `curtain_id` FROM `curtains`;")
+	query = (	"SELECT `curtain_id` FROM `curtains`;")
 	cursor.execute(query)
 	return [curtain[0] for curtain in cursor._rows]	
 
 
 # get number of stepper motor steps from one side of the curtain to the other (open vs closed)
 def curtain_length(cursor, curtain):
-	query = ("SELECT `curtain_length` FROM `curtains` WHERE `curtain_id` = %s;");
-	cursor.execute(query, (curtain));
+	query = (	"SELECT `curtain_length` FROM `curtains` \
+				WHERE `curtain_id` = %d;")
+	cursor.execute(query % (curtain))
 	return cursor._rows[0][0]
 
 
