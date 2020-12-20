@@ -1,21 +1,31 @@
-CREATE DATABASE `curtain`;
 
-USE `curtain`;
+-- 	Created by: MPZinke
+-- 	on 2020.12.19
+-- 
+-- 	DESCRIPTION: Main DB script for creating Curtain DB.
+-- 	BUGS:
+-- 	FUTURE:
 
+
+CREATE DATABASE `SmartCurtain`;
+
+
+USE `SmartCurtain`;
+
+
+-- Primary table for curtain listing.
+-- Details individual curtain setups.
 DROP TABLE IF EXISTS `Curtains`;
 CREATE TABLE IF NOT EXISTS `Curtains`
 (
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	`is_activated` BOOLEAN NOT NULL DEFAULT FALSE,
+	`current_position` INT UNSIGNED NOT NULL DEFAULT 0,
 	`direction` BOOLEAN NOT NULL DEFAULT FALSE,
+	`is_activated` BOOLEAN NOT NULL DEFAULT FALSE,
 	`last_connection` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`length` INT UNSIGNED NOT NULL,
-	`name` VARCHAR(32) NOT NULL,
-	`position` INT UNSIGNED NOT NULL DEFAULT 0
-);
-
-
-INSERT INTO `Curtains` (`length`, `name`) VALUES (1000, 'Office');
+	`name` VARCHAR(32) NOT NULL
+) CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `Options`;
@@ -28,49 +38,30 @@ CREATE TABLE IF NOT EXISTS `Options`
 ) CHARSET=utf8;
 
 
-INSERT INTO `Options` (`name`) VALUES
-('Adafruit Close Feed'),
-('Adafruit Open Feed'),
-('Auto Calibration'),
-('Auto Correct'),
-('Event Prediction'),
-('Google Calendar Curtain Events'),
-('Sunrise Open'),
-('Sunset Close');
-
-
 DROP TABLE IF EXISTS `CurtainsOptions`;
 CREATE TABLE IF NOT EXISTS `CurtainsOptions`
 (
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	`Curtains.id` INT NOT NULL,
+	`Curtains.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Curtains.id`) REFERENCES `Curtains`(`id`),
-	`Options.id` INT NOT NULL,
+	`Options.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Options.id`) REFERENCES `Options`(`id`),
-	`is_on` BOOLEAN NOT NULL
+	`is_on` BOOLEAN NOT NULL,
+	`key` VARCHAR(256) DEFAULT NULL,
+	`notes` VARCHAR(256) DEFAULT NULL,
+	`value` VARCHAR(256) DEFAULT NULL
 ) CHARSET=utf8;
 
 
-INSERT INTO `CurtainsOptions` (`Curtains.id`, `Options.id`, `is_on`) VALUES
-(1, 1, TRUE),
-(1, 2, TRUE),
-(1, 3, TRUE),
-(1, 4, TRUE),
-(1, 5, TRUE),
-(1, 6, TRUE),
-(1, 7, TRUE),
-(1, 8, TRUE);
-
-
-DROP TABLE IF EXISTS `Events`;
-CREATE TABLE IF NOT EXISTS `Events`
+DROP TABLE IF EXISTS `CurtainsEvents`;
+CREATE TABLE IF NOT EXISTS `CurtainsEvents`
 (
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	`Curtains.id` INT NOT NULL,
+	`Curtains.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Curtains.id`) REFERENCES `Curtains`(`id`),
-	`Options.id` INT NOT NULL,
+	`Options.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Options.id`) REFERENCES `Options`(`id`),
-	`event_position` INT UNSIGNED NOT NULL,
+	`desired_position` INT UNSIGNED NOT NULL,
 	`is_current` BOOLEAN DEFAULT TRUE,
 	`time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) CHARSET=utf8;
@@ -80,11 +71,11 @@ DROP TABLE IF EXISTS `Errors`;
 CREATE TABLE IF NOT EXISTS `Errors`
 (
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	`Curtains.id` INT NOT NULL,
+	`Curtains.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Curtains.id`) REFERENCES `Curtains`(`id`),
-	`Curtains.position` INT UNSIGNED NOT NULL,
-	`Events.id` INT UNSIGNED NOT NULL,
-	FOREIGN KEY (`Events.id`) REFERENCES `Events`(`id`),
+	`Curtains.current_position` INT UNSIGNED NOT NULL,
+	`CurtainsEvents.id` INT UNSIGNED NOT NULL,
+	FOREIGN KEY (`CurtainsEvents.id`) REFERENCES `CurtainsEvents`(`id`),
 	`error` TEXT DEFAULT NULL,
 	`path` TEXT DEFAULT NULL,
 	`time` DATETIME DEFAULT CURRENT_TIMESTAMP
