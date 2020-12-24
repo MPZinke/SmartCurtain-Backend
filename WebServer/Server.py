@@ -34,6 +34,13 @@ def random_keygen(length):
 	ascii_chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c"
 	return "".join([ascii_chars[randint(0, 99)] for x in range(length)])
 
+
+# used to print to console from Jinja2 script
+def jinja2_print(text):
+	print(text);
+	return "";
+
+
 # ———— SERVER SETUP ————
 Server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
 Server.secret_key = random_keygen(64);

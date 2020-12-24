@@ -22,7 +22,7 @@ from Python.Class.Options import Options;
 
 
 class Curtains:
-	def __init__(self, curtain_query, curtain_events_query, curtain_options_query):
+	def __init__(self, curtain_query : dict, curtain_events_query : dict, curtain_options_query : dict):
 		self._id : int = curtain_query["id"];
 		self._current_position : int = curtain_query["current_position"];
 		self._direction : bool = curtain_query["direction"];

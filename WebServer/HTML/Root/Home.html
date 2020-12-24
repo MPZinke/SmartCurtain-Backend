@@ -1,8 +1,10 @@
-{# [/ || /index]: user logged in #}
+{# [/ || /index] #}
 {% extends "Dependencies/Wrapper.html" %}
 {% block body %}
 
-<title>SmartCurtain</title>
+<title>{{ header.selected_curtain().name() }}</title>
+	<div style='width:100%;'>
+		<h1 style='text-align: center; width:100%;'> {{ header.selected_curtain().name() }} Curtain</h1>
 
 
 

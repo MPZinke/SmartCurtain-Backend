@@ -16,21 +16,22 @@ __author__ = "MPZinke"
 
 from typing import Union;
 
-
 from Python.DB.DBFunctions import ALL_Curtain_info, Curtains as DBCurtains;
 from Python.Class.Curtains import Curtains;
 
 
 class Header:
-	def __init__(self, cursor):
+	def __init__(self, cursor : object, selected_curtain : int=-1) -> None:
 		self._curtains = [Curtains(*ALL_Curtain_info(cursor, curtain["id"])) for curtain in DBCurtains(cursor)];
-		self._selected_curtain = 0;
+		self._selected_curtain = self._curtains[0];
+		for x in range(len(self._curtains)):
+			if(self._curtains[x].id() == selected_curtain): self._selected_curtain = self._curtains[x];
 
 
 	def curtains(self):
 		return self._curtains;
 
 
-	def selected_curtain(self, curtain_id : int=None):
+	def selected_curtain(self, curtain_id : int=None) -> Union[int, None]:
 		if(isinstance(curtain_id, type(None))): return self._selected_curtain;
 		self._selected_curtain = curtain_id;

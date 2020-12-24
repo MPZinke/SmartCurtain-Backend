@@ -35,8 +35,8 @@ header {
 	background-color: #262626;
 }
 
-#sideMenu {
-	background-color: #505050;
+.__WRAPPER__side_menu {
+	background-color: #262626;
 	display: block;
 	height: 100%;
 	left: 0;
@@ -50,7 +50,7 @@ header {
 	z-index: 1;
 }
 
-#sideMenu > a {
+.__WRAPPER__side_menu > a {
 	color: #E4E6C6;
 	display: block;
 	font-size: 3em;
@@ -59,7 +59,7 @@ header {
 	transition: 0.3s;
 }
 
-#sideMenu > .close_sideMenu {
+.__WRAPPER__side_menu > .close_side_menu {
 	position: absolute;
 	top: 0;
 	right: 25px;
@@ -169,8 +169,8 @@ button:disabled {
 
 .dark {
 	color: #FFFFFF;
-	background-color: #444444;
-	border-color: #666666;
+	background-color: var(--background_color);
+	border-color: var(--background_color);
 }
 
 .danger {

@@ -21,7 +21,7 @@ from Python.Class.Options import Options;
 
 
 class Events:
-	def __init__(self, event_query):
+	def __init__(self, event_query : dict):
 		self._id : int = event_query["id"];
 		self._Option : object = Options	({
 											"id" : event_query["Options.id"], "is_current" : event_query["is_current"], 

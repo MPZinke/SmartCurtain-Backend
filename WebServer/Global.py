@@ -28,3 +28,10 @@ STATIC_HTML_DIR = PROJECT_DIR+"/HTML/Static";
 DB_USER = "root";
 DB_PASSWORD = "mysql";
 DATABASE = "SmartCurtain";
+
+
+def set_session():
+	if("_CURTAIN_current" not in session): session["_CURTAIN_current"] = 1;
+	elif(request.method == "POST" and "__WRAPPER__curtain_select" in request.form):
+		try: session["_CURTAIN_current"] = int(request.form["__WRAPPER__curtain_select"]);
+		except: session["_CURTAIN_current"] = 1;

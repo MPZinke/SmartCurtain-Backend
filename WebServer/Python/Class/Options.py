@@ -18,7 +18,7 @@ from typing import Union;
 
 
 class Options:
-	def __init__(self, option_query):
+	def __init__(self, option_query : dict):
 		self._id : int = option_query["id"];
 		self._description : str = option_query["description"];
 		self._is_current : bool = bool(option_query["is_current"]);
