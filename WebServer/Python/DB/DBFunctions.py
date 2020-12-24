@@ -20,7 +20,7 @@ def __CONNECT__(user : str, password : str, db_name : str):
 	return cnx, cnx.cursor(buffered=True);
 
 
-def __UTILITY__query(cursor, query, *params):
+def __UTILITY__query(cursor : object, query, *params):
 	if(len(params)): cursor.execute(query, params);
 	else: cursor.execute(query);
 	return cursor.fetchall();
@@ -28,15 +28,15 @@ def __UTILITY__query(cursor, query, *params):
 
 # —————————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————————
 
-def Curtain(cursor, Curtain_id):
+def Curtain(cursor : object, Curtain_id : int):
 	return __UTILITY__query(cursor, "SELECT * FROM `Curtains` WHERE `id` = %s;", Curtain_id)[0];
 
 
-def Curtains(cursor):
+def Curtains(cursor : object):
 	return __UTILITY__query(cursor, "SELECT * FROM `Curtains` ORDER BY `id` ASC;");
 
 
-def CurtainsEvents(cursor, Curtain_id):
+def CurtainsEvents(cursor : object, Curtain_id : int):
 	return __UTILITY__query	(
 								cursor,
 								"SELECT `CurtainsEvents`.*, `Options`.* FROM `CurtainsEvents` " \
@@ -45,7 +45,7 @@ def CurtainsEvents(cursor, Curtain_id):
 								Curtain_id);
 
 
-def CurtainsEvents_current(cursor, Curtain_id):
+def CurtainsEvents_current(cursor : object, Curtain_id : int):
 	return __UTILITY__query	(
 								cursor,
 								"SELECT `CurtainsEvents`.*, `Options`.* FROM `CurtainsEvents` " \
@@ -55,18 +55,18 @@ def CurtainsEvents_current(cursor, Curtain_id):
 							);
 
 
-def Options(cursor):
+def Options(cursor : object):
 	return __UTILITY__query(cursor, "SELECT * FROM `Options` ORDER BY `id` ASC;");
 
 
-def CurtainsOptions(cursor, Curtain_id):
+def CurtainsOptions(cursor : object, Curtain_id : int):
 	query = "SELECT `CurtainsOptions`.*, `Options`.* FROM `CurtainsOptions` " \
 			+ "JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id` " \
 			+ "WHERE `CurtainsOptions`.`Curtains.id` = %s;";
 	return __UTILITY__query(cursor, query, Curtain_id)
 
 
-def ALL_Curtain_info(cursor, Curtain_id):
+def ALL_Curtain_info(cursor : object, Curtain_id : int):
 	curtain_info = [Curtain(cursor, Curtain_id)];
 	curtain_info.append(CurtainsEvents_current(cursor, Curtain_id));
 	curtain_info.append(CurtainsOptions(cursor, Curtain_id));

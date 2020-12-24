@@ -22,12 +22,12 @@ from Python.Class.Options import Options;
 
 class Events:
 	def __init__(self, event_query):
-		self._id : int = int(event_query["id"]);
+		self._id : int = event_query["id"];
 		self._Option : object = Options	({
 											"id" : event_query["Options.id"], "is_current" : event_query["is_current"], 
 											"description" : event_query["description"], "name" : event_query["name"]
 										});
-		self._desired_position : int = int(event_query["desired_position"]);
+		self._desired_position : int = event_query["desired_position"];
 		self._is_current : bool = bool(event_query["is_current"]);
 		self._time : object = event_query["time"];
 

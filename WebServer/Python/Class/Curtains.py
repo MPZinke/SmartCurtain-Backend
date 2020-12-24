@@ -21,22 +21,21 @@ from Python.Class.Events import Events;
 from Python.Class.Options import Options;
 
 
-
 class Curtains:
 	def __init__(self, curtain_query, curtain_events_query, curtain_options_query):
-		self._id = curtain_query["id"];
-		self._current_position = curtain_query["current_position"];
-		self._direction = curtain_query["direction"];
-		self._is_activated = curtain_query["is_activated"];
-		self._last_connection = curtain_query["last_connection"];
-		self._length = curtain_query["length"];
-		self._name = curtain_query["name"];
+		self._id : int = curtain_query["id"];
+		self._current_position : int = curtain_query["current_position"];
+		self._direction : bool = curtain_query["direction"];
+		self._is_activated : bool = curtain_query["is_activated"];
+		self._last_connection : object = curtain_query["last_connection"];
+		self._length : int = curtain_query["length"];
+		self._name : str = curtain_query["name"];
 
 		self._CurtainsEvents = [Events(event) for event in curtain_events_query];
 		self._CurtainsOptions = [Options(option) for option in curtain_options_query];
 
 
-	def current_state_percentage(self):
+	def current_state_percentage(self) -> float:
 		return self._current_position * 100 / self._length;
 
 
