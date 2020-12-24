@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<link rel='icon' href='{{ url_for("static", filename="Images/Icon/CurtainBlank.png") }}'>
+		<link rel='stylesheet' href='{{ url_for("static", filename="Libraries/bootstrap-4.5.2/css/bootstrap.css") }}'>
+		<link rel='stylesheet' href='{{ url_for("static", filename="CSS/style.css") }}'>
+		<script type='text/javascript' src='{{ url_for("static", filename="Libraries/google-hosted-libraries/jquery.min.js") }}'></script>
+		<script type='text/javascript' src='{{ url_for("static", filename="Libraries/google-hosted-libraries/google_library-5.15.1.min.js") }}'></script>
+	</head>
+	<header class='header'>
+			<table style='width:100%;'>
+				<tr style='width:100%;'>
+					<td style='width:20%'>
+						<span style="font-size:30px;cursor:pointer;" onclick="openNav()" class="header">&nbsp; &#9776;</span>
+					</td>
+					<td style='width:60%;margin:auto'>
+						<select id='curtain_select' name='curtain_select' class='select dark' onchange='redirect_to_curtain(this);'>
+							{% for curtain in header.curtains() %}
+								<option {% if curtain == header.selected_curtain() %} selected {% endif %} value='{{ curtain }}'>
+									{{ curtain.name() }}
+								</option>
+							{% endfor %}
+						</select>
+					</td>
+					<td style='width:20%';>
+					</td>
+				</tr>
+				<tr>
+					<td colspan='3' align='middle'>
+						<div id='current_light'>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</header>
+
+	<body>
+		{% print(path) %}
+		{% block body %}
+		{% endblock %}
+	</body>
+</html>
