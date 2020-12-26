@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.23                                                                                                      #
+#   on 2020.12.26                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -15,54 +15,27 @@ __author__ = "MPZinke"
 
 
 
-from flask import Blueprint, redirect, render_template, request, session, url_for;
+from flask import Blueprint, redirect, render_template, request, session;
 
 from Global import *;
-from Global import set_session;
-from Python.Class.Header import Header;
 from Python.Class.Curtains import Curtains;
-from Python.DB.DBFunctions import __CONNECT__;
+from Python.DB.DBFunctions import __CONNECT__, ALL_Curtain_info;
 from Server import Server;
 
 
 # —————————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————————
 
-def posted(post : str) -> bool:
-	return post in request.form;
-
 
 # ——————————————————————————————————————————————————————— ROUTES ———————————————————————————————————————————————————————
 
-@Server.route("/", methods=["GET", "POST"])
-def index():
-	set_session();
-	curtain_id = session["_CURTAIN_current"];
+@Server.route("/state/<int:curtain_id>", methods=["POST"])
+def state(curtain_id):
 	cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-	header = Header(cursor, curtain_id);
-	if(request.method == "POST"):
-		curtain = header.selected_curtain();
-		if(posted("open_button")): curtain.open(cnx, cursor);
-		elif(posted("close_button")): curtain.close(cnx, cursor);
-		elif(posted("set_button")):
-			print(int(request.form["desired_position_input"]))
-			curtain.open_percentage(cnx, cursor, desired_position=int(request.form["desired_position_input"]));
-
-		return redirect("/");
-
+	curtain_info = ALL_Curtain_info(cursor, curtain_id);
 	cursor.close();
-	return render_template("Home.html", header=header, session=session);
 
+	if(not curtain_info[0]): return {"error"};
+	curtain = Curtains(*curtain_info);
 
-@Server.route("/favicon.ico", methods=["GET"])
-def favicon():
-	return "";
-
-
-@Server.route("/test")
-def test():
-	return "It worked"
-
-
-# —————————————————————————————————————————————————————— BUILDERS ——————————————————————————————————————————————————————
-
-
+	if("current_position_percent__is_activated" in request.form):
+		return curtain.json(["is_activated", "current_position_percent_int"]);

@@ -45,14 +45,12 @@ def jinja2_print(text):
 Server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
 Server.secret_key = random_keygen(64);
 # ———— DB SETUP ————
-Server.config["MYSQL_USER"] = DB_USER;
-Server.config["MYSQL_PASSWORD"] = DB_PASSWORD;
-Server.config["MYSQL_DATABASE"] = DATABASE;
-_MYSQL_ = MySQL(Server);
+CNX, CURSOR = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
 
 # ———— ROUTES INCLUSION ————
 from Routes.Root import *;
+from Routes.State import *;
 
 
 def main():

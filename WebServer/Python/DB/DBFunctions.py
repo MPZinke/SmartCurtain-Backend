@@ -20,10 +20,22 @@ def __CONNECT__(user : str, password : str, db_name : str):
 	return cnx, cnx.cursor(buffered=True);
 
 
+def __UTILITY__associate_query(cursor):
+	headers = [header[0] for header in cursor._description];
+	return [{header : (row[x] if row[x] else None) for x, header in enumerate(headers)} for row in cursor._rows];
+
+
+def __UTILITY__insert(cnx : object, cursor : object, query : str, *params) -> int:
+	if(len(params)): cursor.execute(query, params);
+	else: cursor.execute(query);
+	if(not cnx.commit()): return 0;
+	return cursor.lastrowid;
+
+
 def __UTILITY__query(cursor : object, query : str, *params) -> list:
 	if(len(params)): cursor.execute(query, params);
 	else: cursor.execute(query);
-	return cursor.fetchall();
+	return __UTILITY__associate_query(cursor);
 
 
 # —————————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————————
@@ -66,3 +78,12 @@ def ALL_Curtain_info(cursor : object, Curtain_id : int) -> list:
 	curtain_info.append(CurtainsOptions(cursor, Curtain_id));
 
 	return curtain_info;
+
+
+# —————————————————————————————————————————————————————— SETTERS ——————————————————————————————————————————————————————
+
+def new_Event(cnx, cursor, Curtain_id : int, Options_id : int, desired_position : int, time : object) -> bool:
+	query =	"INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES" \
+			+ "(%s, %s, %s, %s);"
+	args = (Curtain_id, Options_id, desired_position, time.strftime("%Y-%m-%d %H:%M:%S"));
+	return __UTILITY__insert(cnx, cursor, query, *args);

@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `CurtainsEvents`
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
 	`Curtains.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Curtains.id`) REFERENCES `Curtains`(`id`),
-	`Options.id` INT UNSIGNED NOT NULL,
+	`Options.id` INT UNSIGNED DEFAULT NULL,
 	FOREIGN KEY (`Options.id`) REFERENCES `Options`(`id`),
 	`desired_position` INT UNSIGNED NOT NULL,
 	`is_current` BOOLEAN DEFAULT TRUE,

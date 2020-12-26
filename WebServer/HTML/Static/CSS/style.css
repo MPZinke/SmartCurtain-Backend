@@ -13,7 +13,7 @@
 
 html {
 	font-family: Helvetica;
-	color: #E4E6C6;
+	color: #FFFFFF;
 }
 
 .background_color {
@@ -51,7 +51,7 @@ header {
 }
 
 .__WRAPPER__side_menu > a {
-	color: #E4E6C6;
+	color: #FFFFFF;
 	display: block;
 	font-size: 3em;
 	padding: 8px 8px 8px 32px;
@@ -87,7 +87,7 @@ header {
 
 .close {
 	background-color: rgb(26, 21, 51);
-	color: #E4E6C6;
+	color: #FFFFFF;
 }
 
 
