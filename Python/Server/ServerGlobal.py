@@ -14,34 +14,19 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Union;
-
-from Python.DB.DBFunctions import ALL_Curtain_info, Curtains as DBCurtains;
-from Python.Class.Curtains import Curtains;
-
-
-class Header:
-	def __init__(self, cursor : object, selected_curtain : int=1, *, error : str="", success : str="") -> None:
-		self._curtains = [Curtains(*ALL_Curtain_info(cursor, int(curtain["id"]))) for curtain in DBCurtains(cursor)];
-		self._error = error;
-		self._success = success;
-		self._selected_curtain = self._curtains[0];
-		for x in range(len(self._curtains)):
-			if(self._curtains[x].id() == selected_curtain): self._selected_curtain = self._curtains[x];
+from flask import render_template, request, session;
+from os import getcwd as __OS__getcwd;
+from pathlib import Path as __pathlib__Path;
+import sys;
 
 
-	def curtains(self):
-		return self._curtains;
+SERVER_DIR = str(__pathlib__Path(__OS__getcwd()));
+MAIN_HTML_DIR = SERVER_DIR+"/HTML/Root";
+STATIC_HTML_DIR = SERVER_DIR+"/HTML/Static";
 
 
-	def error(self):
-		return self._error;
-
-
-	def success(self):
-		return self._success;
-
-
-	def selected_curtain(self, curtain_id : int=None) -> Union[int, None]:
-		if(isinstance(curtain_id, type(None))): return self._selected_curtain;
-		self._selected_curtain = curtain_id;
+def set_session():
+	if("_CURTAIN_current" not in session): session["_CURTAIN_current"] = 1;
+	elif(request.method == "POST" and "__WRAPPER__curtain_select" in request.form):
+		try: session["_CURTAIN_current"] = int(request.form["__WRAPPER__curtain_select"]);
+		except: session["_CURTAIN_current"] = 1;

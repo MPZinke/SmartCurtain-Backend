@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from datetime import datetime;
 from typing import Union;
 
-from Python.Class.Options import Options;
+from Class.Options import Options;
 
 
 class Events:

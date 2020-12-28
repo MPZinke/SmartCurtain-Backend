@@ -14,18 +14,19 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-
-
 from flask import Flask, request, session;
 from flask_mysql_connector import MySQL;
 from json import dumps;
-from sys import path as __SYS_path;
+from os import getcwd as __OS__getcwd;
+from pathlib import Path as __pathlib__Path;
+from sys import path as __SYS__path;
 from time import sleep
 
-from Global import *;
-from Python.DB.DBFunctions import __CONNECT__;
-from Python.Class.Header import Header;
-import Python.Other.Logger as Logger;
+__SYS__path.append(str(__pathlib__Path(__OS__getcwd()).parent));  # Add parent directory to path
+from ServerGlobal import *;
+from DB.DBFunctions import __CONNECT__;
+from Class.Header import Header;
+import Other.Logger as Logger;
 
 
 # randomly create a key to secure the session
@@ -44,8 +45,6 @@ def jinja2_print(text):
 # ———— SERVER SETUP ————
 Server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
 Server.secret_key = random_keygen(64);
-# ———— DB SETUP ————
-CNX, CURSOR = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
 
 # ———— ROUTES INCLUSION ————
@@ -55,7 +54,7 @@ from Routes.State import *;
 
 def main():
 	Server.debug = True;
-	Server.run();
+	Server.run(host="0.0.0.0");
 
 
 if __name__ == '__main__':

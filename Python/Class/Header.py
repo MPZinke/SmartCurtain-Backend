@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.25                                                                                                      #
+#   on 2020.12.23                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,24 +14,34 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from typing import Union;
 
-from flask import Blueprint, redirect, render_template, request, session;
-
-from Global import *;
-from Python.Class.Curtains import Curtains;
-from Server import CNX, CURSOR, Server;
+from DB.DBFunctions import ALL_Curtain_info, Curtains as DBCurtains;
+from Class.Curtains import Curtains;
 
 
-@Server.route("/activate", methods=["POST"])
-def activate():
-	if("_CURTAIN_current" not in session): return {"error" : "No curtain set"}.json();
-	curtain_id = session["_CURTAIN_current"];
-	if("_ACTIVATE_full_open" in request.form): return Curtains(curtain_id).open(CNX, CURSOR);
-	return {};
+class Header:
+	def __init__(self, cursor : object, selected_curtain : int=1, *, error : str="", success : str="") -> None:
+		self._curtains = [Curtains(*ALL_Curtain_info(cursor, int(curtain["id"]))) for curtain in DBCurtains(cursor)];
+		self._error = error;
+		self._success = success;
+		self._selected_curtain = self._curtains[0];
+		for x in range(len(self._curtains)):
+			if(self._curtains[x].id() == selected_curtain): self._selected_curtain = self._curtains[x];
 
 
+	def curtains(self):
+		return self._curtains;
 
 
-# —————————————————————————————————————————————————————— BUILDERS ——————————————————————————————————————————————————————
+	def error(self):
+		return self._error;
 
 
+	def success(self):
+		return self._success;
+
+
+	def selected_curtain(self, curtain_id : int=None) -> Union[int, None]:
+		if(isinstance(curtain_id, type(None))): return self._selected_curtain;
+		self._selected_curtain = curtain_id;

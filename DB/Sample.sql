@@ -6,6 +6,8 @@
 -- 	BUGS:
 -- 	FUTURE:
 
+USE `SmartCurtain`;
+
 
 -- MPZinke instance: default length 1000
 INSERT INTO `Curtains` (`length`, `name`) VALUES (1000, 'Office');

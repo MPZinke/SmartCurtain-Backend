@@ -1,13 +1,13 @@
 [Unit]
-Description=Main Smart Curtain Scheduler
+Description=Main Smart Curtain Manager
 After=mariadb.service
 
 [Service]
-ExecStart=/usr/bin/python3 /home/pi/SmartCurtain/Main.py
+ExecStart=/usr/bin/python3 /usr/SmartCurtain/Server.py
 Restart=always
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=Future
+SyslogIdentifier=SmartCurtain_Server
 User=pi
 Group=pi
 

@@ -19,8 +19,8 @@ from datetime import datetime;
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
 from typing import Union;
 
-from Python.Class.Events import Events;
-from Python.Class.Options import Options;
+from Class.Events import Events;
+from Class.Options import Options;
 
 
 class Curtains:
