@@ -1,4 +1,4 @@
-# `~/Server/Python`
+# `~/Hub/Python/`
 
 ---
 
