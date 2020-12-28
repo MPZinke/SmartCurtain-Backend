@@ -47,11 +47,22 @@ CREATE TABLE IF NOT EXISTS `CurtainsOptions`
 	FOREIGN KEY (`Curtains.id`) REFERENCES `Curtains`(`id`),
 	`Options.id` INT UNSIGNED NOT NULL,
 	FOREIGN KEY (`Options.id`) REFERENCES `Options`(`id`),
+	`is_current` BOOLEAN NOT NULL DEFAULT TRUE,
 	`is_on` BOOLEAN NOT NULL,
-	`key` VARCHAR(256) DEFAULT NULL,
 	`notes` VARCHAR(256) DEFAULT NULL,
-	`value` VARCHAR(256) DEFAULT NULL
 ) CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `CurtainsOptionsKeyValues`;
+CREATE TABLE `CurtainsOptionsKeyValues`
+(
+	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	`CurtainsOptions.id` INT UNSIGNED NOT NULL,
+	FOREIGN KEY (`CurtainsOptions.id`) REFERENCES `CurtainsOptions`(`id`),
+	`is_current` BOOLEAN DEFAULT TRUE,
+	`key` VARCHAR(256) DEFAULT NULL,
+	`value` VARCHAR(256) DEFAULT NULL
+);
 
 
 DROP TABLE IF EXISTS `CurtainsEvents`;
