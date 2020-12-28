@@ -1,4 +1,4 @@
-# `~/Hub/DB/`
+# `~/SmartCurtain/Hub/DB/`
 
 ---
 

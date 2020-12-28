@@ -1,4 +1,4 @@
-# `~/Hub/Installation/`
+# `~/SmartCurtain/Hub/Installation/`
 
 ---
 
