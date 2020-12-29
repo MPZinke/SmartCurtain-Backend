@@ -3,11 +3,9 @@
 ---
 
 ## DESCRIPTION
-
 This folder holds the main scripts that are run as the server.
 
 ### CONTENTS
-
 - `./Manager` The multi-threaded program that creates & manages future events.
 - `./Server` The web interface for APIs & user interaction.
 

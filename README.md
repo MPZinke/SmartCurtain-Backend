@@ -3,11 +3,9 @@
 ---
 
 ## DESCRIPTION
-
 This folder is what goes on the Raspberry Pi (or other Hub devices).
 
 ### CONTENTS
-
 - `DB` The folder in which the SQL Schema & setup are held.
 - `Installation` Where linux services & other setup files are held.
 - `Logs` For log message files.
