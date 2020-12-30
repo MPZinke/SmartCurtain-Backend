@@ -18,11 +18,11 @@ from typing import Union;
 
 
 class Options:
-	def __init__(self, option_query : dict):
-		self._id : int = option_query["id"];
-		self._description : str = option_query["description"];
-		self._is_current : bool = bool(option_query["is_current"]);
-		self._name : str = option_query["name"];
+	def __init__(self, option_info : dict):
+		self._id : int = option_info["id"];
+		self._description : str = option_info["description"];
+		self._is_current : bool = bool(option_info["is_current"]);
+		self._name : str = option_info["name"];
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -45,3 +45,15 @@ class Options:
 	def name(self, new_name : str=None) -> Union[str, None]:
 		if(isinstance(new_name, type(None))): return self._name;
 		self._name = new_name;
+
+
+	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
+
+	def dict(self):
+		attrs = ["_id", "_description", "_is_current", "_name"];
+		return {attr : getattr(self, attr) for attr in attrs};
+
+
+	def print(self, tab=0, next_tab=0):
+		attrs = ["_id", "_description", "_is_current", "_name"];
+		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));

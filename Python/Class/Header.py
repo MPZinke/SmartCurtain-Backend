@@ -14,34 +14,33 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from flask import session
 from typing import Union;
-
-from DB.DBFunctions import ALL_Curtain_info, Curtains as DBCurtains;
-from Class.Curtains import Curtains;
 
 
 class Header:
-	def __init__(self, cursor : object, selected_curtain : int=1, *, error : str="", success : str="") -> None:
-		self._curtains = [Curtains(*ALL_Curtain_info(cursor, int(curtain["id"]))) for curtain in DBCurtains(cursor)];
-		self._error = error;
-		self._success = success;
-		self._selected_curtain = self._curtains[0];
-		for x in range(len(self._curtains)):
-			if(self._curtains[x].id() == selected_curtain): self._selected_curtain = self._curtains[x];
+	def __init__(self, system, *, error : str="", success : str="") -> None:
+		if("_CURTAIN_current" not in session):
+			raise Exception("No curtain set: session curtain id must be set before calling Header instance");
+
+		self._Curtains = system.Curtains();
+		self._error : str = error;
+		self._success : str = success;
+		self._selected_curtain = self._Curtains.get(session["_CURTAIN_current"]);
 
 
 	def curtains(self):
-		return self._curtains;
+		return self._Curtains;
 
 
-	def error(self):
+	def error(self) -> str:
 		return self._error;
 
 
-	def success(self):
+	def success(self) -> str:
 		return self._success;
 
 
-	def selected_curtain(self, curtain_id : int=None) -> Union[int, None]:
-		if(isinstance(curtain_id, type(None))): return self._selected_curtain;
-		self._selected_curtain = curtain_id;
+	def selected_curtain(self, Curtains_id : int=None) -> Union[object, None]:
+		if(isinstance(Curtains_id, type(None))): return self._selected_curtain;
+		if(Curtains_id in self._Curtains): self._selected_curtain = self._Curtains[Curtains_id];

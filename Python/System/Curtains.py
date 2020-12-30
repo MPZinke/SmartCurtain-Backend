@@ -14,35 +14,36 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from copy import deepcopy;
 from datetime import datetime;
-from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
 from typing import Union;
 
-from Class.Events import Events;
-from Class.Options import Options;
+from System.Events import Events;
+from System.CurtainsOptions import CurtainsOptions;
+from DB.DBCredentials import *;
+from DB.DBFunctions import __CONNECT__, Curtain as DBCurtain, CurtainsEvents_for_curtain, CurtainsOptions_for_curtain;
 
 
 class Curtains:
-	def __init__(self, curtain_query : dict, curtain_events_query : list=[], curtain_options_query : list=[]):
-		self._id : int = int(curtain_query["id"]);
-		self._current_position : int =	int(curtain_query["current_position"]) if curtain_query["current_position"] \
-										else 0;
-		self._direction : bool = bool(curtain_query["direction"]);
-		self._is_activated : bool = bool(curtain_query["is_activated"]);
-		self._last_connection : object = curtain_query["last_connection"];
-		self._length : int = int(curtain_query["length"]);
-		self._name : str = curtain_query["name"];
+	def __init__(self, curtain_info : dict):
+		self._id : int = curtain_info["id"];
+		self._current_position : int = curtain_info["current_position"] if curtain_info["current_position"] else 0;
+		self._direction : bool = bool(curtain_info["direction"]);
+		self._is_activated : bool = bool(curtain_info["is_activated"]);
+		self._last_connection : object = curtain_info["last_connection"];
+		self._length : int = curtain_info["length"];
+		self._name : str = curtain_info["name"];
 
-		self._CurtainsEvents = [Events(event) for event in curtain_events_query];
-		self._CurtainsOptions = [Options(option) for option in curtain_options_query];
+		_, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		self._CurtainsEvents = {event["id"] : Events(event) for event in CurtainsEvents_for_curtain(cursor, self._id)};
+		self._CurtainsOptions = {option["id"] : CurtainsOptions(option) \
+														for option in CurtainsOptions_for_curtain(cursor, self._id)};
+		cursor.close();
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
 
-	def id(self, new_id : int=None) -> Union[int, None]:
-		if(isinstance(new_id, type(None))): return self._id;
-		self._id = new_id;
+	def id(self) -> int:
+		return self._id;
 
 
 	def current_position(self, new_current_position : int=None) -> Union[int, None]:
@@ -75,27 +76,40 @@ class Curtains:
 		self._name = new_name;
 
 
-	def CurtainsEvents(self) -> list:
-		return deepcopy(self._CurtainsEvents);
+	def CurtainsEvents(self, CurtainsEvents_id : int):
+		return self._CurtainsEvents.get(CurtainsEvents_id);
 
 
-	def CurtainsOptions(self) -> list:
-		return deepcopy(self._CurtainsOptions);
+	def CurtainsEvents(self) -> dict:
+		return self._CurtainsEvents;
 
 
-	def json(self, attributes : list=[], **kw_args) -> str:
-		if(attributes): output = {attribute : getattr(self, attribute)() for attribute in attributes};
-		else: output =	{
-							"id" : self._id,
-							"current_position" : self._current_position,
-							"direction" : self._direction,
-							"is_activated" : self._is_activated,
-							"last_connection" : datetime.strftime(self._last_connection, "%Y-%m-%d %H:%M:%S"),
-							"length" : self._length,
-							"name" : self._name
-						}
-		for kw in kw_args: output[kw] = kw_args[kw];
-		return json_dumps(output);
+	def CurtainsOptions(self, CurtainsOptions_id : int):
+		return self._CurtainsOptions.get(CurtainsOptions_id);
+
+
+	def CurtainsOptions(self) -> dict:
+		return self._CurtainsOptions;
+
+
+	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
+
+	def dict(self):
+		class_dict = {};
+		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
+		class_dict = {attr : getattr(self, attr) for attr in attrs};
+		class_dict["_CurtainsEvents"] = {ce : self._CurtainsEvents[cd].dict() for ce in self._CurtainsEvents};
+		class_dict["_CurtainsOptions"] = {co : self._CurtainsOptions[co].dict() for co in self._CurtainsOptions};
+		return class_dict;
+
+
+	def print(self, tab=0, next_tab=0):
+		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
+		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));
+		print('\t'*tab, "_CurtainsEvents : ");
+		for event in self._CurtainsEvents: self._CurtainsEvents[event].print(tab+next_tab, next_tab);
+		print('\t'*tab, "_CurtainsOptions : ");
+		for option in self._CurtainsOptions: self._CurtainsOptions[option].print(tab+next_tab, next_tab);
 
 
 	# ——————————————————————————————————————————————————————— UI ———————————————————————————————————————————————————————

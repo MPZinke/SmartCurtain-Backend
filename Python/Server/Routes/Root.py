@@ -15,14 +15,11 @@ __author__ = "MPZinke"
 
 
 
-from flask import Blueprint, redirect, render_template, request, session;
+from flask import redirect, render_template, request, session;
 
-from DB.DBCredentials import *;
 from Class.Header import Header;
-from Class.Curtains import Curtains;
-from DB.DBFunctions import __CONNECT__;
-from Server import Server;
-from ServerGlobal import set_session;
+from Server.ServerGlobal import *;
+from Server.ServerGlobal import set_session;
 
 
 # —————————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————————
@@ -33,12 +30,9 @@ def posted(post : str) -> bool:
 
 # ——————————————————————————————————————————————————————— ROUTES ———————————————————————————————————————————————————————
 
-@Server.route("/", methods=["GET", "POST"])
-def index():
+def index(self):
 	set_session();
-	curtain_id = session["_CURTAIN_current"];
-	cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-	header = Header(cursor, curtain_id);
+	header = Header(self._System);
 	if(request.method == "POST"):
 		curtain = header.selected_curtain();
 		if(posted("open_button")): curtain.open(cnx, cursor);
@@ -46,20 +40,16 @@ def index():
 		elif(posted("set_button")):
 			print(int(request.form["desired_position_input"]))
 			curtain.open_percentage(cnx, cursor, desired_position=int(request.form["desired_position_input"]));
-
 		return redirect("/");
 
-	cursor.close();
-	return render_template("Home.html", header=header, session=session);
+	return render_template(MAIN_HTML_DIR+"/Home.html", header=header, session=session);
 
 
-@Server.route("/favicon.ico", methods=["GET"])
-def favicon():
+def favicon(self):
 	return "";
 
 
-@Server.route("/test")
-def test():
+def test(self):
 	return "It worked"
 
 
