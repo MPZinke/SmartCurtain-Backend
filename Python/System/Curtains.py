@@ -17,10 +17,10 @@ __author__ = "MPZinke"
 from datetime import datetime;
 from typing import Union;
 
-from System.Events import Events;
+from System.CurtainsEvents import CurtainsEvents;
 from System.CurtainsOptions import CurtainsOptions;
 from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, Curtain as DBCurtain, CurtainsEvents_for_curtain, CurtainsOptions_for_curtain;
+from DB.DBFunctions import __CONNECT__, current_CurtainsEvents_for_curtain, CurtainsOptions_for_curtain;
 
 
 class Curtains:
@@ -34,9 +34,10 @@ class Curtains:
 		self._name : str = curtain_info["name"];
 
 		_, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		self._CurtainsEvents = {event["id"] : Events(event) for event in CurtainsEvents_for_curtain(cursor, self._id)};
+		self._CurtainsEvents = {event["id"] : CurtainsEvents(event) \
+												for event in current_CurtainsEvents_for_curtain(cursor, self._id)};
 		self._CurtainsOptions = {option["id"] : CurtainsOptions(option) \
-														for option in CurtainsOptions_for_curtain(cursor, self._id)};
+												for option in CurtainsOptions_for_curtain(cursor, self._id)};
 		cursor.close();
 
 
@@ -94,8 +95,9 @@ class Curtains:
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
 
-	def dict(self):
-		class_dict = {};
+	def dict(self, desired_attrs=[]):
+		if(desired_attrs): return {attr : getattr(self, attr)() for attr in desired_attrs};
+
 		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
 		class_dict = {attr : getattr(self, attr) for attr in attrs};
 		class_dict["_CurtainsEvents"] = {ce : self._CurtainsEvents[cd].dict() for ce in self._CurtainsEvents};
@@ -129,19 +131,24 @@ class Curtains:
 
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
-	def close(self, cnx, cursor, *, Options_id : Union[int, None]=None, time : object=datetime.now()):
-		from Python.DB.DBFunctions import new_Event;
-		return new_Event(cnx, cursor, self._id, Options_id, 0, time);
+	def _new_event(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
+		from DB.DBCredentials import DB_USER, DB_PASSWORD, DATABASE;
+		from DB.DBFunctions import __CONNECT__, CurtainsEvent, new_Event;
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+
+		new_Event_id = new_Event(cnx, cursor, self._id, Options_id, desired_position, time);
+		if(new_Event_id): self._CurtainsEvents[new_Event_id] = CurtainsEvents(CurtainsEvent(cursor, new_Event_id));
+		return new_Event_id;
 
 
-	def open(self, cnx : object, cursor : object, *, desired_position : int=0, 
-	  Options_id : Union[int, None]=None, time : object=datetime.now()) -> int:
-		from Python.DB.DBFunctions import new_Event;
-		if(not desired_position): desired_position = self._length;
-		return new_Event(cnx, cursor, self._id, Options_id, desired_position, time);
+	def close(self, *, Options_id : int=None, time : object=datetime.now()):
+		return self._new_event(desired_position=0, Options_id=Options_id, time=time);
 
 
-	def open_percentage(self, cnx : object, cursor : object, *, desired_position : int=0,
-	  Options_id : Union[int, None]=None, time : object=datetime.now()) -> int:
+	def open(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
+		return self._new_event(desired_position=desired_position, Options_id=Options_id, time=time);
+
+
+	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
 		desired_position = int(desired_position * self._length / 100);
-		return self.open(cnx, cursor, Options_id=Options_id, desired_position=desired_position, time=time);
+		return self._new_event(Options_id=Options_id, desired_position=desired_position, time=time);

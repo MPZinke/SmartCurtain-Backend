@@ -31,12 +31,13 @@ class Server(ZWidget):
 	# ———— ROUTES INCLUSION ————
 	# https://stackoverflow.com/a/47562412
 	from Server.Routes.Root import index, favicon, test;
+	from Server.Routes.State import state;
 
 
 	def __init__(self, system):
 		ZWidget.__init__(self, "Server", 10000000);
-		print(MAIN_HTML_DIR, STATIC_HTML_DIR);
 		self._server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
+		print(MAIN_HTML_DIR, STATIC_HTML_DIR);
 		self._server.secret_key = self.random_keygen(64);
 		self._System = system;
 
@@ -67,6 +68,9 @@ class Server(ZWidget):
 	# Calls the Flask::run method.
 	def _loop_process(self, **kw_args):
 		routes = {"/" : [self.index, ["GET", "POST"]], "/favicon" : [self.favicon], "/test" : [self.test]};
+		for route in routes: self.add_route(route, *routes[route]);
+
+		routes = {"/state/<int:Curtains_id>" : [self.state, ["POST"]]};
 		for route in routes: self.add_route(route, *routes[route]);
 
 		self._server.run(host="0.0.0.0");

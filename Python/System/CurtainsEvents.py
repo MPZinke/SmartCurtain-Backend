@@ -18,7 +18,7 @@ from datetime import datetime;
 from typing import Union;
 
 
-class Events:
+class CurtainsEvents:
 	def __init__(self, event_info : dict):
 		self._id : int = event_info["id"];
 		self._Curtains_id : int = event_info["Curtains.id"];

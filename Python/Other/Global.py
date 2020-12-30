@@ -20,3 +20,6 @@ import sys;
 
 
 SMARTCURTAIN_DIR = str(__pathlib__Path(__OS__getcwd()));
+
+
+SYSTEM_REFRESH_WAIT = 84600;

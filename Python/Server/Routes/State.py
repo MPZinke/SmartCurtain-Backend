@@ -15,12 +15,8 @@ __author__ = "MPZinke"
 
 
 
-from flask import Blueprint, redirect, render_template, request, session;
-
-from Class.Curtains import Curtains;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, ALL_Curtain_info;
-from Server import Server;
+from flask import redirect, render_template, request, session;
+from json import dumps;
 
 
 # —————————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————————
@@ -28,14 +24,9 @@ from Server import Server;
 
 # ——————————————————————————————————————————————————————— ROUTES ———————————————————————————————————————————————————————
 
-@Server.route("/state/<int:curtain_id>", methods=["POST"])
-def state(curtain_id):
-	cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-	curtain_info = ALL_Curtain_info(cursor, curtain_id);
-	cursor.close();
-
-	if(not curtain_info[0]): return {"error"};
-	curtain = Curtains(*curtain_info);
+def state(self, Curtains_id : int):
+	if(Curtains_id not in self._System.Curtains()): return {"error"};
 
 	if("current_position_percent__is_activated" in request.form):
-		return curtain.json(["is_activated", "current_position_percent_int"]);
+		print(self._System.Curtain(Curtains_id).dict(["is_activated", "current_position_percent_int"]));
+		return dumps(self._System.Curtain(Curtains_id).dict(["is_activated", "current_position_percent_int"]));

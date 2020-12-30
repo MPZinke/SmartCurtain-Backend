@@ -25,7 +25,7 @@ INSERT INTO `Options` (`id`, `name`, `description`) VALUES
 (9, 'Temperature Setting', 'Set the curtain based on thermostat temperature of room, outside weather & incoming light');
 
 
-INSERT INTO `CurtainsOptions` (`Curtains.id`, `Options.id`, `is_on`, `notes`) VALUES
+INSERT INTO `CurtainsOptions` (`id`, `Curtains.id`, `Options.id`, `is_on`, `notes`) VALUES
 (1, 1, 1, TRUE, NULL),
 (2, 1, 2, TRUE, NULL),
 (3, 1, 3, TRUE, NULL),
@@ -40,4 +40,4 @@ INSERT INTO `CurtainsOptions` (`Curtains.id`, `Options.id`, `is_on`, `notes`) VA
 INSERT INTO `CurtainsOptionsKeyValues` (`CurtainsOptions.id`, `key`, `value`) VALUES
 (1, 'office.curtain-close', NULL),
 (2, 'office-curtain-open', NULL),
-(5, NULL, '1.0'),
+(5, NULL, '1.0');

@@ -34,15 +34,14 @@ def index(self):
 	set_session();
 	header = Header(self._System);
 	if(request.method == "POST"):
-		curtain = header.selected_curtain();
-		if(posted("open_button")): curtain.open(cnx, cursor);
-		elif(posted("close_button")): curtain.close(cnx, cursor);
+		if(posted("open_button")): header.selected_curtain().open();
+		elif(posted("close_button")): header.selected_curtain().close();
 		elif(posted("set_button")):
-			print(int(request.form["desired_position_input"]))
-			curtain.open_percentage(cnx, cursor, desired_position=int(request.form["desired_position_input"]));
+			print(int(request.form["desired_position_input"]));
+			header.selected_curtain().open_percentage(desired_position=int(request.form["desired_position_input"]));
 		return redirect("/");
 
-	return render_template(MAIN_HTML_DIR+"/Home.html", header=header, session=session);
+	return render_template("Home.html", header=header, session=session);
 
 
 def favicon(self):

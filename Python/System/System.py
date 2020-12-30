@@ -16,17 +16,33 @@ __author__ = "MPZinke"
 
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
 
-from System.Curtains import Curtains;
-from System.Options import Options;
+from Class.ZWidget import ZWidget;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CONNECT__, Curtains as DBCurtains, Options as DBOptions;
+from Other.Global import *;
+from System.Curtains import Curtains;
+from System.Options import Options;
 
 
-class System:
+class System(ZWidget):
 	def __init__(self):
+		ZWidget.__init__(self, "System", SYSTEM_REFRESH_WAIT);
+		self._Curtains = None;
+		self._Options = None;
+		self.refresh();
+
+
+	def refresh(self) -> None:
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+
 		self._Curtains = {curtain["id"] : Curtains(curtain) for curtain in DBCurtains(cursor)};
 		self._Options = {option["id"] : Options(option) for option in DBOptions(cursor)};
+
+		cursor.close();
+
+
+	def _loop_process(self) -> None:
+		self.refresh();
 
 
 	# ———————————————————————————————————————————————————— GETTERS ————————————————————————————————————————————————————

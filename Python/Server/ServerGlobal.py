@@ -22,9 +22,8 @@ import sys;
 from Other.Global import *;
 
 
-SERVER_DIR = str(__pathlib__Path(__OS__getcwd()));
-MAIN_HTML_DIR = SERVER_DIR+"/HTML/Root";
-STATIC_HTML_DIR = SERVER_DIR+"/HTML/Static";
+MAIN_HTML_DIR = SMARTCURTAIN_DIR+"/Server/HTML/Root";
+STATIC_HTML_DIR = SMARTCURTAIN_DIR+"/Server/HTML/Static";
 
 
 def set_session():

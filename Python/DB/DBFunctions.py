@@ -59,13 +59,6 @@ def CurtainsEvents(cursor : object, Curtains_id : int) -> list:
 	return __UTILITY__query(cursor, query, Curtains_id);
 
 
-def CurtainsEvents_current(cursor : object, Curtains_id : int) -> list:
-	query = "SELECT `CurtainsEvents`.*, `Options`.* FROM `CurtainsEvents` \n \
-			LEFT JOIN `Options` ON `Options`.`id` = `CurtainsEvents`.`id` \n \
-			WHERE `Curtains.id` = %s AND `CurtainsEvents`.`is_current` = TRUE;";
-	return __UTILITY__query(cursor, query, Curtains_id);
-
-
 def Options(cursor : object) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `Options` ORDER BY `id` ASC;");
 
@@ -89,6 +82,18 @@ def ALL_Curtain_info(cursor : object, Curtains_id : int) -> list:
 
 def Curtains_ids(cursor : object) -> list:
 	return [curtain["id"] for curtain in __UTILITY__query(cursor, "SELECT `id` FROM `Curtains` ORDER BY `id` ASC;")];
+
+
+def current_CurtainsEvents_for_curtain(cursor : object, Curtains_id : int) -> list:
+	from datetime import datetime;
+
+	query = "SELECT * FROM `CurtainsEvents` WHERE `Curtains.id` = %s AND `time` >= %s AND `is_current` = TRUE;";
+	return __UTILITY__query(cursor, query, Curtains_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"));
+
+
+def CurtainsEvent(cursor : object, CurtainsEvents_id : int) -> dict:
+	event = __UTILITY__query(cursor, "SELECT * FROM `CurtainsEvents` WHERE `id` = %s", CurtainsEvents_id);
+	return event[0] if event else {};
 
 
 def CurtainsEvents_for_curtain(cursor : object, Curtains_id : int) -> list:

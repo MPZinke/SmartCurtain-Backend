@@ -29,7 +29,7 @@ class Header:
 		self._selected_curtain = self._Curtains.get(session["_CURTAIN_current"]);
 
 
-	def curtains(self):
+	def Curtains(self):
 		return self._Curtains;
 
 
