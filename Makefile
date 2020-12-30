@@ -28,10 +28,8 @@ all:
 	pip3 install sklearn || echo "Failed to install sklearn with command: pip3 install sklearn" > ./Installation/InstallErrors.log
 
 	# Service setup
-	sudo cp ./Installation/SmartCurtain_Manager.service /etc/systemd/system/ || echo "Failed to copy SmartCurtain_Manager service with command: sudo cp ./Installation/SmartCurtain_Manager.service /etc/systemd/system/" > ./Installation/InstallErrors.log
-	sudo cp ./Installation/SmartCurtain_Server.service /etc/systemd/system/ || echo "Failed to copy SmartCurtain_Server service with command: sudo cp ./Installation/SmartCurtain_Server.service /etc/systemd/system/" > ./Installation/InstallErrors.log
-	sudo systemctl enable SmartCurtain_Manager.service || echo "Failed to enable service SmartCurtain_Manager.service with command: sudo systemctl enable SmartCurtain_Manager.service" > ./Installation/InstallErrors.log
-	sudo systemctl enable SmartCurtain_Server.service || echo "Failed to enable service SmartCurtain_Server.service with command: sudo systemctl enable SmartCurtain_Server.service" > ./Installation/InstallErrors.log
+	sudo cp ./Installation/SmartCurtain.service /etc/systemd/system/ || echo "Failed to copy SmartCurtain service with command: sudo cp ./Installation/SmartCurtain.service /etc/systemd/system/" > ./Installation/InstallErrors.log
+	sudo systemctl enable SmartCurtain.service || echo "Failed to enable service SmartCurtain.service with command: sudo systemctl enable SmartCurtain.service" > ./Installation/InstallErrors.log
 
 	# Clean up (setdown?)
 	echo "Finished"

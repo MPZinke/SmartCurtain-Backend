@@ -3,10 +3,9 @@
 ---
 
 ## DESCRIPTION
-Contains class files for DB structures and other data types.
+Contains class files for general program usage.
 
 ### CONTENTS
-- `./Curtains.py` Used to organize & create data based on Curtains table.
-- `./Events.py` Used to organize & create data based on Events table.
 - `./Header.py` Organizer for retreiving data for Server HTML generation.
-- `./Options.py` Used to organize & create data based on Options table.
+- `./ZThread.py` Custom thread object used by `ZWidget.py` to open and manage a thread.
+- `./ZWidget.py` Custom template to inherit from and run processes & data as its own object.
