@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 
 
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
+from threading import Lock;
 
 from Class.ZWidget import ZWidget;
 from DB.DBCredentials import *;
@@ -27,18 +28,22 @@ from System.Options import Options;
 class System(ZWidget):
 	def __init__(self):
 		ZWidget.__init__(self, "System", SYSTEM_REFRESH_WAIT);
+		self._mutex = Lock();
 		self._Curtains = None;
 		self._Options = None;
 		self.refresh();
 
 
 	def refresh(self) -> None:
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		self._mutex.acquire();  # just to ensure things are executed properly
+		try:
+			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
-		self._Curtains = {curtain["id"] : Curtains(curtain) for curtain in DBCurtains(cursor)};
-		self._Options = {option["id"] : Options(option) for option in DBOptions(cursor)};
+			self._Curtains = {curtain["id"] : Curtains(curtain) for curtain in DBCurtains(cursor)};
+			self._Options = {option["id"] : Options(option) for option in DBOptions(cursor)};
 
-		cursor.close();
+			cursor.close();
+		finally: self._mutex.release();
 
 
 	def _loop_process(self) -> None:

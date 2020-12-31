@@ -21,8 +21,6 @@ from Class.ZThread import ZThread;
 
 class ZWidget:
 	def __init__(self, name : str, sleep_time : Union[int, float]):
-		self._has_changed_flag = True;  # indicate whether any of the (child) information has changed
-
 		self._zthread = ZThread(name, self._loop_process, sleep_time);  # main driver of widget
 
 
@@ -51,20 +49,3 @@ class ZWidget:
 	# PLACEHOLDER: this is what is passed to the ZThread and is operated on.
 	def _loop_process(self) -> None:
 		raise Exception("ZWidget::_loop_process has not been overridden");
-
-
-	# ————————————————————— DISPLAY —————————————————————
-
-	# Returns whether the information has changed.
-	def has_changed(self) -> None:
-		return self._has_changed_flag;
-
-
-	# PLACEHOLDER: this is what checks for differences in new and old values.
-	def _mark_change_if_changed(self) -> None:
-		raise Exception("ZWidget::_mark_change_if_changed has not been overridden");
-
-
-	# Sets the has changed flag back to false after change has been updated.
-	def update_displayed(self) -> None:
-		self._has_changed_flag = False;

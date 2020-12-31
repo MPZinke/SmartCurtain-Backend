@@ -7,7 +7,7 @@ __author__ = "MPZinke"
 #   created by: MPZinke                                                                                                #
 #   on 2020.12.26                                                                                                      #
 #                                                                                                                      #
-#   DESCRIPTION:                                                                                                       #
+#   DESCRIPTION: Get and set individual variables for a specific curtain.                                              #
 #   BUGS:                                                                                                              #
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
@@ -24,6 +24,7 @@ from json import dumps;
 
 # ——————————————————————————————————————————————————————— ROUTES ———————————————————————————————————————————————————————
 
+# /state/<int:Curtains_id>
 def state(self, Curtains_id : int):
 	if(Curtains_id not in self._System.Curtains()): return {"error"};
 

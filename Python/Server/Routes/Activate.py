@@ -14,24 +14,25 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-
 from flask import Blueprint, redirect, render_template, request, session;
-
-from Class.Curtains import Curtains;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__;
-from Server import Server;
+from json import dumps;
 
 
-@Server.route("/activate", methods=["POST"])
-def activate():
-	cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-	if("_CURTAIN_current" not in session): return {"error" : "No curtain set"}.json();
-	curtain_id = session["_CURTAIN_current"];
-	if("_ACTIVATE_full_open" in request.form): return Curtains(curtain_id).open(CNX, CURSOR);
-	return {};
+# /api/current/
+def api_activate(self):
+	if("curtain" not in request.form): return "ERROR: NO CURTAIN ID SUPPLIED";
+	current_event = self._System.Curtain(Curtains_id).current_event();
+	if(not current_event):
+		return "{\"curtain\" : 0, \"event\" : 0, \"current position\" : 0, \"length\" : 0, \"desired position\" : 0}"; 
+
+	#TODO: pull values, send as JSON
 
 
+# /api/complete/
+def api_complete(self):
+	if("data" not in request.form): pass;
+	#TODO: get data from JSON
+	return "SUCCESS";
 
 
 # —————————————————————————————————————————————————————— BUILDERS ——————————————————————————————————————————————————————

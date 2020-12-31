@@ -1,0 +1,15 @@
+[Unit]
+Description=Main Smart Curtain Manager
+After=mariadb.service
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/SmartCurtain/SmartCurtain.py
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=SmartCurtain_Manager
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target

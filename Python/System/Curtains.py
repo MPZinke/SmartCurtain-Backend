@@ -96,7 +96,8 @@ class Curtains:
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
 
 	def dict(self, desired_attrs=[]):
-		if(desired_attrs): return {attr : getattr(self, attr)() for attr in desired_attrs};
+		ignore_attrs = ["_CurtainsEvents", "_CurtainsOptions"];
+		if(desired_attrs): return {attr : getattr(self, attr)() for attr in desired_attrs if attr not in ignore_attrs};
 
 		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
 		class_dict = {attr : getattr(self, attr) for attr in attrs};

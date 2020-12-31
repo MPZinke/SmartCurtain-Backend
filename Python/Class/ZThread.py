@@ -10,7 +10,7 @@ __author__ = "MPZinke"
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
-#   FUTURE:                                                                                                            #
+#   FUTURE: Consider moving to multiprocessing::Process instead.                                                       #
 #                                                                                                                      #
 ########################################################################################################################
 
