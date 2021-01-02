@@ -7,7 +7,8 @@ __author__ = "MPZinke"
 #   created by: MPZinke                                                                                                #
 #   on 2020.12.29                                                                                                      #
 #                                                                                                                      #
-#   DESCRIPTION:                                                                                                       #
+#   DESCRIPTION: SmartCurtain class is the primary operational part of the Hub. Creates & controls submodules of Hub   #
+#    (Manager, Server, & System). This script is invoded by the SmartCurtain Systemd Service.                          #
 #   BUGS:                                                                                                              #
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
@@ -16,8 +17,6 @@ __author__ = "MPZinke"
 
 from Server.Server import Server;
 from System.System import System;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__;
 
 
 class SmartCurtain:
