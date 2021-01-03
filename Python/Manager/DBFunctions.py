@@ -43,7 +43,7 @@ def curtain_length(cursor, curtain):
 	return cursor._rows[0][0]
 
 
-# bool for if the curtain's desired position is current catalogued position 
+# bool for if the curtain's desired position is current catalogued position
 def desire_position_does_not_equal_current(cursor, curtain, desired):
 	query = (	"SELECT `curtain_position` FROM `curtains` \
 				WHERE `curtain_id` = %d;")
