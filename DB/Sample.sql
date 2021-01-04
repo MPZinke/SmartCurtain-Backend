@@ -10,7 +10,7 @@ USE `SmartCurtain`;
 
 
 -- MPZinke instance: default length 1000
-INSERT INTO `Curtains` (`id`, `length`, `name`) VALUES (1, 1000, 'Office');
+INSERT INTO `Curtains` (`id`, `length`, `ip_address`, `name`) VALUES (1, 1000, '10.0.0.12', 'Office');
 
 
 INSERT INTO `Options` (`id`, `name`, `description`) VALUES
