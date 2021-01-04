@@ -67,13 +67,13 @@ class Server(ZWidget):
 	# Sets routes using hardcoded routes, functions & HTTP request methods.
 	# Calls the Flask::run method.
 	def _loop_process(self, **kw_args):
-		routes = {"/" : [self.index, ["GET", "POST"]], "/favicon" : [self.favicon], "/test" : [self.test]};
+		routes = {"/" : [self.index, ["GET", "POST"]], "/favicon" : [self.favicon], "/test" : [self.test, ["GET", "POST"]]};
 		for route in routes: self.add_route(route, *routes[route]);
 
 		routes = {"/state/<int:Curtains_id>" : [self.state, ["POST"]]};
 		for route in routes: self.add_route(route, *routes[route]);
 
-		self._server.run(host="0.0.0.0");
+		self._server.run(host="0.0.0.0", port=80);
 
 
 def main():

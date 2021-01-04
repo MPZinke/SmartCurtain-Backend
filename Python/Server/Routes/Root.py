@@ -49,7 +49,8 @@ def favicon(self):
 
 
 def test(self):
-	return "It worked"
+	print(request.get_json());
+	return "{\"success\":\"It worked\"}"
 
 
 # —————————————————————————————————————————————————————— BUILDERS ——————————————————————————————————————————————————————
