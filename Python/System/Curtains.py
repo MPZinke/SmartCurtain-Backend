@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.19                                                                                                              #
+#   on 2020.12.19                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -17,18 +17,23 @@ __author__ = "MPZinke"
 from datetime import datetime;
 from typing import Union;
 
-from System.CurtainsEvents import CurtainsEvents;
-from System.CurtainsOptions import CurtainsOptions;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CONNECT__, current_CurtainsEvents_for_curtain, CurtainsOptions_for_curtain;
+from Other.Logger import log_error;
+from System.CurtainsEvents import CurtainsEvents;
+from System.CurtainsOptions import CurtainsOptions;
 
 
 class Curtains:
-	def __init__(self, curtain_info : dict):
+	def __init__(self, curtain_info : dict, System):
+		self._System = System;
+
 		self._id : int = curtain_info["id"];
 		self._current_position : int = curtain_info["current_position"] if curtain_info["current_position"] else 0;
 		self._direction : bool = bool(curtain_info["direction"]);
 		self._is_activated : bool = bool(curtain_info["is_activated"]);
+		self._ip_address : str = curtain_info["ip_address"];
+		self._port : int = curtain_info["port"];
 		self._last_connection : object = curtain_info["last_connection"];
 		self._length : int = curtain_info["length"];
 		self._name : str = curtain_info["name"];
@@ -148,6 +153,21 @@ class Curtains:
 
 	def open(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
 		return self._new_event(desired_position=desired_position, Options_id=Options_id, time=time);
+
+
+	def open_immediately(self, desired_position : int=self._length, Options_id : int=None) -> int:
+		event_id = self._new_event(desired_position=desired_position, Options_id=Options_id)
+		if(not event_id): return False;
+		
+		from requests import post;
+		post_json =	{
+						"auto correct" : self._CurtainsOptions.get(self._System.Options_names("Auto Correct")).is_on(),
+						"auto calibrate" : self._CurtainsOptions.get(self._System.Options_names("Auto Calibrate")).is_on(),
+						"current position" : self._current_position, "desired position" : desired_position,
+						"event" : event_id, "direction" : self._direction, "length" : self._length
+					}
+		try: post(url=f"http://{self._ip_address}:{self._port}", json=post_json, timeout=3);
+		except Exception as error: log_error(error);
 
 
 	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:

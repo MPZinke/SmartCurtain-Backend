@@ -31,6 +31,7 @@ class System(ZWidget):
 		self._mutex = Lock();
 		self._Curtains = None;
 		self._Options = None;
+		self._Options_names = None;
 		self.refresh();
 
 
@@ -39,8 +40,9 @@ class System(ZWidget):
 		try:
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
-			self._Curtains = {curtain["id"] : Curtains(curtain) for curtain in DBCurtains(cursor)};
+			self._Curtains = {curtain["id"] : Curtains(curtain, self) for curtain in DBCurtains(cursor)};
 			self._Options = {option["id"] : Options(option) for option in DBOptions(cursor)};
+			self._Options_names = {self._Options[opt].name() : self._Options[opt].id() for opt in self._Options};
 
 			cursor.close();
 		finally: self._mutex.release();
@@ -62,6 +64,10 @@ class System(ZWidget):
 
 	def Option(self, Options_id : int):
 		return self._Options.get(Options_id);
+
+
+	def Option_name(self, Options_name : str):
+		return self._Options_names.get(Options_name);
 
 
 	def Options(self) -> dict:
