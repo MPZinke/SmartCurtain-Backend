@@ -16,7 +16,7 @@ __author__ = "MPZinke"
 
 from flask import redirect, render_template, request, session;
 from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, mark_CurtainsEvents_as_complete;
+from DB.DBFunctions import __CONNECT__;
 from Other.Logger import log_error;
 
 
@@ -24,12 +24,21 @@ from Other.Logger import log_error;
 def api_update_event(self):
 	try:
 		json = request.get_json();
-		for key in ["current position", "event", "length"]:
-			if(key not in json): raise Exception("\\\"{}\\\" missing from request".format(key))
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		if(not isinstance(json["event"], int)): raise Exception("\\\"event\\\" value is not of correct type");
-		if(mark_CurtainsEvents_as_complete(cnx, cursor, json["event"])): return "{\"success\" : \"Updated event\"}";
-		raise Exception("Unable to update event");
+		# validate
+		if(any(key not in json for key in ["current position", "event", "length"])):
+			raise Exception("\\\"{}\\\" missing from request".format(key));
+
+		current_position, event, length = [json[key] for key in ["current position", "event", "length"]];
+		if(not isinstance(event, int)): raise Exception("\\\"event\\\" value is not of correct type");
+
+		curtain_for_event = self._System.Events_Curtain(event);
+		if(not curtain_for_event): raise Exception("No event for curtain found");
+		if(not curtain_for_event.CurtainsEvent_is_activated(True)): raise Exception("Unable to update event");
+		if(not curtain_for_event.is_activated(False)): raise Exception("Unable to update Curtain activation");
+		if(not curtain_for_event.current_position(current_position)): raise Exception("Unable to update position");
+		if(not curtain_for_event.length(length)): raise Exception("Unable to update length");
+
+		return "{\"success\" : \"Updated event\"}";
 	except Exception as error:
 		log_error(error);
 		return "{\"error\" : \"{}\"}".format(str(error));

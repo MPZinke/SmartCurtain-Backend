@@ -24,6 +24,7 @@ class CurtainsEvents:
 		self._Curtains_id : int = event_info["Curtains.id"];
 		self._Options_id : int = event_info["Options.id"];
 		self._desired_position : int = event_info["desired_position"];
+		self._is_activated : bool = bool(event_info["is_activated"]);
 		self._is_current : bool = bool(event_info["is_current"]);
 		self._time : object = event_info["time"];
 
@@ -47,6 +48,18 @@ class CurtainsEvents:
 		self._desired_position = new_desired_position;
 
 
+	def is_activated(self, new_is_activated : Union[bool, None]=None) -> Union[bool, None]:
+		from DB.DBFunctions import set_CurtainsEvent_activation;
+		if(isinstance(new_is_activated, type(None))): return self._is_activated;
+
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		success_flag = set_CurtainsEvent_activation(cnx, cursor, self._id)
+		if(success_flag): self._is_activated = new_is_activated;
+		__CLOSE__(cnx, cursor);
+
+		return success_flag;
+
+
 	def is_current(self, new_is_current : Union[bool, None]=None) -> Union[bool, None]:
 		if(isinstance(new_is_current, type(None))): return self._is_current;
 		self._is_current = new_is_current;
@@ -60,10 +73,10 @@ class CurtainsEvents:
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
 
 	def dict(self):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_current", "_time"];
+		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
 		return {attr : getattr(self, attr) for attr in attrs};
 
 
 	def print(self, tab=0, next_tab=0):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_current", "_time"];
+		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
 		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));

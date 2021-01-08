@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on ..                                                                                                              #
+#   on 2020.11.25                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,6 +14,11 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 from datetime import timedelta;
+
+
+def __CLOSE__(cnx, cursor):
+	cursor.close();
+	cnx.close();
 
 
 def __CONNECT__(user : str, password : str, db_name : str):
@@ -30,6 +35,7 @@ def __UTILITY__associate_query(cursor):
 def __UTILITY__insert(cnx : object, cursor : object, query : str, *params) -> int:
 	if(len(params)): cursor.execute(query, params);
 	else: cursor.execute(query);
+	cnx.commit();
 	return cursor.lastrowid;
 
 
@@ -42,7 +48,8 @@ def __UTILITY__query(cursor : object, query : str, *params) -> list:
 def __UTILITY__update(cnx : object, cursor : object, query : str, *params) -> int:
 	if(len(params)): cursor.execute(query, params);
 	else: cursor.execute(query);
-	return cursor.affected_rows();
+	cnx.commit();
+	return cursor.rowcount;
 
 
 # —————————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————————
@@ -119,7 +126,7 @@ def CurtainsOptions_for_curtain(cursor : object, Curtains_id : int) -> list:
 
 
 def CurtainsOptions_for_curtain_and_option(cursor : object, Curtains_id : int, Options_name : str) -> dict:
-	query =	"SELECT * FROM `CurtainsOptions` LEFT JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id`" \
+	query =	"SELECT * FROM `CurtainsOptions` LEFT JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id` " \
 			+ "WHERE `CurtainsOptions`.`Curtains.id` = %s AND `Options`.`name` = %s;";
 	curtain_option = __UTILITY__query(cursor, query, Curtains_id, Options_name);
 	return curtain_option[0] if curtain_option else {};
@@ -133,12 +140,39 @@ def CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor : object, CurtainsOpt
 # —————————————————————————————————————————————————————— SETTERS ——————————————————————————————————————————————————————
 
 def new_Event(cnx, cursor, Curtains_id : int, Options_id : int, desired_position : int, time : object) -> bool:
-	query =	"INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES" \
+	query =	"INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES " \
 			+ "(%s, %s, %s, %s);"
 	args = (Curtains_id, Options_id, desired_position, time.strftime("%Y-%m-%d %H:%M:%S"));
 	return __UTILITY__insert(cnx, cursor, query, *args);
 
 
-def mark_CurtainsEvents_as_complete(cnx, cursor, CurtainsEvents_id : int) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `is_current` = FALSE WHERE `id` = %s";
+def set_CurtainsEvent_as_complete(cnx, cursor, CurtainsEvents_id : int) -> bool:
+	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, CurtainsEvents_id));
+
+
+def set_Curtain_activation(cnx, cursor, Curtains_id : int, activation : bool) -> bool:
+	query = "UPDATE `Curtains` SET `is_activated` = %s WHERE `id` = %s";
+	return bool(__UTILITY__update(cnx, cursor, query, activation, Curtains_id));
+
+
+def set_Curtain_current_position(cnx, cursor, Curtains_id : id, current_position : int) -> bool:
+	query = "UPDATE `Curtains` SET `current_position` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, current_position, Curtains_id));
+
+
+def set_Curtain_length(cnx, cursor, Curtains_id : int, length : int) ->bool:
+	query = "UPDATE `Curtains` SET `length` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, length, Curtains_id));
+
+
+def set_CurtainsEvent_activation(cnx, cursor, CurtainsEvents_id : int) -> bool:
+	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `id` = %s";
+	return bool(__UTILITY__update(cnx, cursor, query, CurtainsEvents_id));
+
+
+def update_Curtain_from_event(cnx, cursor, CurtainsEvents_id : int, current_position : int, length : int) -> bool:
+	query = "UPDATE `CurtainsEvents` LEFT JOIN `Curtains` ON `CurtainsEvents`.`Curtains.id` = `Curtains`.`id` " \
+			+ "SET `Curtains`.`current_position` = %s, `Curtains`.`is_activated` = FALSE, " \
+			+ "`Curtains`.`length` = %s WHERE `CurtainsEvents`.`id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, current_position, length, CurtainsEvents_id));

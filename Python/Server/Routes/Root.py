@@ -35,16 +35,16 @@ def index(self):
 	set_session();
 	header = Header(self._System);
 	if(request.method == "POST"):
-		if(posted("open_button")): header.selected_curtain().open_immediately(header.selected_curtain().length());
-		elif(posted("close_button")): header.selected_curtain().close_immediately();
-		elif(posted("set_button")):
-			try:
+		try:
+			if(posted("open_button")): header.selected_curtain().open_immediately(header.selected_curtain().length());
+			elif(posted("close_button")): header.selected_curtain().close_immediately();
+			elif(posted("set_button")):
 				position = int(request.form["desired_position_input"])
 				header.selected_curtain().open_percentage(desired_position=position);
 				session["success"] = "Successfully created event";
-			except Exception as error:
-				log_error(error);
-				session["error"] = f"Error setting event {str(error)}";
+		except Exception as error:
+			log_error(error);
+			session["error"] = f"Error setting event {str(error)}";
 		return redirect("/");
 
 	return render_template("Home.html", header=header, session=session);
