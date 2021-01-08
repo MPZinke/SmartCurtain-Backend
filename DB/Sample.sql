@@ -16,7 +16,7 @@ INSERT INTO `Curtains` (`id`, `length`, `ip_address`, `name`) VALUES (1, 1000, '
 INSERT INTO `Options` (`id`, `name`, `description`) VALUES
 (1, 'Adafruit Close Feed', 'Google API Close connection'),
 (2, 'Adafruit Open Feed', 'Google API Open connection'),
-(3, 'Auto Calibration', 'Curtain calibrates length if it moves full span of rod'),
+(3, 'Auto Calibrate', 'Curtain calibrates length if it moves full span of rod'),
 (4, 'Auto Correct', 'Curtain corrects its position if unexpected reaches an end point'),
 (5, 'Event Prediction', 'Use previous events to determine future events'),
 (6, 'Google Calendar Curtain Events', 'Read curtain events from Google Calendar'),

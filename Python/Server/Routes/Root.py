@@ -18,6 +18,7 @@ __author__ = "MPZinke"
 from flask import redirect, render_template, request, session;
 
 from Class.Header import Header;
+from Other.Logger import log_error;
 from Server.ServerGlobal import *;
 from Server.ServerGlobal import set_session;
 
@@ -34,11 +35,16 @@ def index(self):
 	set_session();
 	header = Header(self._System);
 	if(request.method == "POST"):
-		if(posted("open_button")): header.selected_curtain().open();
-		elif(posted("close_button")): header.selected_curtain().close();
+		if(posted("open_button")): header.selected_curtain().open_immediately(header.selected_curtain().length());
+		elif(posted("close_button")): header.selected_curtain().close_immediately();
 		elif(posted("set_button")):
-			print(int(request.form["desired_position_input"]));
-			header.selected_curtain().open_percentage(desired_position=int(request.form["desired_position_input"]));
+			try:
+				position = int(request.form["desired_position_input"])
+				header.selected_curtain().open_percentage(desired_position=position);
+				session["success"] = "Successfully created event";
+			except Exception as error:
+				log_error(error);
+				session["error"] = f"Error setting event {str(error)}";
 		return redirect("/");
 
 	return render_template("Home.html", header=header, session=session);

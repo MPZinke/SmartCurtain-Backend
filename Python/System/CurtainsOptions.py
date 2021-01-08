@@ -56,7 +56,7 @@ class CurtainsOptions:
 
 
 	def is_on(self, new_is_on : Union[bool, None]=None) -> Union[bool, None]:
-		if(isinstance(is_on, type(None))): return self._is_on;
+		if(isinstance(new_is_on, type(None))): return self._is_on;
 		self._is_on = new_is_on;
 
 

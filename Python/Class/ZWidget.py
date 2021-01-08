@@ -20,8 +20,9 @@ from Class.ZThread import ZThread;
 
 
 class ZWidget:
-	def __init__(self, name : str, sleep_time : Union[int, float]):
-		self._zthread = ZThread(name, self._loop_process, sleep_time);  # main driver of widget
+	def __init__(self, name : str, sleep_time : Union[int, float]=0):
+		self._sleep_time = sleep_time;
+		self._zthread = ZThread(name, self._loop_process, self.sleep_time);  # main driver of widget
 
 
 	# ————————————————————— THREAD —————————————————————
@@ -44,6 +45,14 @@ class ZWidget:
 	# Starts the ZThread.
 	def start(self) -> None:
 		self._zthread.start();
+
+
+	# Overrideable function to set the amount of time a thread can sleep.
+	# Defaults to returning the sleep time.
+	# Can be overridden to calculate a sleep time.  This can be so that specific conditions can be introduced to
+	#   determine the sleep time (EG at a specific time of day).
+	def sleep_time(self):
+		return self._sleep_time;
 
 
 	# PLACEHOLDER: this is what is passed to the ZThread and is operated on.

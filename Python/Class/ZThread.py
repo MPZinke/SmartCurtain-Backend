@@ -23,7 +23,7 @@ from typing import Union;
 # Modified thread class for executing a process and sleeping afterwards.
 # Also allows for sleeping and waking a thread.
 class ZThread(Thread):
-	def __init__(self, name : str, loop_process : Callable, sleep_time : Union[int, float]=None):
+	def __init__(self, name : str, loop_process : Callable, sleep_time):
 		Thread.__init__(self, name=name, target=self._thread_loop);
 
 		self._condition = Condition();  # allows for sleep/wake feature
@@ -31,7 +31,7 @@ class ZThread(Thread):
 		self._lock_skip_iteration_process = False;  # does not allow _skip_iteration_process to reset
 		self._loop_process = loop_process;  # operations special to child object
 		self._skip_iteration_process = False;  # option to skip the loop process for this iteration
-		self._sleep_time = sleep_time;  # amount of time thread will sleep for after loop_process
+		self._sleep_time = sleep_time;  # function pointer to determine/return the amount of time it should sleep
 
 
 	# Ends a thread.
@@ -78,7 +78,7 @@ class ZThread(Thread):
 		while(self._is_active):
 			if(not self._skip_iteration_process): self._loop_process();
 			if(not self._lock_skip_iteration_process): self._skip_iteration_process = False;
-			self.sleep(self._sleep_time);
+			self.sleep(self._sleep_time());
 
 
 	# Wakes thread (condition from sleep).

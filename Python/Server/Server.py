@@ -32,6 +32,7 @@ class Server(ZWidget):
 	# https://stackoverflow.com/a/47562412
 	from Server.Routes.Root import index, favicon, test;
 	from Server.Routes.State import state;
+	from Server.Routes.Api import api_update_event;
 
 
 	def __init__(self, system):
@@ -71,6 +72,9 @@ class Server(ZWidget):
 		for route in routes: self.add_route(route, *routes[route]);
 
 		routes = {"/state/<int:Curtains_id>" : [self.state, ["POST"]]};
+		for route in routes: self.add_route(route, *routes[route]);
+
+		routes = {"/api/update/event" : [self.api_update_event, ["POST"]]}
 		for route in routes: self.add_route(route, *routes[route]);
 
 		self._server.run(host="0.0.0.0", port=80);

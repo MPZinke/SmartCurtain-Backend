@@ -30,7 +30,6 @@ def __UTILITY__associate_query(cursor):
 def __UTILITY__insert(cnx : object, cursor : object, query : str, *params) -> int:
 	if(len(params)): cursor.execute(query, params);
 	else: cursor.execute(query);
-	if(not cnx.commit()): return 0;
 	return cursor.lastrowid;
 
 
@@ -39,6 +38,11 @@ def __UTILITY__query(cursor : object, query : str, *params) -> list:
 	else: cursor.execute(query);
 	return __UTILITY__associate_query(cursor);
 
+
+def __UTILITY__update(cnx : object, cursor : object, query : str, *params) -> int:
+	if(len(params)): cursor.execute(query, params);
+	else: cursor.execute(query);
+	return cursor.affected_rows();
 
 
 # —————————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————————
@@ -133,3 +137,8 @@ def new_Event(cnx, cursor, Curtains_id : int, Options_id : int, desired_position
 			+ "(%s, %s, %s, %s);"
 	args = (Curtains_id, Options_id, desired_position, time.strftime("%Y-%m-%d %H:%M:%S"));
 	return __UTILITY__insert(cnx, cursor, query, *args);
+
+
+def mark_CurtainsEvents_as_complete(cnx, cursor, CurtainsEvents_id : int) -> bool:
+	query = "UPDATE `CurtainsEvents` SET `is_current` = FALSE WHERE `id` = %s";
+	return bool(__UTILITY__update(cnx, cursor, query, CurtainsEvents_id));

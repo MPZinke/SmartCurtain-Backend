@@ -41,7 +41,7 @@ class Curtains:
 		_, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		self._CurtainsEvents = {event["id"] : CurtainsEvents(event) \
 												for event in current_CurtainsEvents_for_curtain(cursor, self._id)};
-		self._CurtainsOptions = {option["id"] : CurtainsOptions(option) \
+		self._CurtainsOptions = {option["Options.id"] : CurtainsOptions(option) \
 												for option in CurtainsOptions_for_curtain(cursor, self._id)};
 		cursor.close();
 
@@ -135,39 +135,63 @@ class Curtains:
 		return {0 : "Closed", self._length : "Fully Open"}.get(self._current_position, "Open");
 
 
+	# ————————————————————————————————————————————————————— EVENTS —————————————————————————————————————————————————————
+
+	def activate_event(self, desired_position : int=0, event_id : int=0) -> bool:
+		from requests import post;
+
+		auto_correct = int(self._CurtainsOptions.get(self._System.Option_name("Auto Correct")).is_on());
+		auto_calibrate = int(self._CurtainsOptions.get(self._System.Option_name("Auto Calibrate")).is_on());
+		post_json =	{
+						"auto calibrate" : auto_calibrate, "auto correct" : auto_correct,
+						"current position" : self._current_position, "desired position" : desired_position,
+						"event" : event_id, "direction" : int(self._direction), "length" : self._length
+					};
+		try:
+			response = post(url=f"http://{self._ip_address}", json=post_json, timeout=3);
+			if(response.status_code != 200): raise Exception(f"Status code for event: {event_id} is invalid");
+			if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
+			return True;
+		except Exception as error: log_error(error);
+		return False;
+
+
+
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
 	def _new_event(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
+		# add to DB
 		from DB.DBCredentials import DB_USER, DB_PASSWORD, DATABASE;
 		from DB.DBFunctions import __CONNECT__, CurtainsEvent, new_Event;
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
 		new_Event_id = new_Event(cnx, cursor, self._id, Options_id, desired_position, time);
 		if(new_Event_id): self._CurtainsEvents[new_Event_id] = CurtainsEvents(CurtainsEvent(cursor, new_Event_id));
-		return new_Event_id;
+		# set activation
+		if(time <= datetime.now()): return new_Event_id * self.activate_event(desired_position, new_Event_id);
+		else:
+			pass
+			#TODO create an activation thread
 
 
 	def close(self, *, Options_id : int=None, time : object=datetime.now()):
 		return self._new_event(desired_position=0, Options_id=Options_id, time=time);
 
 
+	def close_immediately(self, Options_id : int=None) -> int:
+		return self._new_event(Options_id=Options_id);
+
+
+
 	def open(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
 		return self._new_event(desired_position=desired_position, Options_id=Options_id, time=time);
 
 
-	def open_immediately(self, desired_position : int=self._length, Options_id : int=None) -> int:
-		event_id = self._new_event(desired_position=desired_position, Options_id=Options_id)
+	def open_immediately(self, desired_position : int=0, Options_id : int=None) -> int:
+		event_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
 		if(not event_id): return False;
 		
-		from requests import post;
-		post_json =	{
-						"auto correct" : self._CurtainsOptions.get(self._System.Options_names("Auto Correct")).is_on(),
-						"auto calibrate" : self._CurtainsOptions.get(self._System.Options_names("Auto Calibrate")).is_on(),
-						"current position" : self._current_position, "desired position" : desired_position,
-						"event" : event_id, "direction" : self._direction, "length" : self._length
-					}
-		try: post(url=f"http://{self._ip_address}:{self._port}", json=post_json, timeout=3);
-		except Exception as error: log_error(error);
+		return 0;
 
 
 	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
