@@ -14,12 +14,20 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from datetime import datetime;
+from datetime import datetime, timedelta;
+from requests import post;
+from threading import Thread;
+from time import sleep;
 from typing import Union;
+
+from DB.DBCredentials import *;
+from DB.DBFunctions import __CLOSE__, __CONNECT__;
 
 
 class CurtainsEvents:
-	def __init__(self, event_info : dict):
+	def __init__(self, event_info : dict, Curtain):
+		self._Curtain = Curtain;
+
 		self._id : int = event_info["id"];
 		self._Curtains_id : int = event_info["Curtains.id"];
 		self._Options_id : int = event_info["Options.id"];
@@ -27,6 +35,14 @@ class CurtainsEvents:
 		self._is_activated : bool = bool(event_info["is_activated"]);
 		self._is_current : bool = bool(event_info["is_current"]);
 		self._time : object = event_info["time"];
+
+		self.__activation_thread = Thread(name="Event Thread: {}".format(self._id), target=self.activate);
+		self.__activation_thread.start();
+
+
+	def __del__(self):
+		try: self.__activation_thread.kill();
+		except: pass;
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -49,9 +65,10 @@ class CurtainsEvents:
 
 
 	def is_activated(self, new_is_activated : Union[bool, None]=None) -> Union[bool, None]:
-		from DB.DBFunctions import set_CurtainsEvent_activation;
 		if(isinstance(new_is_activated, type(None))): return self._is_activated;
+		if(new_is_activated == self._is_activated): return True;
 
+		from DB.DBFunctions import set_CurtainsEvent_activation;
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		success_flag = set_CurtainsEvent_activation(cnx, cursor, self._id)
 		if(success_flag): self._is_activated = new_is_activated;
@@ -80,3 +97,33 @@ class CurtainsEvents:
 	def print(self, tab=0, next_tab=0):
 		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
 		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));
+
+
+	# ———————————————————————————————————————————————————— ACTIVATE ————————————————————————————————————————————————————
+
+	def activate(self):
+		now = datetime.now();
+		sleep((self._time - now).seconds + 1 if (now < self._time) else 1);
+
+		Curtain = self._Curtain;
+		System = Curtain.System();
+		post_json =	{
+						"auto calibrate" : int(Curtain.CurtainsOption(System.Option_name("Auto Calibrate")).is_on()), 
+						"auto correct" : int(Curtain.CurtainsOption(System.Option_name("Auto Correct")).is_on()),
+						"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
+						"length" : Curtain.length(),
+						"desired position" : self._desired_position if self._desired_position else 0,"event" : self._id
+					};
+
+		response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
+		if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
+		if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
+
+		print(response.json());  #TESTING
+		if(not self.is_activated(True) or not self._is_activated): raise Exception("Could not set event as activated");
+		if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain as activated");
+
+		CurtainEventsDict = Curtain.CurtainsEvents();
+		if(self._id not in CurtainEventsDict): raise Exception("Event not found in Curtain Event dictionary");
+		del CurtainEventsDict[self._id];
+		return;

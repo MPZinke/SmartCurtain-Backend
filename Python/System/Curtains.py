@@ -37,13 +37,16 @@ class Curtains:
 		self._last_connection : object = curtain_info["last_connection"];
 		self._length : int = curtain_info["length"];
 		self._name : str = curtain_info["name"];
+		self._CurtainsEvents = None;
+		self._CurtainsOptions = None;
 
-		from DB.DBFunctions import current_CurtainsEvents_for_curtain, CurtainsOptions_for_curtain;
+		# add CurtainsEvents & CurtainsOptions
+		from DB.DBFunctions import current_CurtainsEvents, CurtainsOptions as DBCurtainsOptions;
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		self._CurtainsEvents = {event["id"] : CurtainsEvents(event) \
-												for event in current_CurtainsEvents_for_curtain(cursor, self._id)};
-		self._CurtainsOptions = {option["Options.id"] : CurtainsOptions(option) \
-												for option in CurtainsOptions_for_curtain(cursor, self._id)};
+		curtains_current_events = current_CurtainsEvents(cursor, self._id)
+		self._CurtainsEvents = {event["id"] : CurtainsEvents(event, self) for event in curtains_current_events};
+		curtains_options = DBCurtainsOptions(cursor, self._id);
+		self._CurtainsOptions = {option["Options.id"] : CurtainsOptions(option) for option in curtains_options};
 		__CLOSE__(cnx, cursor);
 
 
@@ -53,12 +56,11 @@ class Curtains:
 		return self._id;
 
 
-	def current_position(self, new_current_position : int=None) -> Union[int, None]:
-		from DB.DBFunctions import set_Curtain_current_position;
+	def current_position(self, new_current_position : int=None) -> Union[int, bool, None]:
 		if(isinstance(new_current_position, type(None))): return self._current_position;
-
 		if(new_current_position == self._current_position): return True;
 
+		from DB.DBFunctions import set_Curtain_current_position;
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		success_flag = set_Curtain_current_position(cnx, cursor, self._id, new_current_position);
 		if(success_flag): self._current_position = new_current_position;
@@ -68,6 +70,18 @@ class Curtains:
 	def direction(self, new_direction : bool=None) -> Union[bool, None]:
 		if(isinstance(new_direction, type(None))): return self._direction;
 		self._direction = new_direction;
+
+
+	def ip_address(self, new_ip_address : str=None):
+		if(isinstance(new_ip_address, type(None))): return self._ip_address;
+		print("Hello from here");
+		if(new_ip_address == self._ip_address): return True;
+
+		from DB.DBFunctions import set_Curtain_ip_address;
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		success_flag = set_Curtain_ip_address(cnx, cursor, self._id, new_ip_address);
+		if(success_flag): self._ip_address = new_ip_address;
+		return success_flag + bool(__CLOSE__(cnx, cursor));
 
 
 	def is_activated(self, new_is_activated : bool=None) -> Union[bool, None]:
@@ -104,17 +118,16 @@ class Curtains:
 		self._name = new_name;
 
 
-	def CurtainsEvent(self, CurtainsEvents_id : int):
+	def CurtainsEvent(self, CurtainsEvents_id : int=None):
 		if(self._CurtainsEvents.get(CurtainsEvents_id)): return self._CurtainsEvents.get(CurtainsEvents_id);  # easy!
 
 		from DB.DBFunctions import CurtainsEvent;
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		CurtainsEvents_data = CurtainsEvent(cursor, CurtainsEvents_id);
 		__CLOSE__(cnx, cursor);
-		if(not CurtainsEvents_data): return None;
-		
-		event = CurtainsEvents(CurtainsEvents_data);
-		if(event.Curtains_id() != self._id): return None;
+
+		event = CurtainsEvents(CurtainsEvents_data, self) if CurtainsEvents_data else None;
+		if(not CurtainsEvents_data or event.Curtains_id() != self._id): return None;
 		self._CurtainsEvents[event.id()] = event;
 		return event;
 
@@ -123,12 +136,16 @@ class Curtains:
 		return self._CurtainsEvents;
 
 
-	def CurtainsOptions(self, CurtainsOptions_id : int):
+	def CurtainsOption(self, CurtainsOptions_id : int=None):
 		return self._CurtainsOptions.get(CurtainsOptions_id);
 
 
-	def CurtainsOptions(self) -> dict:
+	def CurtainsOptions(self):
 		return self._CurtainsOptions;
+
+
+	def System(self):
+		return self._System;
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
@@ -168,32 +185,6 @@ class Curtains:
 		return {0 : "Closed", self._length : "Fully Open"}.get(self._current_position, "Open");
 
 
-	# ————————————————————————————————————————————————————— EVENTS —————————————————————————————————————————————————————
-
-	def activate_event(self, desired_position : int=0, event_id : int=0) -> bool:
-		from requests import post;
-
-		auto_correct = int(self._CurtainsOptions.get(self._System.Option_name("Auto Correct")).is_on());
-		auto_calibrate = int(self._CurtainsOptions.get(self._System.Option_name("Auto Calibrate")).is_on());
-		post_json =	{
-						"auto calibrate" : auto_calibrate, "auto correct" : auto_correct,
-						"current position" : self._current_position, "desired position" : desired_position,
-						"event" : event_id, "direction" : int(self._direction), "length" : self._length
-					};
-
-		response = post(url=f"http://{self._ip_address}", json=post_json, timeout=3);
-		if(response.status_code != 200): raise Exception(f"Status code for event: {event_id} is invalid");
-		if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
-
-		if(self.is_activated(True) and self._is_activated): return True;
-		raise Exception("Could not set curtain as activated");
-
-
-	def CurtainsEvent_is_activated(self, CurtainsEvents_id : int, new_is_activated : Union[bool, None]=None) -> bool:
-		event = self.CurtainsEvent(CurtainsEvents_id);
-		return event.is_activated(new_is_activated) if event else False;
-
-
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
 	def _new_event(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
@@ -203,15 +194,9 @@ class Curtains:
 
 		new_Event_id = new_Event(cnx, cursor, self._id, Options_id, desired_position, time);
 		if(not new_Event_id): return __CLOSE__(cnx, cursor);
-		self._CurtainsEvents[new_Event_id] = CurtainsEvents(CurtainsEvent(cursor, new_Event_id));
+		self._CurtainsEvents[new_Event_id] = CurtainsEvents(CurtainsEvent(cursor, new_Event_id), self);
 		__CLOSE__(cnx, cursor);
 
-		# set activation
-		if(time <= datetime.now()):
-			if(not self.activate_event(desired_position, new_Event_id)): return 0;
-		else:
-			pass
-			#TODO create an activation thread
 		return new_Event_id;
 
 
@@ -228,8 +213,8 @@ class Curtains:
 
 
 	def open_immediately(self, desired_position : int=0, Options_id : int=None) -> int:
-		event_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
-		if(not event_id): return False;
+		CurtainsEvents_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
+		if(not CurtainsEvents_id): return False;
 		
 		return 0;
 

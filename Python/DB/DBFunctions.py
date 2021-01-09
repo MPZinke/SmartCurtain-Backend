@@ -64,21 +64,21 @@ def Curtains(cursor : object) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `Curtains` ORDER BY `id` ASC;");
 
 
-def CurtainsEvents(cursor : object, Curtains_id : int) -> list:
-	query = "SELECT `CurtainsEvents`.*, `Options`.* FROM `CurtainsEvents` " \
-			+ "LEFT JOIN `Options` ON `Options`.`id` = `CurtainsEvents`.`id` WHERE `Curtains.id` = %s;";
-	return __UTILITY__query(cursor, query, Curtains_id);
+# def CurtainsEvents(cursor : object, Curtains_id : int) -> list:
+# 	query = "SELECT `CurtainsEvents`.*, `Options`.* FROM `CurtainsEvents` " \
+# 			+ "LEFT JOIN `Options` ON `Options`.`id` = `CurtainsEvents`.`id` WHERE `Curtains.id` = %s;";
+# 	return __UTILITY__query(cursor, query, Curtains_id);
 
 
 def Options(cursor : object) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `Options` ORDER BY `id` ASC;");
 
 
-def CurtainsOptions(cursor : object, Curtains_id : int) -> list:
-	query = "SELECT `CurtainsOptions`.*, `Options`.* FROM `CurtainsOptions` " \
-			+ "JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id` " \
-			+ "WHERE `CurtainsOptions`.`Curtains.id` = %s;";
-	return __UTILITY__query(cursor, query, Curtains_id);
+# def CurtainsOptions(cursor : object, Curtains_id : int) -> list:
+# 	query = "SELECT `CurtainsOptions`.*, `Options`.* FROM `CurtainsOptions` " \
+# 			+ "JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id` " \
+# 			+ "WHERE `CurtainsOptions`.`Curtains.id` = %s;";
+# 	return __UTILITY__query(cursor, query, Curtains_id);
 
 
 # ————————————————————————————————————————————————— GETTERS: SPECIFIC —————————————————————————————————————————————————
@@ -95,10 +95,11 @@ def Curtains_ids(cursor : object) -> list:
 	return [curtain["id"] for curtain in __UTILITY__query(cursor, "SELECT `id` FROM `Curtains` ORDER BY `id` ASC;")];
 
 
-def current_CurtainsEvents_for_curtain(cursor : object, Curtains_id : int) -> list:
+def current_CurtainsEvents(cursor : object, Curtains_id : int) -> list:
 	from datetime import datetime;
 
-	query = "SELECT * FROM `CurtainsEvents` WHERE `Curtains.id` = %s AND `time` >= %s AND `is_current` = TRUE;";
+	query = """SELECT * FROM `CurtainsEvents` 
+			WHERE `Curtains.id` = %s AND `time` >= %s AND `is_current` = TRUE AND `is_activated` = FALSE;""";
 	return __UTILITY__query(cursor, query, Curtains_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"));
 
 
@@ -121,7 +122,7 @@ def CurtainsEvents_in_range_for_Options_id(cursor : object, Curtains_id : int, O
 	return __UTILITY__query(cursor, query, Curtains_id, Options_id, time_min, time_max);
 
 
-def CurtainsOptions_for_curtain(cursor : object, Curtains_id : int) -> list:
+def CurtainsOptions(cursor : object, Curtains_id : int) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `CurtainsOptions` WHERE `Curtains.id` = %s;", Curtains_id);
 
 
@@ -138,18 +139,7 @@ def CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor : object, CurtainsOpt
 
 
 # —————————————————————————————————————————————————————— SETTERS ——————————————————————————————————————————————————————
-
-def new_Event(cnx, cursor, Curtains_id : int, Options_id : int, desired_position : int, time : object) -> bool:
-	query =	"INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES " \
-			+ "(%s, %s, %s, %s);"
-	args = (Curtains_id, Options_id, desired_position, time.strftime("%Y-%m-%d %H:%M:%S"));
-	return __UTILITY__insert(cnx, cursor, query, *args);
-
-
-def set_CurtainsEvent_as_complete(cnx, cursor, CurtainsEvents_id : int) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `id` = %s";
-	return bool(__UTILITY__update(cnx, cursor, query, CurtainsEvents_id));
-
+# —————————————————————————————————————————————————— SETTERS::CURTAIN ——————————————————————————————————————————————————
 
 def set_Curtain_activation(cnx, cursor, Curtains_id : int, activation : bool) -> bool:
 	query = "UPDATE `Curtains` SET `is_activated` = %s WHERE `id` = %s";
@@ -161,9 +151,40 @@ def set_Curtain_current_position(cnx, cursor, Curtains_id : id, current_position
 	return bool(__UTILITY__update(cnx, cursor, query, current_position, Curtains_id));
 
 
+def set_Curtain_length(cnx, cursor, Curtains_id : int, ip_address : str) ->bool:
+	query = "UPDATE `Curtains` SET `ip_address` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, length, Curtains_id));
+
+
 def set_Curtain_length(cnx, cursor, Curtains_id : int, length : int) ->bool:
 	query = "UPDATE `Curtains` SET `length` = %s WHERE `id` = %s;";
 	return bool(__UTILITY__update(cnx, cursor, query, length, Curtains_id));
+
+
+# ——————————————————————————————————————————————————— SETTERS::EVENT ———————————————————————————————————————————————————
+
+def new_Event(cnx, cursor, Curtains_id : int, Options_id : int, desired_position : int, time : object) -> bool:
+	query =	"INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES " \
+			+ "(%s, %s, %s, %s);"
+	args = (Curtains_id, Options_id, desired_position, time.strftime("%Y-%m-%d %H:%M:%S"));
+	return __UTILITY__insert(cnx, cursor, query, *args);
+
+
+def set_all_CurtainsEvent_as_activated(cnx, cursor) -> bool:
+	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE;";
+	return bool(__UTILITY__update(cnx, cursor, query));
+
+
+def set_all_previous_CurtainsEvent_as_activated(cnx, cursor) -> bool:
+	from datetime import datetime;
+
+	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `time` < %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, datetime.now()));
+
+
+def set_CurtainsEvent_as_activated(cnx, cursor, CurtainsEvents_id : int) -> bool:
+	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `id` = %s";
+	return bool(__UTILITY__update(cnx, cursor, query, CurtainsEvents_id));
 
 
 def set_CurtainsEvent_activation(cnx, cursor, CurtainsEvents_id : int) -> bool:
