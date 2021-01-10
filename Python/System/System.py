@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from datetime import datetime, timedelta;
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
 from threading import Lock;
 
@@ -50,6 +51,13 @@ class System(ZWidget):
 
 			__CLOSE__(cnx, cursor);
 		finally: self._mutex.release();
+
+
+	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
+	def sleep_time(self) -> int:
+		tomorrow = datetime.now() + timedelta(1);
+		midnight = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=0, minute=0, second=0);
+		return (midnight - datetime.now()).seconds
 
 
 	def _loop_process(self) -> None:
