@@ -19,7 +19,7 @@
 				<td style='width:60%;margin:auto'>
 					<form method='POST'>
 						<select id='__WRAPPER__curtain_select' name='__WRAPPER__curtain_select' class='select dark' 
-						style='font-size: 60px; height: 80px; text-align: center;' onchange='this.form.submit();'>
+						  onchange='this.form.submit();'>
 							{% for curtain in header.Curtains() %}
 								<option {% if curtain == session["_CURTAIN_current"] %} selected {% endif %} value='{{ curtain }}'>
 									{{ header.Curtains()[curtain].name() }}

@@ -67,6 +67,13 @@ header {
 	margin-left: 50px;
 }
 
+#__WRAPPER__curtain_select
+{
+	font-size: 60px;
+	height: 80px;
+	text-align: center;
+}
+
 #state_title {
 	padding-top: 100px;
 }
@@ -78,6 +85,11 @@ header {
 
 #state_refresh {
 	padding-top: 50px;
+}
+
+#slider_input
+{
+	width:100%;
 }
 
 .open {
@@ -192,6 +204,48 @@ button:disabled {
 	width:70%;
 	left:15%;
 	border-radius: 5px;
+}
+
+#desired_position_input
+{
+	width:25%;
+	size:32px;
+	margin:auto;
+	display:block;
+}
+
+
+@media only screen and (max-width: 1080px)
+{
+	html
+	{
+		font-size: 2em;
+	}
+
+	.button
+	{
+		font-size: 64px;
+		width: 80%;
+		height: 128px;
+	}
+
+	#desired_position_input
+	{
+		height: 128px;
+		font-size: 100px;
+	}
+
+	#__WRAPPER__curtain_select
+	{
+		font-size: 100px;
+		height: 128px;
+		text-align: center;
+	}
+
+	.input_div
+	{
+		height: 128px;
+	}
 }
 
 

@@ -7,10 +7,10 @@
 	<h1 style='text-align:center;'>Curtain is {{ header.selected_curtain().state_string() }}</h1>
 
 	<form method='post'>
-		<div style='width:100%;'>
+		<div class='input_div' style='width:100%;'>
 			<input id='desired_position_input' name='desired_position_input' 
 			  value='{{ header.selected_curtain().current_position_percent_int() }}' class='input'
-			  type='number' min='0' max='100' step='1' style='width:25%; size:32px; margin:auto; display:block;' 
+			  type='number' min='0' max='100' step='1' 
 			  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
 		</div>
 		<button class='button' name='set_button' style='display:block; margin:auto; margin-top:25px;'>Set Curtain</button>
@@ -22,7 +22,7 @@
 				</td>
 				<td width='60%' align='middle'>
 					<input id='slider_input' value='{{ header.selected_curtain().current_position_percent_int() }}' type='range' 
-					style='width:100%' min='0' max='100'/>
+					  min='0' max='100'/>
 				</td>
 				<td width='20%' align='left'>
 					<button name='open_button' class='button' style='background-color:inherit;'>Open</button>

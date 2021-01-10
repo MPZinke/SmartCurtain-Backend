@@ -126,4 +126,3 @@ class CurtainsEvents:
 		CurtainEventsDict = Curtain.CurtainsEvents();
 		if(self._id not in CurtainEventsDict): raise Exception("Event not found in Curtain Event dictionary");
 		del CurtainEventsDict[self._id];
-		return;
