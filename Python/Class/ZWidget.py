@@ -25,6 +25,11 @@ class ZWidget:
 		self._zthread = ZThread(name, self._loop_process, self.sleep_time);  # main driver of widget
 
 
+	def __del__(self):
+		try: self._zthread.kill();
+		except: pass;
+
+
 	# ————————————————————— THREAD —————————————————————
 
 	# Securely ends widget update.

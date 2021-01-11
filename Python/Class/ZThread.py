@@ -23,7 +23,7 @@ from typing import Union;
 # Modified thread class for executing a process and sleeping afterwards.
 # Also allows for sleeping and waking a thread.
 class ZThread(Thread):
-	def __init__(self, name : str, loop_process : Callable, sleep_time):
+	def __init__(self, name : str, loop_process : Callable, sleep_time : Callable):
 		Thread.__init__(self, name=name, target=self._thread_loop);
 
 		self._condition = Condition();  # allows for sleep/wake feature
@@ -41,22 +41,23 @@ class ZThread(Thread):
 
 		self._is_active = False;
 		with self._condition: self._condition.notify();
-		self.join();
+		try: self.join();
+		except: pass;
 
 
 	# Changes the amount of time Condition::wait() will wait until next iteration.
 	# Takes the amount of time ::_sleep_time will equal.  New sleep amount will begin after current iteration
 	# on _thread_loop is complete.
-	def set_sleep_time(self, amount : Union[int, float]) -> None:
-		self._sleep_time = amount;
+	def set_sleep_time(self, sleep_time : Callable) -> None:
+		self._sleep_time = sleep_time;
 
 
 	# Sets the sleep time and immediately sleeps for that amount of time.
 	# Takes the amount of time ::_sleep_time will equal, whether loop process should be skipped (default: True).
 	# Sets _sleep_time, then _skip_process to skip the process for this interation. Starts iteration on 
 	# _thread_loop, skips process, then reinitializes process.
-	def set_immediate_sleep_time(self, amount : Union[int, float], skip_iteration : bool=True) -> None:
-		self._sleep_time = amount;
+	def set_immediate_sleep_time(self, sleep_time : Callable, skip_iteration : bool=True) -> None:
+		self._sleep_time = sleep_time;
 		self._skip_iteration_process = skip_iteration;
 		self.wake();
 
@@ -64,9 +65,9 @@ class ZThread(Thread):
 	# Sleeps thread_loop for amount of time.
 	# Takes a numeric amount of time defaulted to None.
 	# Sleeps for default amount of time if specified, otherwise indefinitely.
-	def sleep(self, amount : Union[int, float, None]=None) -> None:
+	def sleep(self, sleep_time : Callable=None) -> None:
 		with self._condition:
-			if(amount): self._condition.wait(amount);
+			if(sleep_time): self._condition.wait(sleep_time());
 			else:
 				Warn(f"Thread: {self.name} has been indefinitely put to sleep");
 				self._condition.wait();  # incase 0 is used, default to indefinitely
@@ -78,7 +79,7 @@ class ZThread(Thread):
 		while(self._is_active):
 			if(not self._skip_iteration_process): self._loop_process();
 			if(not self._lock_skip_iteration_process): self._skip_iteration_process = False;
-			self.sleep(self._sleep_time());
+			self.sleep(self._sleep_time);
 
 
 	# Wakes thread (condition from sleep).

@@ -16,12 +16,12 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta;
 from requests import post;
-from threading import Thread;
 from time import sleep;
 from typing import Union;
 
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Class.ZThread import ZThread;
 
 
 class CurtainsEvents:
@@ -36,7 +36,8 @@ class CurtainsEvents:
 		self._is_current : bool = bool(event_info["is_current"]);
 		self._time : object = event_info["time"];
 
-		self.__activation_thread = Thread(name="Event Thread: {}".format(self._id), target=self.activate);
+		self.__activation_thread = ZThread("Event Thread: {}".format(self._id), self.activate, self.sleep_time);
+		self.__activation_thread.set_immediate_sleep_time(self.sleep_time);
 		self.__activation_thread.start();
 
 
@@ -101,10 +102,12 @@ class CurtainsEvents:
 
 	# ———————————————————————————————————————————————————— ACTIVATE ————————————————————————————————————————————————————
 
-	def activate(self):
+	def sleep_time(self):
 		now = datetime.now();
-		sleep((self._time - now).seconds + 1 if (now < self._time) else 1);
+		return (self._time - now).seconds + 1 if (now < self._time) else 1;
 
+
+	def activate(self):
 		Curtain = self._Curtain;
 		System = Curtain.System();
 		post_json =	{
@@ -112,7 +115,7 @@ class CurtainsEvents:
 						"auto correct" : int(Curtain.CurtainsOption(System.Option_name("Auto Correct")).is_on()),
 						"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
 						"length" : Curtain.length(),
-						"desired position" : self._desired_position if self._desired_position else 0,"event" : self._id
+						"desired position" : self._desired_position if self._desired_position else 0, "event" : self._id
 					};
 
 		response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
@@ -122,6 +125,8 @@ class CurtainsEvents:
 		print(response.json());  #TESTING
 		if(not self.is_activated(True) or not self._is_activated): raise Exception("Could not set event as activated");
 		if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain as activated");
+
+		self.__activation_thread.kill();
 
 		CurtainEventsDict = Curtain.CurtainsEvents();
 		if(self._id not in CurtainEventsDict): raise Exception("Event not found in Curtain Event dictionary");

@@ -27,6 +27,7 @@ class SmartCurtain:
 
 	def start(self):
 		self._Server.start();
+		self._System.start();
 
 
 	def dict(self):

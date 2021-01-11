@@ -14,7 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from datetime import datetime;
+from datetime import datetime, timedelta;
 from typing import Union;
 
 from DB.DBCredentials import *;
@@ -187,7 +187,9 @@ class Curtains:
 
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
-	def _new_event(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
+	def _new_event(self, *, desired_position : int=0, Options_id : int=None, time : object=None) -> int:
+		if(isinstance(time, type(None))): time = datetime.now();
+
 		# add to DB
 		from DB.DBFunctions import CurtainsEvent, new_Event;
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
@@ -200,7 +202,9 @@ class Curtains:
 		return new_Event_id;
 
 
-	def close(self, *, Options_id : int=None, time : object=datetime.now()):
+	def close(self, *, Options_id : int=None, time : object=None):
+		if(isinstance(time, type(None))): time = datetime.now();
+
 		return self._new_event(desired_position=0, Options_id=Options_id, time=time);
 
 
@@ -208,7 +212,9 @@ class Curtains:
 		return self._new_event(Options_id=Options_id);
 
 
-	def open(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
+	def open(self, *, desired_position : int=0, Options_id : int=None, time : object=None) -> int:
+		if(isinstance(time, type(None))): time = datetime.now();
+
 		return self._new_event(desired_position=desired_position, Options_id=Options_id, time=time);
 
 
@@ -219,6 +225,8 @@ class Curtains:
 		return 0;
 
 
-	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=datetime.now()) -> int:
+	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=None) -> int:
+		if(isinstance(time, type(None))): time = datetime.now();
+
 		desired_position = int(desired_position * self._length / 100);
 		return self._new_event(Options_id=Options_id, desired_position=desired_position, time=time);

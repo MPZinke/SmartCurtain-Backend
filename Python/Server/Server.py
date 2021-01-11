@@ -36,21 +36,33 @@ class Server(ZWidget):
 
 
 	def __init__(self, system):
-		ZWidget.__init__(self, "Server", 10000000);
-		self._server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
-		print(MAIN_HTML_DIR, STATIC_HTML_DIR);
-		self._server.secret_key = self.random_keygen(64);
+		ZWidget.__init__(self, "Server");
 		self._System = system;
+
+		self._Server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
+		self._Server.secret_key = self.random_keygen(64);
+		self.add_routes();
 
 
 	# Instead of @app.route decorator, adds a route to the server.
 	# https://stackoverflow.com/a/40466535
 	def add_route(self, url, handler, methods=["GET"]):
-		self._server.add_url_rule(url, url, handler, methods=methods);
+		self._Server.add_url_rule(url, url, handler, methods=methods);
+
+
+	def add_routes(self):
+		routes =	{
+						"/" : [self.index, ["GET", "POST"]],
+						"/favicon" : [self.favicon],
+						"/test" : [self.test, ["GET", "POST"]],
+						"/state/<int:Curtains_id>" : [self.state, ["POST"]],
+						"/api/update/event" : [self.api_update_event, ["POST"]]
+					};
+		for route in routes: self.add_route(route, *routes[route]);
 
 
 	def debug(self, flag=True):
-		self._server.debug = flag;
+		self._Server.debug = flag;
 
 
 	# Randomly create a key to secure the session using ASCII characters.
@@ -67,25 +79,5 @@ class Server(ZWidget):
 	# Adds routes to server & class, and starts the server instance.
 	# Sets routes using hardcoded routes, functions & HTTP request methods.
 	# Calls the Flask::run method.
-	def _loop_process(self, **kw_args):
-		routes = {"/" : [self.index, ["GET", "POST"]], "/favicon" : [self.favicon], "/test" : [self.test, ["GET", "POST"]]};
-		for route in routes: self.add_route(route, *routes[route]);
-
-		routes = {"/state/<int:Curtains_id>" : [self.state, ["POST"]]};
-		for route in routes: self.add_route(route, *routes[route]);
-
-		routes = {"/api/update/event" : [self.api_update_event, ["POST"]]}
-		for route in routes: self.add_route(route, *routes[route]);
-
-		self._server.run(host="0.0.0.0", port=80);
-
-
-def main():
-	server = Server();
-
-	# server.debug();
-	server.start();
-
-
-if __name__ == '__main__':
-	main()
+	def _loop_process(self):
+		self._Server.run(host="0.0.0.0", port=80);
