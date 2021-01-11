@@ -30,7 +30,6 @@ class ZThread(Thread):
 
 		self._condition = Condition();  # allows for sleep/wake feature
 		self._is_active = True;  # used by thread_loop() for maintaining while loop
-		self._lock_skip_iteration_process = False;  # does not allow _skip_iteration_process to reset
 		self._loop_process = loop_process;  # operations special to child object
 		self._skip_iteration_process = False;  # option to skip the loop process for this iteration
 		self._sleep_time = sleep_time;  # function pointer to determine/return the amount of time it should sleep
@@ -46,8 +45,9 @@ class ZThread(Thread):
 
 
 	# Changes the amount of time Condition::wait() will wait until next iteration.
-	# Takes the amount of time ::_sleep_time will equal.  New sleep amount will begin after current iteration
-	# on _thread_loop is complete.
+	# Takes a function to determine the time ::_sleep_time will calculate. New sleep amount will begin after current 
+	# iteration on _thread_loop is complete.
+	# To implement immediately, follow with ::sleep(sleep_time()).
 	def set_sleep_time(self, sleep_time : Callable) -> None:
 		self._sleep_time = sleep_time;
 
@@ -55,15 +55,18 @@ class ZThread(Thread):
 	# Sleeps thread_loop for amount of time.
 	# Takes a numeric amount of time defaulted to None.
 	# Sleeps for default amount of time if specified, otherwise indefinitely.
-	def sleep(self, sleep_time : Callable=None) -> None:
+	def sleep(self, sleep_amount : int=0) -> None:
 		with self._condition:
-			if(sleep_time): self._condition.wait(sleep_time());
+			if(sleep_amount): self._condition.wait(sleep_amount);
 			else:
 				Warn(f"Thread: {self.name} has been indefinitely put to sleep");
 				self._condition.wait();  # incase 0 is used, default to indefinitely
 
 
-	def start_thread(self, skip_first_iteration=False):
+	# Starts a thread after deciding whether to run ::_loop_process on first iteration.
+	# Takes whether the first iteration should be skipped.
+	# Sets whether the first iterations should be skipped and starts self (Thread::start).
+	def start_thread(self, skip_first_iteration : bool=False):
 		self._skip_iteration_process = skip_first_iteration;
 		self.start();
 
@@ -74,8 +77,8 @@ class ZThread(Thread):
 		try:  # make it safe!!!
 			while(self._is_active):
 				if(not self._skip_iteration_process): self._loop_process();
-				if(not self._lock_skip_iteration_process): self._skip_iteration_process = False;
-				self.sleep(self._sleep_time);
+				self._skip_iteration_process = False;
+				self.sleep(self._sleep_time());
 		except Exception as error:
 			try: log_error(error);
 			except: pass;
