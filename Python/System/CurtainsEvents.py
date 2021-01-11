@@ -37,8 +37,7 @@ class CurtainsEvents:
 		self._time : object = event_info["time"];
 
 		self.__activation_thread = ZThread("Event Thread: {}".format(self._id), self.activate, self.sleep_time);
-		self.__activation_thread.set_immediate_sleep_time(self.sleep_time);
-		self.__activation_thread.start();
+		self.__activation_thread.start_thread(True);
 
 
 	def __del__(self):
@@ -126,8 +125,8 @@ class CurtainsEvents:
 		if(not self.is_activated(True) or not self._is_activated): raise Exception("Could not set event as activated");
 		if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain as activated");
 
-		self.__activation_thread.kill();
-
+		self.__activation_thread.kill();  # stops current process
+		# clear event from structure (later tater)
 		CurtainEventsDict = Curtain.CurtainsEvents();
 		if(self._id not in CurtainEventsDict): raise Exception("Event not found in Curtain Event dictionary");
 		del CurtainEventsDict[self._id];

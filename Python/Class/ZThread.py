@@ -19,6 +19,8 @@ from threading import Condition, Thread;
 from warnings import warn as Warn;
 from typing import Union;
 
+from Other.Logger import log_error;
+
 
 # Modified thread class for executing a process and sleeping afterwards.
 # Also allows for sleeping and waking a thread.
@@ -41,8 +43,6 @@ class ZThread(Thread):
 
 		self._is_active = False;
 		with self._condition: self._condition.notify();
-		try: self.join();
-		except: pass;
 
 
 	# Changes the amount of time Condition::wait() will wait until next iteration.
@@ -50,16 +50,6 @@ class ZThread(Thread):
 	# on _thread_loop is complete.
 	def set_sleep_time(self, sleep_time : Callable) -> None:
 		self._sleep_time = sleep_time;
-
-
-	# Sets the sleep time and immediately sleeps for that amount of time.
-	# Takes the amount of time ::_sleep_time will equal, whether loop process should be skipped (default: True).
-	# Sets _sleep_time, then _skip_process to skip the process for this interation. Starts iteration on 
-	# _thread_loop, skips process, then reinitializes process.
-	def set_immediate_sleep_time(self, sleep_time : Callable, skip_iteration : bool=True) -> None:
-		self._sleep_time = sleep_time;
-		self._skip_iteration_process = skip_iteration;
-		self.wake();
 
 
 	# Sleeps thread_loop for amount of time.
@@ -73,13 +63,22 @@ class ZThread(Thread):
 				self._condition.wait();  # incase 0 is used, default to indefinitely
 
 
+	def start_thread(self, skip_first_iteration=False):
+		self._skip_iteration_process = skip_first_iteration;
+		self.start();
+
+
 	# Main loop that runs thread if activated.
 	# Check that the it is supposed to do stuff, then sleeps thread
 	def _thread_loop(self) -> None:
-		while(self._is_active):
-			if(not self._skip_iteration_process): self._loop_process();
-			if(not self._lock_skip_iteration_process): self._skip_iteration_process = False;
-			self.sleep(self._sleep_time);
+		try:  # make it safe!!!
+			while(self._is_active):
+				if(not self._skip_iteration_process): self._loop_process();
+				if(not self._lock_skip_iteration_process): self._skip_iteration_process = False;
+				self.sleep(self._sleep_time);
+		except Exception as error:
+			try: log_error(error);
+			except: pass;
 
 
 	# Wakes thread (condition from sleep).
