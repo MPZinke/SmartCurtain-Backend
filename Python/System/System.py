@@ -22,6 +22,7 @@ from Class.ZWidget import ZWidget;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__, Curtains as DBCurtains, Options as DBOptions;
 from Other.Global import *;
+from Other.Global import tomorrow_00_00;
 from System.Curtains import Curtains;
 from System.Options import Options;
 
@@ -55,9 +56,7 @@ class System(ZWidget):
 
 	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
 	def sleep_time(self) -> int:
-		tomorrow = datetime.now() + timedelta(1);
-		midnight = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=0, minute=0, second=0);
-		return (midnight - datetime.now()).seconds
+		return (tomorrow_00_00() - datetime.now()).seconds + 30;  # give time to let event creators to do their thing
 
 
 	def _loop_process(self) -> None:

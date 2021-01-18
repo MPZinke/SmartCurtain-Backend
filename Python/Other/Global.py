@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from datetime import datetime, timedelta;
 from os import getcwd as __OS__getcwd;
 from pathlib import Path as __pathlib__Path;
 import sys;
@@ -22,4 +23,10 @@ import sys;
 SMARTCURTAIN_DIR = str(__pathlib__Path(__OS__getcwd()));
 
 
-SYSTEM_REFRESH_WAIT = 84600;
+
+# Get the datetime object for the next day at 00:00:00.
+# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
+def tomorrow_00_00():
+	tomorrow = datetime.now() + timedelta(1);
+	return datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=0, minute=0, second=0);
+

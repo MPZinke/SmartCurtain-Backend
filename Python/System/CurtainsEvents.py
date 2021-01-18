@@ -18,6 +18,7 @@ from datetime import datetime, timedelta;
 from requests import post;
 from time import sleep;
 from typing import Union;
+from warnings import warn as Warn;
 
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
@@ -55,36 +56,41 @@ class CurtainsEvents:
 		return self._Curtains_id;
 
 
+	# Helper function for managing what happens to DB data & attributes.
+	# Take the name of the attribute that is affected & that setting value (if being set).
+	# Sets a new value if a new value is passed.
+	# Will return the original value if no new value is passed. Returns whether new value successfully set.
+	def _get_or_set_attribute(self, attribute_name : str, new_value=None):
+		if(isinstance(new_value, type(None))): return getattr(self, attribute_name);
+
+		if(new_value == getattr(self, attribute_name)): return True;  # values match, take the easy way out
+		# gotta update DB to match structure
+		import DB.DBFunctions as DBFunctions;
+		DB_function = getattr(DBFunctions, "set_CurtainsEvent"+attribute_name);
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		success_flag = DB_function(cnx, cursor, self._id, new_value);
+		if(success_flag): setattr(self, attribute_name, new_value);
+		return success_flag + bool(__CLOSE__(cnx, cursor));
+
+
 	def Options_id(self) -> int:
 		return self._Options_id;
 
 
-	def desired_position(self, new_desired_position : Union[int, None]=None) -> Union[int, None]:
-		if(isinstance(new_desired_position, type(None))): return self._desired_position;
-		self._desired_position = new_desired_position;
+	def desired_position(self, new_desired_position : Union[int, None]=None):
+		return self._get_or_set_attribute("_desired_position", new_desired_position);
 
 
-	def is_activated(self, new_is_activated : Union[bool, None]=None) -> Union[bool, None]:
-		if(isinstance(new_is_activated, type(None))): return self._is_activated;
-		if(new_is_activated == self._is_activated): return True;
-
-		from DB.DBFunctions import set_CurtainsEvent_activation;
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		success_flag = set_CurtainsEvent_activation(cnx, cursor, self._id)
-		if(success_flag): self._is_activated = new_is_activated;
-		__CLOSE__(cnx, cursor);
-
-		return success_flag;
+	def is_activated(self, new_is_activated : Union[bool, None]=None):
+		return self._get_or_set_attribute("_is_activated", new_is_activated);
 
 
-	def is_current(self, new_is_current : Union[bool, None]=None) -> Union[bool, None]:
-		if(isinstance(new_is_current, type(None))): return self._is_current;
-		self._is_current = new_is_current;
+	def is_current(self, new_is_current : Union[bool, None]=None):
+		return self._get_or_set_attribute("_is_current", new_is_current);
 
 
-	def time(self, new_time : Union[int, None]=None) -> Union[int, None]:
-		if(isinstance(new_time, type(None))): return self._time;
-		self._time = new_time;
+	def time(self, new_time : Union[int, None]=None):
+		return self._get_or_set_attribute("_time", new_time);
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
@@ -103,6 +109,7 @@ class CurtainsEvents:
 
 	def sleep_time(self):
 		now = datetime.now();
+		if(self._time + 1 < now): Warn("Event {} is schedules at a time in the past".format(self._id));
 		return (self._time - now).seconds + 1 if (now < self._time) else 1;
 
 

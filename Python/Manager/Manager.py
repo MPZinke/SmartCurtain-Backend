@@ -5,16 +5,17 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on ..                                                                                                              #
+#   on 2021.01.17                                                                                                      #
 #                                                                                                                      #
-#   DESCRIPTION:                                                                                                       #
+#   DESCRIPTION: Manages the individual threads that create events based on options set by the user. Checks every 30   #
+#     seconds that all subprocesses are running. If not, restarts subproprocess.                                       #
 #   BUGS:                                                                                                              #
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
 ########################################################################################################################
 
 
-# from Class.ZWidget import ZWidget;
+from Class.ZWidget import ZWidget;
 
 
 class Manager(ZWidget):

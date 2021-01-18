@@ -51,86 +51,60 @@ class Curtains:
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
+	# —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
 
 	def id(self) -> int:
 		return self._id;
 
 
-	def current_position(self, new_current_position : int=None) -> Union[int, bool, None]:
-		if(isinstance(new_current_position, type(None))): return self._current_position;
-		if(new_current_position == self._current_position): return True;
+	# Helper function for managing what happens to DB data & attributes.
+	# Take the name of the attribute that is affected & that setting value (if being set).
+	# Sets a new value if a new value is passed.
+	# Will return the original value if no new value is passed. Returns whether new value successfully set.
+	def _get_or_set_attribute(self, attribute_name : str, new_value=None):
+		if(isinstance(new_value, type(None))): return getattr(self, attribute_name);
 
-		from DB.DBFunctions import set_Curtain_current_position;
+		if(new_value == getattr(self, attribute_name)): return True;  # values match, take the easy way out
+		# gotta update DB to match structure
+		import DB.DBFunctions as DBFunctions;
+		DB_function = getattr(DBFunctions, "set_Curtain"+attribute_name);
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		success_flag = set_Curtain_current_position(cnx, cursor, self._id, new_current_position);
-		if(success_flag): self._current_position = new_current_position;
+		success_flag = DB_function(cnx, cursor, self._id, new_value);
+		if(success_flag): setattr(self, attribute_name, new_value);
 		return success_flag + bool(__CLOSE__(cnx, cursor));
 
 
-	def direction(self, new_direction : bool=None) -> Union[bool, None]:
-		if(isinstance(new_direction, type(None))): return self._direction;
-		self._direction = new_direction;
+	def current_position(self, new_current_position : int=None):
+		return self._get_or_set_attribute("_current_position", new_current_position);
+
+
+	def direction(self, new_direction : bool=None):
+		return self._get_or_set_attribute("_direction", new_direction);
 
 
 	def ip_address(self, new_ip_address : str=None):
-		if(isinstance(new_ip_address, type(None))): return self._ip_address;
-		print("Hello from here");
-		if(new_ip_address == self._ip_address): return True;
-
-		from DB.DBFunctions import set_Curtain_ip_address;
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		success_flag = set_Curtain_ip_address(cnx, cursor, self._id, new_ip_address);
-		if(success_flag): self._ip_address = new_ip_address;
-		return success_flag + bool(__CLOSE__(cnx, cursor));
+		return self._get_or_set_attribute("_ip_address", new_ip_address);
 
 
-	def is_activated(self, new_is_activated : bool=None) -> Union[bool, None]:
-		from DB.DBFunctions import set_Curtain_activation;
-		if(isinstance(new_is_activated, type(None))): return self._is_activated;
-
-		if(new_is_activated == self._is_activated): return True;
-
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		success_flag = set_Curtain_activation(cnx, cursor, self._id, new_is_activated);
-		if(success_flag): self._is_activated = new_is_activated;
-		return success_flag + bool(__CLOSE__(cnx, cursor));
+	def is_activated(self, new_is_activated : bool=None):
+		return self._get_or_set_attribute("_is_activated", new_is_activated);
 
 
-	def last_connection(self, new_last_connection : object=None) -> Union[object, None]:
-		if(isinstance(new_last_connection, type(None))): return self._last_connection;
-		self._last_connection = new_last_connection;
+	def last_connection(self, new_last_connection : object=None):
+		return self._get_or_set_attribute("_last_connection", new_last_connection);
 
 
-	def length(self, new_length : int=None) -> Union[int, None]:
-		from DB.DBFunctions import set_Curtain_length;
-		if(isinstance(new_length, type(None))): return self._length;
-
-		if(new_length == self._length): return True;
-
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		success_flag = set_Curtain_length(cnx, cursor, self._id, new_length);
-		if(success_flag): self._length = new_length;
-		return success_flag + bool(__CLOSE__(cnx, cursor));
+	def length(self, new_length : int=None):
+		return self._get_or_set_attribute("_length", new_length);
 
 
-	def name(self, new_name : str=None) -> Union[str, None]:
-		if(isinstance(new_name, type(None))): return self._name;
-		self._name = new_name;
+	def name(self, new_name : str=None):
+		return self._get_or_set_attribute("_name", new_name);
 
 
-	def CurtainsEvent(self, CurtainsEvents_id : int=None):
-		if(self._CurtainsEvents.get(CurtainsEvents_id)): return self._CurtainsEvents.get(CurtainsEvents_id);  # easy!
-
-		from DB.DBFunctions import CurtainsEvent;
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		CurtainsEvents_data = CurtainsEvent(cursor, CurtainsEvents_id);
-		__CLOSE__(cnx, cursor);
-
-		event = CurtainsEvents(CurtainsEvents_data, self) if CurtainsEvents_data else None;
-		if(not CurtainsEvents_data or event.Curtains_id() != self._id): return None;
-		self._CurtainsEvents[event.id()] = event;
-		return event;
-
+	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
 
 	def CurtainsEvents(self) -> dict:
 		return self._CurtainsEvents;
@@ -146,6 +120,43 @@ class Curtains:
 
 	def System(self):
 		return self._System;
+
+
+	# ———————————————————————————————————————————————— GETTERS: SPECIAL ————————————————————————————————————————————————
+
+	# Get all curtain events for a time range.
+	# Takes the latest datetime time that an event can be, optionally the earliest datetime time an event can be.
+	# Cycles through dictionary of events. If an event is within the range, event is added to list.
+	# Returns list of curtain events within that time range.
+	def CurtainsEvents_for_range(self, latest : object=None, earliest : object=None) -> list:
+		if(not earliest and not latest): return [self._CurtainsEvents[event_id] for event_id in self._CurtainsEvents];
+		events = [];
+		for event_id in self._CurtainsEvents:
+			event = self._CurtainsEvents[event_id];
+			if((latest and latest < event.time()) or (earliest and event.time() < earliest)): continue;
+			events.append(event);
+		return events;
+
+
+	# Get CurtainsEvent if exists.
+	# Takes the CurtainsEvents id to pull from.
+	# Checks whether the CurtainsEvents exists in memory. If it doesn't, checks if it exists in the DB.
+	# Returns the Event if it is found, else None.
+	def CurtainsEvent(self, CurtainsEvents_id : int=None):
+		if(CurtainsEvents_id in self._CurtainsEvents): return self._CurtainsEvents.get(CurtainsEvents_id);  # easy!
+
+		# not found, check if in DB
+		from DB.DBFunctions import CurtainsEvent;
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		CurtainsEvents_data = CurtainsEvent(cursor, CurtainsEvents_id);
+		__CLOSE__(cnx, cursor);
+
+		# return if found in DB
+		event = CurtainsEvents(CurtainsEvents_data, self) if CurtainsEvents_data else None;
+		if(not CurtainsEvents_data or event.Curtains_id() != self._id): return None;
+		self._CurtainsEvents[event.id()] = event;
+		return event;
+
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————

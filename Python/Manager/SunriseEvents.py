@@ -14,16 +14,20 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from datetime import datetime, timedelta;
+
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CONNECT__, Curtains_ids, CurtainsOptions_for_curtain_and_option;
 from ManagerGlobal import *;
 from Other.Global import *;
+from Other.Global import tomorrow_00_00;
 from ZWidget import ZWidget;
 
 
 class SunriseEvents(ZWidget):
-	def __init__(self):
-		ZWidget.__init__(self, "SunriseEvents", SUNRISEEVENTS_SLEEP);
+	def __init__(self, System):
+		ZWidget.__init__(self, "SunriseEvents");
+		self._System = System;
 
 
 	def sunrise_time(self):
@@ -34,15 +38,25 @@ class SunriseEvents(ZWidget):
 		return astr_object[CITY].sun(local=True)["sunrise"]
 
 
-	def _loop_process(self):
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		try:
-			for curtain in Curtains_ids(cursor):
-				option_id = OPTIONS_ID_FOR_NAME["Sunrise Open"];  # name is HARDCODED
-				curtain_option = CurtainsOptions_for_curtain_and_option(cursor, curtain["id"], "Sunrise Open");
-				if not curtain_option or not curtain_option["is_on"]: continue;  # ignore if either not setup or not on
+	# Determines sleep time for time to next day.
+	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
+	def sleep_time(self) -> int:
+		return (tomorrow_00_00() - datetime.now()).seconds;
 
-				if(CurtainsOptions_for_curtain_and_option(curtain["id"], curtain_option["id"], ))
+
+	def _loop_process(self):
+		option_id = self._System.Option_name("Sunrise Open");
+		sunrise = self.sunrise_time();
+
+		for curtain_id in self._System.Curtains():
+			try:
+				curtain = self._System.Curtains()[curtain_id];
+				curtain_option = curtain.CurtainsOption(option_id);
+				if(not curtain_option.is_on()): continue;
+
+				todays_events = curtain.CurtainsEvents_for_range(earliest=sunrise-5, latest=sunrise+5);
+				if(any(event.Options_id() == option_id for event in todays_events)): return;  # no need to duplicate
+
 
 
 
