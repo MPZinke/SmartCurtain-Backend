@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on ..                                                                                                              #
+#   on 2021.01.18                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,15 +14,4 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-
-def __GLOBAL__set_options_names() -> dict:
-	from DB.DBCredentials import *;
-	from DB.DBFunctions import __CONNECT__, Options;
-
-	_, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-	options = Options(cursor);
-
-	return {options["name"] : options["id"] for option in options};
-
-
-OPTIONS_ID_FOR_NAME = __GLOBAL__set_options_names();  # used so that only the name (easier to read) has to be HARDCODED
+CITY = "DALLAS";

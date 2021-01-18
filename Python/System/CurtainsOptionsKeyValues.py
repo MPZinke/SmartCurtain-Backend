@@ -36,19 +36,33 @@ class CurtainsOptionsKeyValues:
 		return self._CurtainsOptions_id;
 
 
-	def is_current(self, new_is_current : Union[bool, None]=None) -> Union[bool, None]:
-		if(isinstance(new_is_current, type(None))): return self._is_current;
-		self._is_current = new_is_current;
+	# Helper function for managing what happens to DB data & attributes.
+	# Take the name of the attribute that is affected & that setting value (if being set).
+	# Sets a new value if a new value is passed.
+	# Will return the original value if no new value is passed. Returns whether new value successfully set.
+	def _get_or_set_attribute(self, attribute_name : str, new_value=None):
+		if(isinstance(new_value, type(None))): return getattr(self, attribute_name);
+
+		if(new_value == getattr(self, attribute_name)): return True;  # values match, take the easy way out
+		# gotta update DB to match structure
+		import DB.DBFunctions as DBFunctions;
+		DB_function = getattr(DBFunctions, "set_CurtainsOptionsKeyValues"+attribute_name);
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		success_flag = DB_function(cnx, cursor, self._id, new_value);
+		if(success_flag): setattr(self, attribute_name, new_value);
+		return success_flag + bool(__CLOSE__(cnx, cursor));
 
 
-	def key(self, new_key : Union[str, None]=None) -> Union[str, None]:
-		if(isinstance(new_key, type(None))): return self._key;
-		self._key = new_key;
+	def is_current(self, new_is_current : bool=None):
+		return self._get_or_set_attribute("_is_current", new_is_current);
 
 
-	def value(self, new_value : Union[str, None]=None) -> Union[str, None]:
-		if(isinstance(new_value, type(None))): return self._value;
-		self._value = new_value;
+	def key(self, new_key : str=None):
+		return self._get_or_set_attribute("_key", new_key);
+
+
+	def value(self, new_value : str=None):
+		return self._get_or_set_attribute("_value", new_value);
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————

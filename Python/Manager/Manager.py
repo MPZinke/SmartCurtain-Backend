@@ -16,6 +16,7 @@ __author__ = "MPZinke"
 
 
 from Class.ZWidget import ZWidget;
+from Manager.SunriseOpen import SunriseOpen;
 
 
 class Manager(ZWidget):
@@ -24,25 +25,26 @@ class Manager(ZWidget):
 
 		self._System = System;
 
-		self._AdafruitFeed = AdafruitFeed(self);
-		self._DaytimeEvents = DaytimeEvents(self);
-		self._EventPredictor = EventPredictor(self);
-		self._SunriseEvents = SunriseEvents(self);
-		self._SunsetEvents = SunsetEvents(self);
+		# self._AdafruitFeed = AdafruitFeed(self._System);
+		# self._DaytimeEvents = DaytimeEvents(self._System);
+		# self._EventPredictor = EventPredictor(self._System);
+		self._SunriseOpen = SunriseOpen(self._System);
+		# self._SunsetEvents = SunsetEvents(self._System);
 
-		self._widget_list =	[
-								self._AdafruitFeed, self._DaytimeEvents, self._EventPredictor,
-								self._SunriseEvents, self._SunsetEvents
-							];
-		for wigdet in self._widget_list: widget.start();
+		# self._widget_list =	[
+		# 						self._AdafruitFeed, self._DaytimeEvents, self._EventPredictor,
+		# 						self._SunriseOpen, self._SunsetEvents
+		# 					];
+		# for wigdet in self._widget_list: widget.start();
+		self._SunriseOpen.start();
 
 
 	def _loop_process(self):
-		if(not self._AdafruitFeed.is_alive()): self._AdafruitFeed = AdafruitFeed(self);
-		if(not self._DaytimeEvents.is_alive()): self._DaytimeEvents = DaytimeEvents(self);
-		if(not self._EventPredictor.is_alive()): self._EventPredictor = EventPredictor(self);
-		if(not self._SunriseEvents.is_alive()): self._SunriseEvents = SunriseEvents(self);
-		if(not self._SunsetEvents.is_alive()): self._SunsetEvents = SunsetEvents(self);
+		# if(not self._AdafruitFeed.is_alive()): self._AdafruitFeed = AdafruitFeed(self);
+		# if(not self._DaytimeEvents.is_alive()): self._DaytimeEvents = DaytimeEvents(self);
+		# if(not self._EventPredictor.is_alive()): self._EventPredictor = EventPredictor(self);
+		if(not self._SunriseOpen.is_alive()): self._SunriseOpen = SunriseOpen(self);
+		# if(not self._SunsetEvents.is_alive()): self._SunsetEvents = SunsetEvents(self);
 
 
 	def System(self):

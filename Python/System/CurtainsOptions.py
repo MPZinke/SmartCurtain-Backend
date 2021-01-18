@@ -18,7 +18,7 @@ from typing import Union;
 
 from System.CurtainsOptionsKeyValues import CurtainsOptionsKeyValues;
 from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, CurtainsOptionsKeyValues_for_CurtainsOptions_id;
+from DB.DBFunctions import __CONNECT__, __CLOSE__, current_CurtainsOptionsKeyValues_for_CurtainsOptions_id as CurtOptKV;
 
 
 class CurtainsOptions:
@@ -29,11 +29,9 @@ class CurtainsOptions:
 		self._is_on : bool = bool(curtains_options["is_on"]);
 		self._notes : str = curtains_options["notes"];
 
-		_, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		self._CurtainsOptionsKeyValues = {};
-		for kv in CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor, self._id):
-			self._CurtainsOptionsKeyValues[kv["CurtainsOptions.id"]] = CurtainsOptionsKeyValues(kv);
-		cursor.close();
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		self._CurtainsOptionsKeyValues = [CurtainsOptionsKeyValues(kv) for kv in CurtOptKV(cursor, self._id)];
+		__CLOSE__(cnx, cursor);
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -50,19 +48,33 @@ class CurtainsOptions:
 		return self._Options_id;
 
 
-	def is_current(self, new_is_current : Union[bool, None]=None) -> Union[bool, None]:
-		if(isinstance(is_current, type(None))): return self._is_current;
-		self._is_current = new_is_current;
+	# Helper function for managing what happens to DB data & attributes.
+	# Take the name of the attribute that is affected & that setting value (if being set).
+	# Sets a new value if a new value is passed.
+	# Will return the original value if no new value is passed. Returns whether new value successfully set.
+	def _get_or_set_attribute(self, attribute_name : str, new_value=None):
+		if(isinstance(new_value, type(None))): return getattr(self, attribute_name);
+
+		if(new_value == getattr(self, attribute_name)): return True;  # values match, take the easy way out
+		# gotta update DB to match structure
+		import DB.DBFunctions as DBFunctions;
+		DB_function = getattr(DBFunctions, "set_CurtainsOption"+attribute_name);
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		success_flag = DB_function(cnx, cursor, self._id, new_value);
+		if(success_flag): setattr(self, attribute_name, new_value);
+		return success_flag + bool(__CLOSE__(cnx, cursor));
 
 
-	def is_on(self, new_is_on : Union[bool, None]=None) -> Union[bool, None]:
-		if(isinstance(new_is_on, type(None))): return self._is_on;
-		self._is_on = new_is_on;
+	def is_on(self, new_is_on : bool=None):
+		return self._get_or_set_attribute("_is_on", new_is_on);
 
 
-	def notes(self, new_notes : Union[str, None]=None) -> Union[str, None]:
-		if(isinstance(notes, type(None))): return self._notes;
-		self._notes = new_notes;
+	def notes(self, new_notes : str=None):
+		return self._get_or_set_attribute("_notes", new_notes);
+
+
+	def CurtainsOptionsKeyValues(self) -> list:
+		return [CurtOptKV for CurtOptKV in self._CurtainsOptionsKeyValues];
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————

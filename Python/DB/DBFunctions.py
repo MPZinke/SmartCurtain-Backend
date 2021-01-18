@@ -138,7 +138,12 @@ def CurtainsOptions_for_curtain_and_option(cursor : object, Curtains_id : int, O
 
 
 def CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor : object, CurtainsOptions_id : id) -> list:
-	query = "SELECT * FROM `CurtainsOptionsKeyValues` WHERE `CurtainsOptions.id` = %s";
+	query = "SELECT * FROM `CurtainsOptionsKeyValues` WHERE `CurtainsOptions.id` = %s;";
+	return __UTILITY__query(cursor, query, CurtainsOptions_id);
+
+
+def current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor : object, CurtainsOptions_id : id) -> list:
+	query = "SELECT * FROM `CurtainsOptionsKeyValues` WHERE `CurtainsOptions.id` = %s AND `is_current` = TRUE";
 	return __UTILITY__query(cursor, query, CurtainsOptions_id);
 
 
@@ -200,9 +205,9 @@ def set_all_CurtainsEvent_as_activated(cnx, cursor) -> bool:
 	return bool(__UTILITY__update(cnx, cursor, query));
 
 
-def set_all_previous_CurtainsEvent_as_activated(cnx, cursor) -> bool:
+def set_all_previous_CurtainsEvent_as_activated(cnx, cursor) -> int:
 	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `time` < %s;";
-	return bool(__UTILITY__update(cnx, cursor, query, datetime.now()));
+	return __UTILITY__update(cnx, cursor, query, datetime.now());
 
 
 def set_CurtainsEvent_desired_position(cnx, cursor, CurtainsEvents_id : int, desired_position : bool) -> bool:
@@ -223,3 +228,32 @@ def set_CurtainsEvent_is_current(cnx, cursor, CurtainsEvents_id : int, is_curren
 def set_CurtainsEvent_time(cnx, cursor, CurtainsEvents_id : int, time : bool) -> bool:
 	query = "UPDATE `CurtainsEvents` SET `time` = TRUE WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, time, CurtainsEvents_id));
+
+
+# —————————————————————————————————————————————— SETTERS::CURTAINSOPTIONS ——————————————————————————————————————————————
+
+def set_CurtainsOption_is_on(cnx, cursor, CurtainsOptions_id : int, is_on : bool) -> bool:
+	query = "UPDATE `CurtainsOptions` SET `is_on` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, is_on, CurtainsOptions_id));
+
+
+def set_CurtainsOption_notes(cnx, cursor, CurtainsOptions_id : int, notes : str) -> bool:
+	query = "UPDATE `CurtainsOptions` SET `notes` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, notes, CurtainsOptions_id));
+
+
+# ————————————————————————————————————————— SETTERS::CURTAINSOPTIONSKEYVALUES —————————————————————————————————————————
+
+def set_CurtainsOptionsKeyValue_is_current(cnx, cursor, CurtainsOptions_id : int, is_current : bool) -> bool:
+	query = "UPDATE `CurtainsOptions` SET `is_current` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, is_current, CurtainsOptions_id));
+
+
+def set_CurtainsOptionsKeyValue_key(cnx, cursor, CurtainsOptions_id : int, key : bool) -> bool:
+	query = "UPDATE `CurtainsOptions` SET `key` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, key, CurtainsOptions_id));
+
+
+def set_CurtainsOptionsKeyValue_value(cnx, cursor, CurtainsOptions_id : int, value : bool) -> bool:
+	query = "UPDATE `CurtainsOptions` SET `value` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, value, CurtainsOptions_id));
