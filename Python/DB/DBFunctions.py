@@ -153,7 +153,7 @@ def current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor : object, Cur
 
 # —————————————————————————————————————————————————— SETTERS::CURTAIN ——————————————————————————————————————————————————
 
-def set_Curtain_activation(cnx, cursor, Curtains_id : int, activation : bool) -> bool:
+def set_Curtain_is_activated(cnx, cursor, Curtains_id : int, activation : bool) -> bool:
 	query = "UPDATE `Curtains` SET `is_activated` = %s WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, activation, Curtains_id));
 
@@ -211,22 +211,22 @@ def set_all_previous_CurtainsEvent_as_activated(cnx, cursor) -> int:
 
 
 def set_CurtainsEvent_desired_position(cnx, cursor, CurtainsEvents_id : int, desired_position : bool) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `desired_position` = TRUE WHERE `id` = %s";
+	query = "UPDATE `CurtainsEvents` SET `desired_position` = %s WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, desired_position, CurtainsEvents_id));
 
 
 def set_CurtainsEvent_is_activated(cnx, cursor, CurtainsEvents_id : int, is_activated : bool) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `is_activated` = TRUE WHERE `id` = %s";
+	query = "UPDATE `CurtainsEvents` SET `is_activated` = %s WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, is_activated, CurtainsEvents_id));
 
 
 def set_CurtainsEvent_is_current(cnx, cursor, CurtainsEvents_id : int, is_current : bool) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `is_current` = TRUE WHERE `id` = %s";
+	query = "UPDATE `CurtainsEvents` SET `is_current` = %s WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, is_current, CurtainsEvents_id));
 
 
 def set_CurtainsEvent_time(cnx, cursor, CurtainsEvents_id : int, time : bool) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `time` = TRUE WHERE `id` = %s";
+	query = "UPDATE `CurtainsEvents` SET `time` = %s WHERE `id` = %s";
 	return bool(__UTILITY__update(cnx, cursor, query, time, CurtainsEvents_id));
 
 

@@ -37,3 +37,8 @@ def tomorrow_00_00():
 def try_convert(value, value_type):
 	try: return value_type(value);
 	except: return None;
+
+
+# Used to override warning format & return only the warning message.
+def warning_message(message, category, filename, lineno, line=''):
+	return str(message)+"\n";

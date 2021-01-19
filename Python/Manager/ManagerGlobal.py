@@ -15,3 +15,11 @@ __author__ = "MPZinke"
 
 
 CITY = "DALLAS";
+
+
+def datetime_to_utc(time=None):
+	from datetime import datetime;
+	from pytz import UTC;
+
+	if(not time): time = datetime.now()
+	return UTC.localize(time);
