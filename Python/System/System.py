@@ -29,7 +29,7 @@ from System.Options import Options;
 
 class System(ZWidget):
 	def __init__(self):
-		ZWidget.__init__(self, "System");
+		ZWidget.__init__(self, "System", self);
 		self._mutex = Lock();
 		self._Curtains = None;
 		self._Options = None;
