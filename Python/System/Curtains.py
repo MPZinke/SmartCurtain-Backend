@@ -143,6 +143,16 @@ class Curtains:
 		return events;
 
 
+	
+	def prior_CurtainsEvents_for_current_day_of_week(self, earliest : object=None) -> list:
+		earliest = earliest or datetime.today() - timedelta(days=28);
+
+		from DB.DBFunctions import TODO;
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		CurtainsEvents_data = CurtainsEvent(cursor, CurtainsEvents_id);
+		__CLOSE__(cnx, cursor);
+
+
 	# Get CurtainsEvent if exists.
 	# Takes the CurtainsEvents id to pull from.
 	# Checks whether the CurtainsEvents exists in memory. If it doesn't, checks if it exists in the DB.

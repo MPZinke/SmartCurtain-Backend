@@ -33,8 +33,7 @@ from Class.ZWidget import ZWidget;
 
 class SunsetClose(ZWidget):
 	def __init__(self, System):
-		ZWidget.__init__(self, "SunsetClose");
-		self._System = System;
+		ZWidget.__init__(self, "SunsetClose", System);
 
 		warnings.formatwarning = warning_message;
 
@@ -52,10 +51,10 @@ class SunsetClose(ZWidget):
 
 
 	def _loop_process(self):
-		option_id = self._System.Option_name("Sunset Close");
 		sunset = self.sunset_time().replace(tzinfo=None);
 		if(sunset < datetime.now()): return Warn("Sunset has already passed for today. Skipping today");
 
+		option_id = self._System.Option_name("Sunset Close");
 		for curtain_id in self._System.Curtains():
 			try:
 				curtain = self._System.Curtains()[curtain_id];

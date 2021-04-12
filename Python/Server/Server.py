@@ -35,9 +35,8 @@ class Server(ZWidget):
 	from Server.Routes.Api import api_update_event;
 
 
-	def __init__(self, system):
-		ZWidget.__init__(self, "Server");
-		self._System = system;
+	def __init__(self, System):
+		ZWidget.__init__(self, "Server", System);
 
 		self._Server = Flask(__name__, template_folder=MAIN_HTML_DIR, static_folder=STATIC_HTML_DIR);
 		self._Server.secret_key = self.random_keygen(64);
