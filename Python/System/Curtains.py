@@ -29,6 +29,7 @@ class Curtains:
 		self._System = System;
 
 		self._id : int = curtain_info["id"];
+		self._buffer_time = curtain_info["buffer_time"];
 		self._current_position : int = curtain_info["current_position"] if curtain_info["current_position"] else 0;
 		self._direction : bool = bool(curtain_info["direction"]);
 		self._is_activated : bool = bool(curtain_info["is_activated"]);
@@ -74,6 +75,10 @@ class Curtains:
 		success_flag = DB_function(cnx, cursor, self._id, new_value);
 		if(success_flag): setattr(self, attribute_name, new_value);
 		return success_flag + bool(__CLOSE__(cnx, cursor));
+
+
+	def buffer_time(self, new_buffer_time : int=None):
+		return self._get_or_set_attribute("_buffer_time", new_buffer_time);
 
 
 	def current_position(self, new_current_position : int=None):

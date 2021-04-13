@@ -46,6 +46,11 @@ class CurtainsEvents:
 		except: pass;
 
 
+	def delete(self):
+		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
+		finally: del Curtain.CurtainsEvents()[self._id];  # clear event from structure (later tater)
+
+
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
 
 	def id(self) -> int:
@@ -116,15 +121,8 @@ class CurtainsEvents:
 
 	def activate(self):
 		Curtain = self._Curtain;
-		System = Curtain.System();
-		post_json =	{
-						"auto calibrate" : int(Curtain.CurtainsOption(System.Option_name("Auto Calibrate")).is_on()), 
-						"auto correct" : int(Curtain.CurtainsOption(System.Option_name("Auto Correct")).is_on()),
-						"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
-						"length" : Curtain.length(),
-						"desired position" : self._desired_position if self._desired_position else 0, "event" : self._id
-					};
 
+		post_json = self.json();
 		response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
 		if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
 		if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
@@ -133,8 +131,16 @@ class CurtainsEvents:
 		if(not self.is_activated(True) or not self._is_activated): raise Exception("Could not set event as activated");
 		if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain as activated");
 
-		self.__activation_thread.kill();  # stops current process
-		# clear event from structure (later tater)
-		CurtainEventsDict = Curtain.CurtainsEvents();
-		if(self._id not in CurtainEventsDict): raise Exception("Event not found in Curtain Event dictionary");
-		del CurtainEventsDict[self._id];
+		self.delete();
+
+
+	def json(self):
+		Curtain = self._Curtain;
+		System = Curtain.System();
+		return	{
+					"auto calibrate" : int(Curtain.CurtainsOption(System.Option_name("Auto Calibrate")).is_on()), 
+					"auto correct" : int(Curtain.CurtainsOption(System.Option_name("Auto Correct")).is_on()),
+					"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
+					"length" : Curtain.length(),
+					"desired position" : self._desired_position if self._desired_position else 0, "event" : self._id
+				};

@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS `Curtains`;
 CREATE TABLE IF NOT EXISTS `Curtains`
 (
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	`buffer_time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Curtain travel deci-seconds (prevent event overlap)
 	`current_position` INT UNSIGNED NOT NULL DEFAULT 0,
 	`direction` BOOLEAN NOT NULL DEFAULT FALSE,
 	`is_activated` BOOLEAN NOT NULL DEFAULT FALSE,
