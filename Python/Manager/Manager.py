@@ -25,13 +25,13 @@ class Manager(ZWidget):
 		ZWidget.__init__(self, "Manager", System, 60);
 
 		# self._AdafruitFeed = AdafruitFeed(self._System);
-		self._EventPredictor = EventPredictor(self._System);
+		# self._EventPredictor = EventPredictor(self._System);
 		self._SunriseOpen = SunriseOpen(self._System);
 		self._SunsetClose = SunsetClose(self._System);
 
 		self._widget_list =	[
 		# 						self._AdafruitFeed, 
-								self._EventPredictor,
+								# self._EventPredictor,
 								self._SunriseOpen, self._SunsetClose
 							];
 		for widget in self._widget_list: widget.start();

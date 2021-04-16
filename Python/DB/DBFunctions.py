@@ -174,7 +174,7 @@ def set_Curtain_last_connection(cnx, cursor, Curtains_id : int, last_connection 
 	return bool(__UTILITY__update(cnx, cursor, query, last_connection, Curtains_id));
 
 
-def set_Curtain_length(cnx, cursor, Curtains_id : int, ip_address : str) ->bool:
+def set_Curtain_length(cnx, cursor, Curtains_id : int, length : int) ->bool:
 	query = "UPDATE `Curtains` SET `ip_address` = %s WHERE `id` = %s;";
 	return bool(__UTILITY__update(cnx, cursor, query, length, Curtains_id));
 

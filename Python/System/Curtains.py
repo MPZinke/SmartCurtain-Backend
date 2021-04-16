@@ -246,9 +246,7 @@ class Curtains:
 
 	def open_immediately(self, desired_position : int=0, Options_id : int=None) -> int:
 		CurtainsEvents_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
-		if(not CurtainsEvents_id): return False;
-		
-		return 0;
+		return CurtainsEvents_id if CurtainsEvents_id else False;
 
 
 	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=None) -> int:
