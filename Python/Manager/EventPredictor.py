@@ -53,9 +53,15 @@ from Other.Logger import log_error;
 class EventTime:
 	def __init__(self, eventtime_datetime, position):
 		self._datetime = eventtime_datetime;
-		self._decimal = self._datetime.hour + self._datetime.minute / 60;
 		self._position = position;
 
+
+	def decimal(self):
+		return self._datetime.hour + self._datetime.minute / 60;
+
+
+	def position(self):
+		return self._position
 
 
 class EventPredictor(ZWidget):
