@@ -11,7 +11,7 @@ all:
 	# DB setup
 	sudo apt-get install mariadb-server -y || echo "Failed to install mariadb-server with command: sudo apt-get install mariadb-server -y" > ./Installation/InstallErrors.log
 	sudo mariadb -uroot -praspberry < DB/Schema.sql || echo "Failed to setup DB with command: sudo mariadb -uroot -praspberry < DB/Schema.sql" > ./Installation/InstallErrors.log
-	sudo mariadb -uroot -praspberry < DB/Users_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
+	sudo mariadb -uroot -praspberry < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
 
 	# Local folder setup
 	sudo mkdir /usr/SmartCurtain || echo "Failed to make directory /usr/SmartCurtain" > ./Installation/InstallErrors.log

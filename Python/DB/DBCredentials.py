@@ -14,6 +14,6 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-DB_USER = "root";
-DB_PASSWORD = "mysql";
+DB_USER = "python_db_user";
+DB_PASSWORD = "";
 DATABASE = "SmartCurtain";
