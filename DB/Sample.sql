@@ -11,6 +11,7 @@ USE `SmartCurtain`;
 
 -- MPZinke instance: default length 1000
 INSERT INTO `Curtains` (`id`, `length`, `ip_address`, `name`) VALUES (1, 1000, '10.0.0.12', 'Office');
+INSERT INTO `Curtains` (`id`, `length`, `ip_address`, `name`) VALUES (2, 1000, '10.0.0.13', 'Bedroom');
 
 
 INSERT INTO `Options` (`id`, `name`, `description`) VALUES
@@ -34,10 +35,22 @@ INSERT INTO `CurtainsOptions` (`id`, `Curtains.id`, `Options.id`, `is_on`, `note
 (6, 1, 6, FALSE, NULL),
 (7, 1, 7, TRUE, 'Value is for time before/after sunrise that curtain opens'),
 (8, 1, 8, TRUE, 'Value is for time before/after sunset that curtain closes'),
-(9, 1, 9, FALSE, NULL);
+(9, 1, 9, FALSE, NULL),
+(10, 2, 1, TRUE, NULL),
+(11, 2, 2, TRUE, NULL),
+(12, 2, 3, TRUE, NULL),
+(13, 2, 4, TRUE, NULL),
+(14, 2, 5, TRUE, 'Value is for clustering leniency in hours'),
+(15, 2, 6, FALSE, NULL),
+(16, 2, 7, TRUE, 'Value is for time before/after sunrise that curtain opens'),
+(17, 2, 8, TRUE, 'Value is for time before/after sunset that curtain closes'),
+(18, 2, 9, FALSE, NULL);
 
 
 INSERT INTO `CurtainsOptionsKeyValues` (`CurtainsOptions.id`, `key`, `value`) VALUES
 (1, 'office.curtain-close', NULL),
 (2, 'office-curtain-open', NULL),
-(5, NULL, '1.0');
+(5, NULL, '1.0'),
+(10, 'office.curtain-close', NULL),
+(11, 'office-curtain-open', NULL),
+(14, NULL, '1.0');
