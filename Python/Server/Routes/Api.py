@@ -100,30 +100,32 @@ def api_update_deactivatecurtain(self):
 
 # /api/update/deactivateevent
 def api_update_deactivateevent(self):
-	pass
-	#TODO: Update below code so that it updates the event instead of the curtain
-	# try:
-	# 	json = request.get_json();
+	try:
+		json = request.get_json();
+		print("Server::api_update_deactivateevent: ", end="");  #TESTING
+		print(json);  #TESTING
 
-	# 	current_pos, event, length = [json[key] for key in ["current position", "event", "length"]];
-	# 	if(not isinstance(current_pos, int)): raise Exception("\\\"current_pos\\\" value is wrong type");
-	# 	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
-	# 	if(not isinstance(event, int)): raise Exception("\\\"event\\\" value is wrong type");
-	# 	if(not isinstance(length, int)): raise Exception("\\\"length\\\" value is wrong type");
-	# 	print(json);  #TESTING
+		# Scrub & validate data from JSON
+		keys = ["current position", "curtain", "event", "length"]
+		current_position, curtain_id, event, length = [json.get(key) for key in keys];
+		if(not isinstance(current_position, int)): raise Exception("\\\"current position\\\" value is wrong type");
+		if(not isinstance(curtain_id, int)): raise Exception("\\\"curtain\\\" value is wrong type");
+		if(not isinstance(event, int)): raise Exception("\\\"event\\\" value is wrong type");
+		if(not isinstance(length, int)): raise Exception("\\\"length\\\" value is wrong type");
 
-	# 	curtain = self._System.Curtain(curtain);
-	# 	if(not curtain): raise Exception("No curtain for ID found");
-	# 	if(not curtain.is_activated(False)): raise Exception("Unable to update Curtain activation");
-	# 	if(not curtain.current_position(current_pos)): raise Exception("Unable to update position");
-	# 	if(not curtain.length(length)): raise Exception("Unable to update length");
+		# Update curtain
+		curtain = self._System.Curtain(curtain_id);
+		if(not curtain): raise Exception("No curtain for ID found");
+		if(not curtain.is_activated(False)): raise Exception("Unable to update Curtain activation");
+		if(not curtain.current_position(current_position)): raise Exception("Unable to update position");
+		if(not curtain.length(length)): raise Exception("Unable to update length");
 
-	# 	return "{\"success\" : \"Updated event\"}";
+		return "{\"success\" : \"Updated event\"}";
 
-	# except Exception as error:
-	# 	log_error(error);
-	# 	if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
-	# 	return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
+	except Exception as error:
+		log_error(error);
+		if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
+		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 
 
 # —————————————————————————————————————————————————————— BUILDERS ——————————————————————————————————————————————————————

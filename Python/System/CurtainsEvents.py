@@ -48,7 +48,7 @@ class CurtainsEvents:
 
 	def delete(self):
 		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
-		finally: del Curtain.CurtainsEvents()[self._id];  # clear event from structure (later tater)
+		finally: del self._Curtain.CurtainsEvents()[self._id];  # clear event from structure (later tater)
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -123,6 +123,8 @@ class CurtainsEvents:
 		Curtain = self._Curtain;
 
 		post_json = self.json();
+		print("Post data:", end="");
+		print(post_json);
 		response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
 		if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
 		if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");

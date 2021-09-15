@@ -32,9 +32,9 @@ class Server(ZWidget):
 	# https://stackoverflow.com/a/47562412
 	from Server.Routes.Root import index, events, favicon, test;
 	from Server.Routes.State import state;
-	from Server.Routes.Api import api_update_deactivateevent;
 	from Server.Routes.Api import api_create_future;
 	from Server.Routes.Api import api_create_now;
+	from Server.Routes.Api import api_update_deactivateevent;
 	from Server.Routes.Api import api_update_deactivatecurtain;
 
 
@@ -59,9 +59,9 @@ class Server(ZWidget):
 						"/favicon" : [self.favicon],
 						"/test" : [self.test, ["GET", "POST"]],
 						"/state/<int:Curtains_id>" : [self.state, ["POST"]],
-						"/api/update/deactivateevent" : [self.api_update_deactivateevent, ["POST"]],
 						"/api/create/future" : [self.api_create_future, ["POST"]],
 						"/api/create/now" : [self.api_create_now, ["POST"]],
+						"/api/update/deactivateevent" : [self.api_update_deactivateevent, ["POST"]],
 						"/api/update/deactivatecurtain" : [self.api_update_deactivatecurtain, ["POST"]]
 					};
 		for route in routes: self.add_route(route, *routes[route]);
