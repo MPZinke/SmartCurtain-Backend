@@ -50,6 +50,12 @@ def index(self):
 	return render_template("Home.html", header=header, session=session);
 
 
+def events(self):
+	set_session();
+	header = Header(self._System);
+	return render_template("Events.html", header=header, session=session);
+
+
 def favicon(self):
 	return "";
 

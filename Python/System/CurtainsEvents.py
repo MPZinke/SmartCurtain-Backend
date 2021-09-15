@@ -115,7 +115,7 @@ class CurtainsEvents:
 	def sleep_time(self):
 		now = datetime.now();
 		time_plus_1_second = self._time + timedelta(seconds=1);
-		if(time_plus_1_second < now): Warn("Event {} is schedules at a time in the past".format(self._id));
+		if(time_plus_1_second < now): Warn("Event {} is scheduled at a time in the past".format(self._id));
 		return (time_plus_1_second - now).seconds if (now < self._time) else 1;
 
 
