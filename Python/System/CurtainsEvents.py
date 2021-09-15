@@ -22,7 +22,7 @@ from warnings import warn as Warn;
 
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from Class.ZThread import ZThread;
+from Class.ZThreadSingle import ZThreadSingle;
 
 
 class CurtainsEvents:
@@ -37,7 +37,7 @@ class CurtainsEvents:
 		self._is_current : bool = bool(event_info["is_current"]);
 		self._time : object = event_info["time"];
 
-		self.__activation_thread = ZThread("Event Thread: {}".format(self._id), self.activate, self.sleep_time);
+		self.__activation_thread = ZThreadSingle("Event Thread: {}".format(self._id), self.activate, self.sleep_time);
 		self.__activation_thread.start_thread(True);
 
 

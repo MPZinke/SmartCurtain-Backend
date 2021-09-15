@@ -14,7 +14,8 @@ __author__ = "MPZinke"
 #                                                                                                                      #
 ########################################################################################################################
 
-from collections.abc import Callable
+
+from collections.abc import Callable;
 from threading import Condition, Thread;
 import warnings;
 from warnings import warn as Warn;
@@ -33,7 +34,6 @@ class ZThread(Thread):
 		self._condition = Condition();  # allows for sleep/wake feature
 		self._is_active = True;  # used by thread_loop() for maintaining while loop
 		self._loop_process = loop_process;  # operations special to child object
-		self._skip_iteration_process = False;  # option to skip the loop process for this iteration
 		self._sleep_time = sleep_time;  # function pointer to determine/return the amount of time it should sleep
 
 		warnings.formatwarning = warning_message;
@@ -80,9 +80,7 @@ class ZThread(Thread):
 	def _thread_loop(self) -> None:
 		try:  # make it safe!!!
 			while(self._is_active):
-				if(not self._skip_iteration_process):
-					self._loop_process();
-					self._skip_iteration_process = False;
+				self._loop_process();
 				self.sleep(self._sleep_time());
 		except Exception as error:
 			try: log_error(error);
