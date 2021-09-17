@@ -23,6 +23,7 @@ from warnings import warn as Warn;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
 from Class.ZThreadSingle import ZThreadSingle;
+from Other.Logger import log_error;
 
 
 class CurtainsEvents:
@@ -116,7 +117,7 @@ class CurtainsEvents:
 		now = datetime.now();
 		time_plus_1_second = self._time + timedelta(seconds=1);
 		if(time_plus_1_second < now): Warn("Event {} is scheduled at a time in the past".format(self._id));
-		return (time_plus_1_second - now).seconds if (now < self._time) else 1;
+		return (time_plus_1_second - now).seconds if (now < self._time) else .25;
 
 
 	def activate(self):
@@ -125,11 +126,13 @@ class CurtainsEvents:
 		post_json = self.json();
 		print("Post data:", end="");
 		print(post_json);
-		response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
-		if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
-		if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
+		try:
+			response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
+			if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
+			if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
+			print(response.json());  #TESTING
+		except Exception as error: log_error(error);
 
-		print(response.json());  #TESTING
 		if(not self.is_activated(True) or not self._is_activated): raise Exception("Could not set event as activated");
 		if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain as activated");
 

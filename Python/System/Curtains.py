@@ -199,11 +199,11 @@ class Curtains:
 	# ——————————————————————————————————————————————————————— UI ———————————————————————————————————————————————————————
 
 	def current_position_percent_float(self) -> float:
-		return self._current_position * 100 / self._length;
+		return 100 / self._length * self._current_position;
 
 
 	def current_position_percent_int(self) -> int:
-		return int(self._current_position * 100 / self._length);
+		return int(100 / self._length * self._current_position);
 
 
 	def state_string(self) -> str:
