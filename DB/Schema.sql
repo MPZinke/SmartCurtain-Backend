@@ -7,7 +7,7 @@
 -- 	FUTURE:
 
 
-CREATE DATABASE `SmartCurtain`;
+CREATE DATABASE `SmartCurtain` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;;
 
 
 USE `SmartCurtain`;
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `Curtains`
 	`last_connection` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`length` INT UNSIGNED NOT NULL,
 	`name` VARCHAR(32) NOT NULL
-) CHARSET=utf8;
+) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 DROP TABLE IF EXISTS `Options`;
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `Options`
 	`description` VARCHAR(256) NOT NULL DEFAULT '',
 	`is_current` BOOLEAN NOT NULL DEFAULT TRUE,
 	`name` VARCHAR(32) NOT NULL
-) CHARSET=utf8;
+) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 DROP TABLE IF EXISTS `CurtainsOptions`;
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `CurtainsOptions`
 	UNIQUE `UNIQUE:CurtainsOptions`(`Curtains.id`, `Options.id`),
 	`is_on` BOOLEAN NOT NULL,
 	`notes` VARCHAR(256) DEFAULT NULL
-) CHARSET=utf8;
+) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 DROP TABLE IF EXISTS `CurtainsOptionsKeyValues`;
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `CurtainsOptionsKeyValues`
 	`is_current` BOOLEAN DEFAULT TRUE,
 	`key` VARCHAR(256) DEFAULT NULL,
 	`value` VARCHAR(256) DEFAULT NULL
-);
+) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 DROP TABLE IF EXISTS `CurtainsEvents`;
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `CurtainsEvents`
 	`is_activated` BOOLEAN NOT NULL DEFAULT FALSE,
 	`is_current` BOOLEAN NOT NULL DEFAULT TRUE,
 	`time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) CHARSET=utf8;
+) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 DROP TABLE IF EXISTS `Errors`;
@@ -95,4 +95,4 @@ CREATE TABLE IF NOT EXISTS `Errors`
 	`error` TEXT DEFAULT NULL,
 	`path` TEXT DEFAULT NULL,
 	`time` DATETIME DEFAULT CURRENT_TIMESTAMP
-) CHARSET=utf8;
+) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
