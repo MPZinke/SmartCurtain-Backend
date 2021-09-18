@@ -22,7 +22,7 @@ all:
 	pip3 install adafruit-io || echo "Failed to install adafruit-io with command: pip3 install adafruit-io" > ./Installation/InstallErrors.log
 	pip3 install astral==1.10.1 || echo "Failed to install astral with command: pip3 install astral" > ./Installation/InstallErrors.log
 	sudo pip3 install flask || echo "Failed to install flask with command: pip3 install flask" > ./Installation/InstallErrors.log
-	sudo pip3 install mysql-connector || echo "Failed to install mysql-connector with command: pip3 install mysql-connector" > ./Installation/InstallErrors.log
+	sudo apt-get install python3-mysql.connector || echo "Failed to install python3-mysql.connector with command: sudo apt-get install python3-mysql.connector" > ./Installation/InstallErrors.log
 	pip3 install numpy || echo "Failed to install numpy with command: pip3 install numpy" > ./Installation/InstallErrors.log
 	pip3 install RPi.GPIO || echo "Failed to install RPi.GPIO with command: pip3 install RPi.GPIO" > ./Installation/InstallErrors.log
 	pip3 install setuptool || echo "Failed to install setuptool with command: pip3 install setuptool" > ./Installation/InstallErrors.log
