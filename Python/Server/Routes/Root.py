@@ -60,12 +60,12 @@ def new(self):
 	if(request.method == "POST"):
 		try:
 			if(posted("date_input") and  posted("time_input") and  posted("position_input")):
-				date_input, time_input = get_posted_value("date_input", "time_input");
+				date_input, time_input, position_input = get_posted_value("date_input", "time_input", "position_input");
 				date_time = datetime.strptime(f"{date_input} {time_input}", "%Y-%m-%d %H:%M");
-				position_input = int(get_posted_value("desired_position_input"));
+				position = int(position_input);
 
 				header.selected_curtain().open_percentage(desired_position=position, time=date_time);
-				session["success"] = f"Successfully created event for {date_input} {time_input} at {position_input}";
+				session["success"] = f"Successfully created event for {date_input} {time_input} at {position}";
 
 			elif(not posted("date_input")): raise Exception("Value date_input not found");
 			elif(not posted("time_input")): raise Exception("Value time_input not found");
