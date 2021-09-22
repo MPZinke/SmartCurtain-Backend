@@ -14,19 +14,17 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-
+from datetime import datetime, timedelta;
 from flask import redirect, render_template, request, session;
 
 from Class.Header import Header;
 from Other.Logger import log_error;
 from Server.ServerGlobal import *;
-from Server.ServerGlobal import set_session;
+from Server.ServerGlobal import add_error_and_redirect, posted, set_session;
 
 
 # —————————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————————
 
-def posted(post : str) -> bool:
-	return post in request.form;
 
 
 # ——————————————————————————————————————————————————————— ROUTES ———————————————————————————————————————————————————————
@@ -54,6 +52,36 @@ def events(self):
 	set_session();
 	header = Header(self._System);
 	return render_template("Events.html", header=header, session=session);
+
+
+def new(self):
+	set_session();
+	header = Header(self._System);
+	if(request.method == "POST"):
+		try:
+			if(posted("date_input") and  posted("time_input") and  posted("position_input")):
+				date_input, time_input = get_posted_value("date_input", "time_input");
+				date_time = datetime.strptime(f"{date_input} {time_input}", "%Y-%m-%d %H:%M");
+				position_input = int(get_posted_value("desired_position_input"));
+
+				header.selected_curtain().open_percentage(desired_position=position, time=date_time);
+				session["success"] = f"Successfully created event for {date_input} {time_input} at {position_input}";
+
+			elif(not posted("date_input")): raise Exception("Value date_input not found");
+			elif(not posted("time_input")): raise Exception("Value time_input not found");
+			elif(not posted("position_input")): raise Exception("Value position_input not found");
+
+		except Exception as error:
+			log_error(error);
+			session["error"] = f"Error setting event {str(error)}";
+
+		return redirect("/new");
+
+	current_date = datetime.now().strftime("%Y-%m-%d");
+	time_plus_hour = (datetime.now() + timedelta(hours=1)).strftime("%H-%M");
+	kwargs = {"header": header, "session": session, "current_date": current_date, "time_plus_hour": time_plus_hour};
+	return render_template("New.html", **kwargs);
+
 
 
 def favicon(self):
