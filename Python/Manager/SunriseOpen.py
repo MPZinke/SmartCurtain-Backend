@@ -61,7 +61,8 @@ class SunriseOpen(ZWidget):
 				curtain_option = curtain.CurtainsOption(option_id);
 				if(not curtain_option.is_on()): continue;
 
-				buffer_td = timedelta(seconds=curtain.buffer_time() / 10 / 2);  # .5: buffer both sides; .10: precision
+				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();
+				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision
 				if(curtain.CurtainsEvents_for_range(earliest=sunrise-buffer_td, latest=sunrise+buffer_td)):
 					Warn("Event already set for sunrise time.");
 					continue;  # don't duplicate sunrise
