@@ -15,7 +15,6 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from typing import Union;
 
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
