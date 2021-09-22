@@ -15,13 +15,12 @@ __author__ = "MPZinke"
 
 
 from flask import Flask, request, session;
-from os import getcwd as __OS__getcwd;
 from pathlib import Path as __pathlib__Path;
 from sys import path as __SYS__path;
 from time import sleep;
 
  # Add parent directory to path for testing purposes
-if(__name__ == '__main__'): __SYS__path.append(str(__pathlib__Path(__OS__getcwd()).parent));
+if(__name__ == '__main__'): __SYS__path.append(str(__pathlib__Path(__file__).parent.parent));
 from Server.ServerGlobal import *;
 from Class.ZWidget import ZWidget;
 import Other.Logger as Logger;

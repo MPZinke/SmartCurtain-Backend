@@ -15,12 +15,11 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from os import getcwd as __OS__getcwd;
 from pathlib import Path as __pathlib__Path;
 import sys;
 
 
-SMARTCURTAIN_DIR = str(__pathlib__Path(__OS__getcwd()));
+SMARTCURTAIN_DIR = str(__pathlib__Path(__file__).parent.parent);
 
 
 
