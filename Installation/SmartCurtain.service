@@ -3,7 +3,7 @@ Description=Main Smart Curtain Manager
 After=mariadb.service
 
 [Service]
-ExecStart=/usr/bin/python3 /usr/SmartCurtain/SmartCurtain.py
+ExecStart=sudo /usr/bin/python3 /usr/SmartCurtain/SmartCurtain.py
 Restart=always
 StandardOutput=syslog
 StandardError=syslog
