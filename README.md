@@ -14,12 +14,19 @@ This folder is what goes on the Raspberry Pi (or other Hub devices).
 
 ---
 
-** The makefile is a work in progress **
 
 ## INSTALL
 
-Run `make`
+Run 
+```bash
+make
+```
 
-## UNINSTALL
+## UPDATE
 
-Run `make uninstall`
+Pulls the latest Production version and copies it to the working project directory.
+
+Run
+```bash
+make update
+```
