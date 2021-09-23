@@ -36,3 +36,10 @@ all:
 	echo "Finished"
 	cat ./Installation/InstallErrors.log
 	rm ./Installation/InstallErrors.log
+
+
+update:
+	git stash
+	git checkout Production
+	git pull
+	sudo cp -R ./Python/* /usr/SmartCurtain/
