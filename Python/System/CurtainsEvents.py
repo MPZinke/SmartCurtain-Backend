@@ -27,6 +27,9 @@ from Other.Logger import log_error;
 
 
 class CurtainsEvents:
+
+	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
+
 	def __init__(self, event_info : dict, Curtain):
 		self._Curtain = Curtain;
 
@@ -40,6 +43,35 @@ class CurtainsEvents:
 
 		self.__activation_thread = ZThreadSingle("Event Thread: {}".format(self._id), self.activate, self.sleep_time);
 		self.__activation_thread.start_thread(True);
+
+
+	# Creates a new entry in the DB and returns the newly created CurtainsEvents object
+	@staticmethod
+	def new(**kwargs: dict) -> object:
+		from System.Curtain import Curtain as System_Curtain_Curtain;
+
+		# Check attributes are present
+		required_args = ["Curtain", "desired_position", "is_activated", "time"];
+		for arg in required_args:
+			if(arg not in kwargs): raise Exception(f"CurtainsEvents::new is missing argument: {arg}");
+
+		# Get attributes
+		Curtain = kwargs.get("Curtain");
+		Options.id = kwargs.get("Options.id", None);
+		desired_position = kwargs.get("desired_position");
+		is_activated = kwargs.get("is_activated");
+		is_current = kwargs.get("is_current", True);
+		time = kwargs.get("time");
+
+		# Check types
+		if(not isinstance(Curtain, System_Curtain_Curtain)): raise TypeError("Curtain value is not of type Curtain");
+		if(not isinstance(is_activated, bool)): raise TypeError("is_activated value is not of type bool");
+		if(not isinstance(is_current, bool)): raise TypeError("is_activated value is not of type bool");
+		if(not isinstance(time, datetime)): raise TypeError("time value is not of type datetime");
+
+		# Add to DB
+
+		# Return new instance of CurtainsEvents
 
 
 	def __del__(self):
