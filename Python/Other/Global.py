@@ -20,6 +20,7 @@ import sys;
 
 
 SMARTCURTAIN_DIR = str(__pathlib__Path(__file__).parent.parent);
+NONETYPE = type(None);
 
 
 

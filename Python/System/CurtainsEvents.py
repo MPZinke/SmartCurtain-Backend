@@ -22,56 +22,56 @@ from warnings import warn as Warn;
 
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Class.DBClass import DBClass;
 from Class.ZThreadSingle import ZThreadSingle;
+from Other.Global import *;
 from Other.Logger import log_error;
 
 
-class CurtainsEvents:
+
+class CurtainsEvents(DBClass):
 
 	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
 
-	def __init__(self, event_info : dict, Curtain):
-		self._Curtain = Curtain;
+	def __init__(self, **event_info):
+		DBClass.__init__(self, "set_CurtainsEvent", **event_info);
 
-		self._id : int = event_info["id"];
-		self._Curtains_id : int = event_info["Curtains.id"];
-		self._Options_id : int = event_info["Options.id"];
-		self._desired_position : int = event_info["desired_position"];
-		self._is_activated : bool = bool(event_info["is_activated"]);
-		self._is_current : bool = bool(event_info["is_current"]);
-		self._time : object = event_info["time"];
+		from System.Curtains import Curtains as Curtains_Class;  # must be imported here to prevent circular importing
+		keys = ["Curtain", "id", "desired_position", "is_activated", "is_current", "time"];
+		types =	[Curtains_Class, int, [int, NONETYPE], [int, bool, NONETYPE], [int, bool, NONETYPE], datetime];
+		CurtainsEvents.validate_data(keys, types, event_info);
 
-		self.__activation_thread = ZThreadSingle("Event Thread: {}".format(self._id), self.activate, self.sleep_time);
+		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
 		self.__activation_thread.start_thread(True);
 
 
 	# Creates a new entry in the DB and returns the newly created CurtainsEvents object
 	@staticmethod
-	def new(**kwargs: dict) -> object:
-		from System.Curtain import Curtain as System_Curtain_Curtain;
+	def New(**info) -> object:
+		from DB.DBFunctions import CurtainsEvent, INSERT_CurtainsEvents;
 
 		# Check attributes are present
-		required_args = ["Curtain", "desired_position", "is_activated", "time"];
-		for arg in required_args:
-			if(arg not in kwargs): raise Exception(f"CurtainsEvents::new is missing argument: {arg}");
+		from System.Curtains import Curtains as Curtains_Class;
+		keys = ["Curtain", "desired_position", "time"]
+		types = [Curtains_Class, int, datetime]
+		CurtainsEvents.validate_data(keys, types, info);
 
-		# Get attributes
-		Curtain = kwargs.get("Curtain");
-		Options.id = kwargs.get("Options.id", None);
-		desired_position = kwargs.get("desired_position");
-		is_activated = kwargs.get("is_activated");
-		is_current = kwargs.get("is_current", True);
-		time = kwargs.get("time");
-
-		# Check types
-		if(not isinstance(Curtain, System_Curtain_Curtain)): raise TypeError("Curtain value is not of type Curtain");
-		if(not isinstance(is_activated, bool)): raise TypeError("is_activated value is not of type bool");
-		if(not isinstance(is_current, bool)): raise TypeError("is_activated value is not of type bool");
-		if(not isinstance(time, datetime)): raise TypeError("time value is not of type datetime");
+		# Set possible missing attributes
+		names, defaults = ["Options.id", "is_activated", "is_current"], [None, False, True];
+		[info.update({name: info.get(name, defaults[x])}) for x, name in enumerate(names)];
 
 		# Add to DB
+		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
+		event_params = [info["Curtain"].id(), info["Options.id"], info["desired_position"], info["time"]]
+		info["id"] = INSERT_CurtainsEvents(cnx, cursor, *event_params);
+
+		if(not info["id"]):
+			__CLOSE__(cnx, cursor);
+			raise Exception("Unable to add event to DB");
+		__CLOSE__(cnx, cursor);
 
 		# Return new instance of CurtainsEvents
+		return CurtainsEvents(info);
 
 
 	def __del__(self):
@@ -81,54 +81,7 @@ class CurtainsEvents:
 
 	def delete(self):
 		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
-		finally: del self._Curtain.CurtainsEvents()[self._id];  # clear event from structure (later tater)
-
-
-	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
-
-	def id(self) -> int:
-		return self._id;
-
-
-	def Curtains_id(self) -> int:
-		return self._Curtains_id;
-
-
-	# Helper function for managing what happens to DB data & attributes.
-	# Take the name of the attribute that is affected & that setting value (if being set).
-	# Sets a new value if a new value is passed.
-	# Will return the original value if no new value is passed. Returns whether new value successfully set.
-	def _get_or_set_attribute(self, attribute_name : str, new_value=None):
-		if(isinstance(new_value, type(None))): return getattr(self, attribute_name);
-
-		if(new_value == getattr(self, attribute_name)): return True;  # values match, take the easy way out
-		# gotta update DB to match structure
-		import DB.DBFunctions as DBFunctions;
-		DB_function = getattr(DBFunctions, "set_CurtainsEvent"+attribute_name);
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		success_flag = DB_function(cnx, cursor, self._id, new_value);
-		if(success_flag): setattr(self, attribute_name, new_value);
-		return success_flag + bool(__CLOSE__(cnx, cursor));
-
-
-	def Options_id(self) -> int:
-		return self._Options_id;
-
-
-	def desired_position(self, new_desired_position : Union[int, None]=None):
-		return self._get_or_set_attribute("_desired_position", new_desired_position);
-
-
-	def is_activated(self, new_is_activated : Union[bool, None]=None):
-		return self._get_or_set_attribute("_is_activated", new_is_activated);
-
-
-	def is_current(self, new_is_current : Union[bool, None]=None):
-		return self._get_or_set_attribute("_is_current", new_is_current);
-
-
-	def time(self, new_time : Union[int, None]=None):
-		return self._get_or_set_attribute("_time", new_time);
+		finally: del self._Curtains.CurtainsEvents()[self._id];  # clear event from structure (later tater)
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
@@ -149,11 +102,11 @@ class CurtainsEvents:
 		now = datetime.now();
 		time_plus_1_second = self._time + timedelta(seconds=1);
 		if(time_plus_1_second < now): Warn("Event {} is scheduled at a time in the past".format(self._id));
-		return (time_plus_1_second - now).seconds if (now < self._time) else .25;
+		return (self._time - now).seconds if (now < self._time) else .25;
 
 
 	def activate(self):
-		Curtain = self._Curtain;
+		Curtain = self._Curtains;
 
 		post_json = self.json();
 		print("Post data:", end="");
@@ -172,7 +125,7 @@ class CurtainsEvents:
 
 
 	def json(self):
-		Curtain = self._Curtain;
+		Curtain = self._Curtains;
 		System = Curtain.System();
 		return	{
 					"auto calibrate" : int(Curtain.CurtainsOption(System.Option_name("Auto Calibrate")).is_on()), 

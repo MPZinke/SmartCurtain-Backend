@@ -45,9 +45,9 @@ class System(ZWidget):
 		try:
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
-			print("{} old events cleared".format(set_all_previous_CurtainsEvent_as_activated(cnx, cursor)));
-			self._Curtains = {curtain["id"] : Curtains(curtain, self) for curtain in DBCurtains(cursor)};
-			self._Options = {option["id"] : Options(option) for option in DBOptions(cursor)};
+			print(f"{set_all_previous_CurtainsEvent_as_activated(cnx, cursor)} old events cleared");
+			self._Curtains = {curtain["id"]: Curtains(**{**curtain, "System": self}) for curtain in DBCurtains(cursor)};
+			self._Options = {option["id"]: Options(option) for option in DBOptions(cursor)};
 			self._Options_names = {self._Options[opt].name() : self._Options[opt].id() for opt in self._Options};
 
 			__CLOSE__(cnx, cursor);
