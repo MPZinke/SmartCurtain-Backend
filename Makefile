@@ -15,6 +15,7 @@ all:
 
 	# Local folder setup
 	sudo mkdir /usr/SmartCurtain || echo "Failed to make directory /usr/SmartCurtain" > ./Installation/InstallErrors.log
+	sudo mkdir /usr/SmartCurtain/Logs || echo "Failed to make directory /usr/SmartCurtain/Logs" > ./Installation/InstallErrors.log
 	sudo cp -R ./Python/* /usr/SmartCurtain/ || echo "Failed to copy into directory /usr/SmartCurtain/ with command: sudo cp -R ./Python/* /usr/SmartCurtain/" > ./Installation/InstallErrors.log
 
 	# Python setup
