@@ -19,8 +19,7 @@ from datetime import datetime, timedelta;
 from Class.DBClass import DBClass;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from DB.DBFunctions import current_CurtainsEvents as DBcurrent_CurtainsEvents, CurtainsOptions as DBCurtainsOptions;
-from DB.DBFunctions import CurtainsEvent as DBCurtainsEvent;
+from DB.DBFunctions import SELECT_CurtainsEvent, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
 from Other.Logger import log_error;
 from System.CurtainsEvents import CurtainsEvents;
 from System.CurtainsOptions import CurtainsOptions;
@@ -30,17 +29,14 @@ class Curtains(DBClass):
 	def __init__(self, **curtain_info):
 		DBClass.__init__(self, "set_Curtain", **curtain_info);
 
-		self._CurtainsEvents = None;
-		self._CurtainsOptions = None;
-
 		# Get associated relations
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
-		current_events = current_CurtainsEvents(cursor, self._id)
+		current_events = SELECT_current_CurtainsEvents(cursor, self._id)
 		self._CurtainsEvents = {event["id"]: CurtainsEvents(**{**event, "Curtain": self}) for event in current_events};
 
-		curtains_options = DBCurtainsOptions(cursor, self._id);
-		self._CurtainsOptions = {option["Options.id"] : CurtainsOptions(option) for option in curtains_options};
+		curtains_options = SELECT_CurtainsOptions(cursor, self._id);
+		self._CurtainsOptions = {option["Options.id"] : CurtainsOptions(**option) for option in curtains_options};
 
 		__CLOSE__(cnx, cursor);
 
@@ -50,40 +46,8 @@ class Curtains(DBClass):
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
 
-	# def id(self) -> int:
-	# 	return self._id;
-
-
-	# def buffer_time(self, new_buffer_time : int=None):
-	# 	return self._get_or_set_attribute("_buffer_time", new_buffer_time);
-
-
-	# def current_position(self, new_current_position : int=None):
-	# 	return self._get_or_set_attribute("_current_position", new_current_position);
-
-
-	# def direction(self, new_direction : bool=None):
-	# 	return self._get_or_set_attribute("_direction", new_direction);
-
-
-	# def ip_address(self, new_ip_address : str=None):
-	# 	return self._get_or_set_attribute("_ip_address", new_ip_address);
-
-
-	# def is_activated(self, new_is_activated : bool=None):
-	# 	return self._get_or_set_attribute("_is_activated", new_is_activated);
-
-
-	# def last_connection(self, new_last_connection : object=None):
-	# 	return self._get_or_set_attribute("_last_connection", new_last_connection);
-
-
-	# def length(self, new_length : int=None):
-	# 	return self._get_or_set_attribute("_length", new_length);
-
-
-	# def name(self, new_name : str=None):
-	# 	return self._get_or_set_attribute("_name", new_name);
+	def id(self) -> int:
+		return self._id;
 
 
 	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
@@ -125,7 +89,7 @@ class Curtains(DBClass):
 		earliest = earliest or datetime.today() - timedelta(days=28);
 
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		CurtainsEvents_data = DBCurtainsEvent(cursor, CurtainsEvents_id);
+		CurtainsEvents_data = SELECT_CurtainsEvent(cursor, CurtainsEvents_id);
 		__CLOSE__(cnx, cursor);
 
 
@@ -138,11 +102,11 @@ class Curtains(DBClass):
 
 		# not found, check if in DB
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		CurtainsEvents_data = DBCurtainsEvent(cursor, CurtainsEvents_id);
+		CurtainsEvents_data = SELECT_CurtainsEvent(cursor, CurtainsEvents_id);
 		__CLOSE__(cnx, cursor);
 
 		# return if found in DB
-		event = CurtainsEvents(CurtainsEvents_data, self) if CurtainsEvents_data else None;
+		if(CurtainsEvents_data): event = CurtainsEvents(**{**CurtainsEvents_data, "Curtain": self});
 		if(not CurtainsEvents_data or event.Curtains_id() != self._id): return None;
 		self._CurtainsEvents[event.id()] = event;
 		return event;

@@ -48,7 +48,7 @@ class CurtainsEvents(DBClass):
 	# Creates a new entry in the DB and returns the newly created CurtainsEvents object
 	@staticmethod
 	def New(**info) -> object:
-		from DB.DBFunctions import CurtainsEvent, INSERT_CurtainsEvents;
+		from DB.DBFunctions import SELECT_CurtainsEvent, INSERT_CurtainsEvents;
 
 		# Check attributes are present
 		from System.Curtains import Curtains as Curtains_Class;
@@ -71,7 +71,7 @@ class CurtainsEvents(DBClass):
 		__CLOSE__(cnx, cursor);
 
 		# Return new instance of CurtainsEvents
-		return CurtainsEvents(info);
+		return CurtainsEvents(**info);
 
 
 	def __del__(self):
@@ -82,6 +82,12 @@ class CurtainsEvents(DBClass):
 	def delete(self):
 		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
 		finally: del self._Curtains.CurtainsEvents()[self._id];  # clear event from structure (later tater)
+
+
+	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
+
+	def id(self) -> int:
+		return self._id;
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————

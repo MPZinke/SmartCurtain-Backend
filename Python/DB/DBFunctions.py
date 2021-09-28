@@ -57,11 +57,11 @@ def __UTILITY__update(cnx: object, cursor: object, query: str, *params) -> int:
 
 # —————————————————————————————————————————————————— GETTERS::TABLES ——————————————————————————————————————————————————
 
-def Curtains(cursor: object) -> list:
+def SELECT_Curtains(cursor: object) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `Curtains` ORDER BY `id` ASC;");
 
 
-def Options(cursor: object) -> list:
+def SELECT_Options(cursor: object) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `Options` ORDER BY `id` ASC;");
 
 
@@ -92,7 +92,7 @@ def SELECT_Curtains_ids(cursor: object) -> list:
 # 	return __UTILITY__query(cursor, query, Curtains_id);
 
 
-def current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
+def SELECT_current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
 	query =	"""
 			SELECT * FROM `CurtainsEvents` 
 			WHERE `Curtains.id` = %s AND `time` >= %s 
@@ -101,22 +101,25 @@ def current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
 	return __UTILITY__query(cursor, query, Curtains_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"));
 
 
-def CurtainsEvent(cursor: object, CurtainsEvents_id: int) -> dict:
+def SELECT_CurtainsEvent(cursor: object, CurtainsEvents_id: int) -> dict:
 	event = __UTILITY__query(cursor, "SELECT * FROM `CurtainsEvents` WHERE `id` = %s", CurtainsEvents_id);
 	return event[0] if event else {};
 
 
-def CurtainsEvents_for_curtain(cursor: object, Curtains_id: int) -> list:
+def SELECT_CurtainsEvents_for_curtain(cursor: object, Curtains_id: int) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `CurtainsEvents` WHERE `Curtains.id` = %s;", Curtains_id);
 
 
-def CurtainsEvents_in_range_for_Options_id(cursor: object, Curtains_id: int, Options_id: int, time: object,
+def SELECT_CurtainsEvents_in_range_for_Options_id(cursor: object, Curtains_id: int, Options_id: int, time: object,
   minute_range: int) -> list:
 	time_min = (time - timedelta(minutes=minute_range)).strftime("%Y-%m-%d %H:%M:%S");
 	time_max = (time + timedelta(minutes=minute_range)).strftime("%Y-%m-%d %H:%M:%S");
 
-	query = "SELECT * FROM `CurtainsEvents` WHERE `Curtains.id` = %s AND `Options.id` = %s " \
-			+ "AND %s <= `time` AND `time` <= %s;";
+	query =	"""
+			SELECT * FROM `CurtainsEvents` 
+			WHERE `Curtains.id` = %s AND `Options.id` = %s 
+			AND %s <= `time` AND `time` <= %s;
+			""";
 	return __UTILITY__query(cursor, query, Curtains_id, Options_id, time_min, time_max);
 
 
@@ -129,23 +132,27 @@ def CurtainsEvents_in_range_for_Options_id(cursor: object, Curtains_id: int, Opt
 # 	return __UTILITY__query(cursor, query, Curtains_id);
 
 
-def CurtainsOptions(cursor: object, Curtains_id: int) -> list:
+def SELECT_CurtainsOptions(cursor: object, Curtains_id: int) -> list:
 	return __UTILITY__query(cursor, "SELECT * FROM `CurtainsOptions` WHERE `Curtains.id` = %s;", Curtains_id);
 
 
-def CurtainsOptions_for_curtain_and_option(cursor: object, Curtains_id: int, Options_name: str) -> dict:
-	query =	"SELECT * FROM `CurtainsOptions` LEFT JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id` " \
-			+ "WHERE `CurtainsOptions`.`Curtains.id` = %s AND `Options`.`name` = %s;";
+def SELECT_CurtainsOptions_for_curtain_and_option(cursor: object, Curtains_id: int, Options_name: str) -> dict:
+	query =	"""
+			SELECT * FROM `CurtainsOptions` 
+			LEFT JOIN `Options` ON `Options`.`id` = `CurtainsOptions`.`Options.id`
+			WHERE `CurtainsOptions`.`Curtains.id` = %s 
+			AND `Options`.`name` = %s;
+			""";
 	curtain_option = __UTILITY__query(cursor, query, Curtains_id, Options_name);
 	return curtain_option[0] if curtain_option else {};
 
 
-def CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor: object, CurtainsOptions_id: id) -> list:
+def SELECT_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor: object, CurtainsOptions_id: id) -> list:
 	query = "SELECT * FROM `CurtainsOptionsKeyValues` WHERE `CurtainsOptions.id` = %s;";
 	return __UTILITY__query(cursor, query, CurtainsOptions_id);
 
 
-def current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor: object, CurtainsOptions_id: id) -> list:
+def SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor: object, CurtainsOptions_id: id) -> list:
 	query = "SELECT * FROM `CurtainsOptionsKeyValues` WHERE `CurtainsOptions.id` = %s AND `is_current` = TRUE";
 	return __UTILITY__query(cursor, query, CurtainsOptions_id);
 
@@ -197,8 +204,10 @@ def UPDATE_Curtain_name(cnx, cursor, Curtains_id: int, name: str) -> bool:
 # —————————————————————————————————————————————— SETTERS::CURTAINSEVENTS ——————————————————————————————————————————————
 
 def INSERT_CurtainsEvents(cnx, cursor, Curtains_id: int, Options_id: int, desired_position: int, time: object) -> bool:
-	query =	"INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES " \
-			+ "(%s, %s, %s, %s);"
+	query =	"""
+			INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_position`, `time`) VALUES
+			(%s, %s, %s, %s);
+			"""
 	args = (Curtains_id, Options_id, desired_position, time.strftime("%Y-%m-%d %H:%M:%S"));
 	return __UTILITY__insert(cnx, cursor, query, *args);
 

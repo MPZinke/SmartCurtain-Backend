@@ -20,8 +20,9 @@ class DBClass:
 
 		for attribute in table_values:
 			attribute_name = "_" + attribute.replace(".", "_")
-			setattr(self, attribute_name, table_values[attribute]);
+			setattr(self, attribute_name, table_values[attribute] if table_values[attribute] else 0);
 			setattr(self, attribute, self._get_or_set_attribute(db_prefix, attribute_name));
+
 		# 	setattr(self, attribute, lambda key=attribute_name: self._get_or_set_attribute(key));
 
 

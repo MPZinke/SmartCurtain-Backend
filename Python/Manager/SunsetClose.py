@@ -21,14 +21,12 @@ from datetime import datetime, timedelta;
 import warnings;
 from warnings import warn as Warn;
 
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, Curtains_ids, CurtainsOptions_for_curtain_and_option;
+from Class.ZWidget import ZWidget;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00, warning_message;
 from Other.Logger import log_error;
-from Class.ZWidget import ZWidget;
 
 
 class SunsetClose(ZWidget):

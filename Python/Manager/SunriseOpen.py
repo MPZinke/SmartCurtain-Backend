@@ -22,8 +22,6 @@ import warnings;
 from warnings import warn as Warn;
 
 from Class.ZWidget import ZWidget;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, Curtains_ids, CurtainsOptions_for_curtain_and_option;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
 from Other.Global import *;
