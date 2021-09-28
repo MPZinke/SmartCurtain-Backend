@@ -30,7 +30,7 @@ def log_error(error : Union[Exception, str]) -> bool:
 		except: module = "Unknown traceback";
 		error_message = "%s|%s|%s\n" % (datetime.now().strftime("%H:%M:%S"), module, error);
 
-		log_name = "../Logs/"+datetime.now().strftime("%Y.%m.%d")+".log";
+		log_name = "./Logs/"+datetime.now().strftime("%Y.%m.%d")+".log";
 		with open(log_name, "a") as log: log.write(error_message);
 		print(error_message);
 		return True;
