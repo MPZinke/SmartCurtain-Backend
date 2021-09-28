@@ -43,3 +43,4 @@ update:
 	git checkout Production
 	git pull
 	sudo cp -R ./Python/* /usr/SmartCurtain/
+	sudo systemctl restart SmartCurtain.service
