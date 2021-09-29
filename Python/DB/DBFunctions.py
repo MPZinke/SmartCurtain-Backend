@@ -7,7 +7,8 @@ __author__ = "MPZinke"
 #   created by: MPZinke                                                                                                #
 #   on 2020.11.25                                                                                                      #
 #                                                                                                                      #
-#   DESCRIPTION:                                                                                                       #
+#   DESCRIPTION: DB Functions are named to indicate what kind of an operation they perform. This prefix also indicates #
+#    that the imported function is a DB function.                                                                      #
 #   BUGS:                                                                                                              #
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
