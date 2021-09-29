@@ -63,7 +63,7 @@ class DBClass:
 	def validate_data(keys: list, types: list, values: dict) -> None:
 		for key in keys:
 			if(key not in values):
-				raise Exception(f"CurtainsEvents::new is missing argument: {key}");
+				raise Exception(f"Missing argument: {key}");
 
 		if(len(keys) != len(types)):
 			raise Exception("Length of keys does not equal length of types");

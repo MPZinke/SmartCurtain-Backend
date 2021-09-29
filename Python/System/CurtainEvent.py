@@ -49,9 +49,8 @@ class CurtainEvent(DBClass):
 	# Creates a new entry in the DB and returns the newly created CurtainEvent object
 	@staticmethod
 	def New(**info) -> object:
-
 		# Check attributes are present
-		from System.Curtain import Curtain as Curtain_Class;
+		from System.Curtain import Curtain as Curtain_Class;  # must be imported here to prevent circular importing
 		keys = ["Curtain", "desired_position", "time"]
 		types = [Curtain_Class, int, datetime]
 		CurtainEvent.validate_data(keys, types, info);
@@ -86,37 +85,19 @@ class CurtainEvent(DBClass):
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
 
+	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
 	def id(self) -> int:
 		return self._id;
 
 
-	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
-
-	def dict(self):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
-		return {attr : getattr(self, attr) for attr in attrs};
-
-
-	def print(self, tab=0, next_tab=0):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
-		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));
-
-
 	# ———————————————————————————————————————————————————— ACTIVATE ————————————————————————————————————————————————————
-
-	def sleep_time(self):
-		now = datetime.now();
-		time_plus_1_second = self._time + timedelta(seconds=1);
-		if(time_plus_1_second < now): Warn("Event {} is scheduled at a time in the past".format(self._id));
-		return (self._time - now).seconds if (now < self._time) else .25;
-
 
 	def activate(self):
 		Curtain = self._Curtain;
 
 		post_json = self.json();
-		print("Post data:", end="");
-		print(post_json);
+		print("Post data:", end="");  #TESTING
+		print(post_json);  #TESTING
 		try:
 			response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
 			if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
@@ -134,9 +115,28 @@ class CurtainEvent(DBClass):
 		Curtain = self._Curtain;
 		System = Curtain.System();
 		return	{
-					"auto calibrate" : int(Curtain.CurtainOption(System.Option_name("Auto Calibrate")).is_on()), 
-					"auto correct" : int(Curtain.CurtainOption(System.Option_name("Auto Correct")).is_on()),
+					"auto calibrate" : int(Curtain.CurtainOption(System.Option_name("Auto Calibrate").id()).is_on()), 
+					"auto correct" : int(Curtain.CurtainOption(System.Option_name("Auto Correct").id()).is_on()),
 					"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
 					"length" : Curtain.length(),
 					"desired position" : self._desired_position if self._desired_position else 0, "event" : self._id
 				};
+
+
+	def sleep_time(self):
+		now = datetime.now();
+		time_plus_1_second = self._time + timedelta(seconds=1);
+		if(time_plus_1_second < now): Warn("Event {} is scheduled at a time in the past".format(self._id));
+		return (self._time - now).seconds if (now < self._time) else .25;
+
+
+	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
+
+	def dict(self):
+		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
+		return {attr : getattr(self, attr) for attr in attrs};
+
+
+	def print(self, tab=0, next_tab=0):
+		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_position", "_is_activated", "_is_current", "_time"];
+		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));

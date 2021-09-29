@@ -52,7 +52,7 @@ class SunriseOpen(ZWidget):
 		sunrise = self.sunrise_time().replace(tzinfo=None);
 		if(sunrise < datetime.now()): return Warn("Sunrise has already passed for today. Skipping today");
 
-		option_id = self._System.Option_name("Sunrise Open");
+		option_id = self._System.Option_name("Sunrise Open").id();
 		for curtain_id in self._System.Curtain():
 			try:
 				curtain = self._System.Curtain(curtain_id);
@@ -65,7 +65,7 @@ class SunriseOpen(ZWidget):
 					Warn("Event already set for sunrise time.");
 					continue;  # don't duplicate sunrise
 
-				curtain_option_key_values = curtain_option.CurtainsOptionsKeyValues();
+				curtain_option_key_values = curtain_option.CurtainOptionKeyValues();
 				position = curtain_option_key_values[0].value() if curtain_option_key_values else curtain.length();
 				curtain.open(desired_position=position, Options_id=option_id, time=sunrise);
 

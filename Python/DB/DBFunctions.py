@@ -74,8 +74,8 @@ def SELECT_Curtains_by_id(cursor: object, Curtains_id: int) -> dict:
 
 def DB_ALL_Curtain_info(cursor: object, Curtains_id: int) -> list:
 	curtain_info = [Curtain(cursor, Curtains_id)];
-	curtain_info.append(CurtainsEvents_current(cursor, Curtains_id));
-	curtain_info.append(CurtainsOptions(cursor, Curtains_id));
+	curtain_info.append(SELECT_current_CurtainsEvents(cursor, Curtains_id));
+	curtain_info.append(SELECT_CurtainsOptions(cursor, Curtains_id));
 
 	return curtain_info;
 

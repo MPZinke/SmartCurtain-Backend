@@ -28,7 +28,7 @@ class CurtainOption(DBClass):
 
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		option_key_values = SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor, self._id);
-		self._CurtainsOptionsKeyValues = [CurtainOptionKeyValue(**kv) for kv in option_key_values];
+		self._CurtainOptionKeyValues = [CurtainOptionKeyValue(**kv) for kv in option_key_values];
 		__CLOSE__(cnx, cursor);
 
 
@@ -39,7 +39,7 @@ class CurtainOption(DBClass):
 
 
 	def CurtainOptionKeyValues(self) -> list:
-		return [CurtOptKV for CurtOptKV in self._CurtainsOptionsKeyValues];
+		return [CurtOptKV for CurtOptKV in self._CurtainOptionKeyValues];
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
@@ -47,12 +47,12 @@ class CurtainOption(DBClass):
 	def dict(self):
 		attrs = ["_id", "_Curtains_id", "_Options_id", "_is_on", "_notes"];
 		class_dict = {attr : getattr(self, attr) for attr in attrs};
-		class_dict["_CurtainsOptionsKeyValues"] = {kv : self._CurtainsOptionsKeyValues[kv].dict() \
-		  for kv in self._CurtainsOptionsKeyValues};
+		class_dict["CurtainOptionKeyValues"] = {kv : self._CurtainOptionKeyValues[kv].dict() \
+		  for kv in self._CurtainOptionKeyValues};
 
 
 	def print(self, tab=0, next_tab=0):
 		attrs = ["_id", "_Curtains_id", "_Options_id", "_is_on", "_notes"];
 		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));
-		print('\t'*tab, "_CurtainsOptionsKeyValues : ");
-		for kv in self._CurtainsOptionsKeyValues: self._CurtainsOptionsKeyValues[kv].print(tab+next_tab, next_tab);
+		print('\t'*tab, "CurtainOptionKeyValues : ");
+		for kv in self._CurtainOptionKeyValues: self._CurtainOptionKeyValues[kv].print(tab+next_tab, next_tab);

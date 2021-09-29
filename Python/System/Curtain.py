@@ -27,7 +27,7 @@ from System.CurtainOption import CurtainOption;
 
 class Curtain(DBClass):
 	def __init__(self, **curtain_info):
-		DBClass.__init__(self, "UPDATE_Curtain", **curtain_info);
+		DBClass.__init__(self, "UPDATE_Curtains", **curtain_info);
 
 		# Get associated relations
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
@@ -36,7 +36,7 @@ class Curtain(DBClass):
 		self._CurtainEvents = {event["id"]: CurtainEvent(**{**event, "Curtain": self}) for event in current_events};
 
 		curtains_options = SELECT_CurtainsOptions(cursor, self._id);
-		self._CurtainOptions = {option["Options.id"] : CurtainOption(**option) for option in curtains_options};
+		self._CurtainOptions = {option["Options.id"]: CurtainOption(**option) for option in curtains_options};
 
 		__CLOSE__(cnx, cursor);
 
@@ -46,6 +46,7 @@ class Curtain(DBClass):
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
 
+	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
 	def id(self) -> int:
 		return self._id;
 
@@ -60,7 +61,7 @@ class Curtain(DBClass):
 		return self._CurtainOptions.get(CurtainOption_id);
 
 
-	def CurtainsOptions(self):
+	def CurtainOptions(self):
 		return self._CurtainOptions;
 
 
@@ -74,7 +75,7 @@ class Curtain(DBClass):
 	# Takes the latest datetime time that an event can be, optionally the earliest datetime time an event can be.
 	# Cycles through dictionary of events. If an event is within the range, event is added to list.
 	# Returns list of curtain events within that time range.
-	def CurtainEvents_for_range(self, latest : object=None, earliest : object=None) -> list:
+	def CurtainEvents_for_range(self, latest: object=None, earliest: object=None) -> list:
 		if(not earliest and not latest): return [self._CurtainEvents[event_id] for event_id in self._CurtainEvents];
 		events = [];
 		for event_id in self._CurtainEvents:
@@ -147,7 +148,7 @@ class Curtain(DBClass):
 
 	def state_string(self) -> str:
 		if(self._is_activated): return "Moving";
-		return {0 : "Closed", self._length : "Fully Open"}.get(self._current_position, "Open");
+		return {0: "Closed", self._length: "Fully Open"}.get(self._current_position, "Open");
 
 
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
@@ -162,7 +163,7 @@ class Curtain(DBClass):
 		return new_CurtainEvent.id();
 
 
-	def close(self, *, Options_id : int=None, time : object=None):
+	def close(self, *, Options_id: int=None, time: object=None):
 		if(isinstance(time, type(None))): time = datetime.now();
 
 		return self._new_event(desired_position=0, Options_id=Options_id, time=time);
@@ -172,18 +173,18 @@ class Curtain(DBClass):
 		return self._new_event(Options_id=Options_id);
 
 
-	def open(self, *, desired_position : int=0, Options_id : int=None, time : object=None) -> int:
+	def open(self, *, desired_position: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
 		return self._new_event(desired_position=desired_position, Options_id=Options_id, time=time);
 
 
-	def open_immediately(self, desired_position : int=0, Options_id : int=None) -> int:
-		CurtainsEvent_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
-		return CurtainsEvent_id if CurtainsEvent_id else False;
+	def open_immediately(self, desired_position: int=0, Options_id: int=None) -> int:
+		CurtainEvent_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
+		return CurtainEvent_id if CurtainEvent_id else False;
 
 
-	def open_percentage(self, *, desired_position : int=0, Options_id : int=None, time : object=None) -> int:
+	def open_percentage(self, *, desired_position: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
 		desired_position = int(desired_position * self._length / 100);
