@@ -5,14 +5,14 @@
 <title>{{ header.selected_curtain().name() }}</title>
 <div style='width:100%; padding-top:32px; margin:auto;'>
 	<table>
-		<th>
-			<td>
+		<tr>
+			<th>
 				Time
-			</td>
-			<td>
+			</th>
+			<th>
 				Position
-			</td>
-		</th>
+			</th>
+		</tr>
 		{% for event in header.selected_curtain().CurtainEvents() %}
 				<tr>
 					<td>
