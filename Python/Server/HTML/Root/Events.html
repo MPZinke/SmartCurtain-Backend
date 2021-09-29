@@ -13,13 +13,13 @@
 				Position
 			</td>
 		</th>
-		{% for event in header.selected_curtain().CurtainsEvents() %}
+		{% for event in header.selected_curtain().CurtainEvents() %}
 				<tr>
 					<td>
-						{{ header.selected_curtain().CurtainsEvents()[event].time() }}
+						{{ header.selected_curtain().CurtainEvents()[event].time() }}
 					</td>
 					<td>
-						{{ header.selected_curtain().CurtainsEvents()[event].desired_position() }}
+						{{ header.selected_curtain().CurtainEvents()[event].desired_position() }}
 					</td>
 				</tr>
 		{% endfor %}

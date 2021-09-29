@@ -19,16 +19,16 @@ from typing import Union;
 from Class.DBClass import DBClass;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CONNECT__, __CLOSE__, SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id;
-from System.CurtainsOptionsKeyValues import CurtainsOptionsKeyValues;
+from System.CurtainOptionKeyValue import CurtainOptionKeyValue;
 
 
-class CurtainsOptions(DBClass):
-	def __init__(self, **curtains_options):
-		DBClass.__init__(self, "UPDATE_CurtainsOption", **curtains_options)
+class CurtainOption(DBClass):
+	def __init__(self, **curtain_option):
+		DBClass.__init__(self, "UPDATE_CurtainsOption", **curtain_option)
 
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		option_key_values = SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor, self._id);
-		self._CurtainsOptionsKeyValues = [CurtainsOptionsKeyValues(**kv) for kv in option_key_values];
+		self._CurtainsOptionsKeyValues = [CurtainOptionKeyValue(**kv) for kv in option_key_values];
 		__CLOSE__(cnx, cursor);
 
 
@@ -38,7 +38,7 @@ class CurtainsOptions(DBClass):
 		return self._id;
 
 
-	def CurtainsOptionsKeyValues(self) -> list:
+	def CurtainOptionKeyValues(self) -> list:
 		return [CurtOptKV for CurtOptKV in self._CurtainsOptionsKeyValues];
 
 

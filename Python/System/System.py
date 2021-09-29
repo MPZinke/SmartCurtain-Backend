@@ -24,8 +24,8 @@ from DB.DBFunctions import __CLOSE__, __CONNECT__;
 from DB.DBFunctions import SELECT_Curtains, SELECT_Options, UPDATE_all_prior_CurtainsEvents_is_activated;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00;
-from System.Curtains import Curtains;
-from System.Options import Options;
+from System.Curtain import Curtain;
+from System.Option import Option;
 
 
 class System(ZWidget):
@@ -45,8 +45,8 @@ class System(ZWidget):
 
 			print(f"{UPDATE_all_prior_CurtainsEvents_is_activated(cnx, cursor)} old events cleared");
 			selected_curtains = SELECT_Curtains(cursor);
-			self._Curtains = {curtain["id"]: Curtains(**{**curtain, "System": self}) for curtain in selected_curtains};
-			self._Options = {option["id"]: Options(option) for option in SELECT_Options(cursor)};
+			self._Curtains = {curtain["id"]: Curtain(**{**curtain, "System": self}) for curtain in selected_curtains};
+			self._Options = {option["id"]: Option(**option) for option in SELECT_Options(cursor)};
 			self._Options_names = {self._Options[opt].name() : self._Options[opt].id() for opt in self._Options};
 
 			__CLOSE__(cnx, cursor);
@@ -64,7 +64,7 @@ class System(ZWidget):
 
 	# ———————————————————————————————————————————————————— GETTERS ————————————————————————————————————————————————————
 
-	def Curtain(self, Curtains_id : int):
+	def Curtain(self, Curtains_id: int):
 		return self._Curtains.get(Curtains_id);
 
 

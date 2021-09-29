@@ -30,31 +30,31 @@ from Other.Logger import log_error;
 
 
 
-class CurtainsEvents(DBClass):
+class CurtainEvent(DBClass):
 
 	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
 
 	def __init__(self, **event_info):
 		DBClass.__init__(self, "UPDATE_CurtainsEvents", **event_info);
 
-		from System.Curtains import Curtains as Curtains_Class;  # must be imported here to prevent circular importing
+		from System.Curtain import Curtain as Curtain_Class;  # must be imported here to prevent circular importing
 		keys = ["Curtain", "id", "desired_position", "is_activated", "is_current", "time"];
-		types =	[Curtains_Class, int, [int, NONETYPE], [int, bool, NONETYPE], [int, bool, NONETYPE], datetime];
-		CurtainsEvents.validate_data(keys, types, event_info);
+		types =	[Curtain_Class, int, [int, NONETYPE], [int, bool, NONETYPE], [int, bool, NONETYPE], datetime];
+		CurtainEvent.validate_data(keys, types, event_info);
 
 		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
 		self.__activation_thread.start_thread(True);
 
 
-	# Creates a new entry in the DB and returns the newly created CurtainsEvents object
+	# Creates a new entry in the DB and returns the newly created CurtainEvent object
 	@staticmethod
 	def New(**info) -> object:
 
 		# Check attributes are present
-		from System.Curtains import Curtains as Curtains_Class;
+		from System.Curtain import Curtain as Curtain_Class;
 		keys = ["Curtain", "desired_position", "time"]
-		types = [Curtains_Class, int, datetime]
-		CurtainsEvents.validate_data(keys, types, info);
+		types = [Curtain_Class, int, datetime]
+		CurtainEvent.validate_data(keys, types, info);
 
 		# Set possible missing attributes
 		names, defaults = ["Options.id", "is_activated", "is_current"], [None, False, True];
@@ -70,8 +70,8 @@ class CurtainsEvents(DBClass):
 			raise Exception("Unable to add event to DB");
 		__CLOSE__(cnx, cursor);
 
-		# Return new instance of CurtainsEvents
-		return CurtainsEvents(**info);
+		# Return new instance of CurtainEvents
+		return CurtainEvent(**info);
 
 
 	def __del__(self):
@@ -81,7 +81,7 @@ class CurtainsEvents(DBClass):
 
 	def delete(self):
 		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
-		finally: del self._Curtain.CurtainsEvents()[self._id];  # clear event from structure (later tater)
+		finally: del self._Curtain.CurtainEvents()[self._id];  # clear event from structure (later tater)
 
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
@@ -134,8 +134,8 @@ class CurtainsEvents(DBClass):
 		Curtain = self._Curtain;
 		System = Curtain.System();
 		return	{
-					"auto calibrate" : int(Curtain.CurtainsOption(System.Option_name("Auto Calibrate")).is_on()), 
-					"auto correct" : int(Curtain.CurtainsOption(System.Option_name("Auto Correct")).is_on()),
+					"auto calibrate" : int(Curtain.CurtainOption(System.Option_name("Auto Calibrate")).is_on()), 
+					"auto correct" : int(Curtain.CurtainOption(System.Option_name("Auto Correct")).is_on()),
 					"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
 					"length" : Curtain.length(),
 					"desired position" : self._desired_position if self._desired_position else 0, "event" : self._id

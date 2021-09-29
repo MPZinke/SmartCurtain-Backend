@@ -19,9 +19,9 @@ from typing import Union;
 from Class.DBClass import DBClass;
 
 
-class CurtainsOptionsKeyValues(DBClass):
-	def __init__(self, **curtains_options_key_value_info):
-		DBClass.__init__(self, "UPDATE_CurtainsOptionsKeyValues", **curtains_options_key_value_info);
+class CurtainOptionKeyValue(DBClass):
+	def __init__(self, **curtain_option_key_value_info):
+		DBClass.__init__(self, "UPDATE_CurtainsOptionsKeyValues", **curtain_option_key_value_info);
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————

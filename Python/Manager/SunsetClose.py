@@ -61,7 +61,7 @@ class SunsetClose(ZWidget):
 
 				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();
 				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision 
-				if(curtain.CurtainsEvents_for_range(earliest=sunset-buffer_td, latest=sunset+buffer_td)):
+				if(curtain.CurtainEvents_for_range(earliest=sunset-buffer_td, latest=sunset+buffer_td)):
 					Warn("Event already set for sunset time.");
 					continue;  # don't duplicate sunset
 
