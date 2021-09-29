@@ -185,8 +185,13 @@ def UPDATE_Curtains_last_connection(cnx, cursor, Curtains_id: int, last_connecti
 	return bool(__UTILITY__update(cnx, cursor, query, last_connection, Curtains_id));
 
 
-def UPDATE_Curtains_length(cnx, cursor, Curtains_id: int, length: int) ->bool:
+def UPDATE_Curtains_ip_address(cnx, cursor, Curtains_id: int, ip_address: int) ->bool:
 	query = "UPDATE `Curtains` SET `ip_address` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, ip_address, Curtains_id));
+
+
+def UPDATE_Curtains_length(cnx, cursor, Curtains_id: int, length: int) ->bool:
+	query = "UPDATE `Curtains` SET `length` = %s WHERE `id` = %s;";
 	return bool(__UTILITY__update(cnx, cursor, query, length, Curtains_id));
 
 
