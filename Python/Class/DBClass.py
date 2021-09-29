@@ -14,17 +14,18 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from DB.DBCredentials import *;
+import DB.DBFunctions as DBFunctions;
+from DB.DBFunctions import __CLOSE__, __CONNECT__;
+
+
+
 class DBClass:
 	def __init__(self, db_prefix, **table_values: dict):
-		# [setattr(self, "_" + key.replace(".", "_"), table_values[key]) for key in table_values];
-
 		for attribute in table_values:
 			attribute_name = "_" + attribute.replace(".", "_")
 			setattr(self, attribute_name, table_values[attribute] if table_values[attribute] else 0);
 			setattr(self, attribute, self._get_or_set_attribute(db_prefix, attribute_name));
-
-		# 	setattr(self, attribute, lambda key=attribute_name: self._get_or_set_attribute(key));
-
 
 
 	# Helper function for managing what happens to DB data & attributes.
@@ -40,7 +41,6 @@ class DBClass:
 				return True;  # values match, take the easy way out
 
 			# gotta update DB to match structure
-			import DB.DBFunctions as DBFunctions;
 			DB_function = getattr(DBFunctions, db_prefix+attribute_name);
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 			success_flag = DB_function(cnx, cursor, self._id, new_value);
@@ -53,8 +53,9 @@ class DBClass:
 
 
 
-	def __getattr__(self, attribute_name):
-		if("_"+attribute_name not in self.__dict__.items()): raise Exception("TODO")
+	# def __getattr__(self, attribute_name):
+	# 	if("_"+attribute_name not in self.__dict__.items()):
+	# 		raise Exception(f"_{attribute_name} is not initialized for object {type(self)}");
 
 
 	# Check key value types of dictonary for attributes to be passed to dictionary.

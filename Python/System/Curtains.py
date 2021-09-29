@@ -19,7 +19,7 @@ from datetime import datetime, timedelta;
 from Class.DBClass import DBClass;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from DB.DBFunctions import SELECT_CurtainsEvent, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
+from DB.DBFunctions import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
 from Other.Logger import log_error;
 from System.CurtainsEvents import CurtainsEvents;
 from System.CurtainsOptions import CurtainsOptions;
@@ -27,7 +27,7 @@ from System.CurtainsOptions import CurtainsOptions;
 
 class Curtains(DBClass):
 	def __init__(self, **curtain_info):
-		DBClass.__init__(self, "set_Curtain", **curtain_info);
+		DBClass.__init__(self, "UPDATE_Curtain", **curtain_info);
 
 		# Get associated relations
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
@@ -89,7 +89,7 @@ class Curtains(DBClass):
 		earliest = earliest or datetime.today() - timedelta(days=28);
 
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		CurtainsEvents_data = SELECT_CurtainsEvent(cursor, CurtainsEvents_id);
+		CurtainsEvents_data = SELECT_CurtainsEvents(cursor, CurtainsEvents_id);
 		__CLOSE__(cnx, cursor);
 
 
@@ -102,7 +102,7 @@ class Curtains(DBClass):
 
 		# not found, check if in DB
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		CurtainsEvents_data = SELECT_CurtainsEvent(cursor, CurtainsEvents_id);
+		CurtainsEvents_data = SELECT_CurtainsEvents(cursor, CurtainsEvents_id);
 		__CLOSE__(cnx, cursor);
 
 		# return if found in DB

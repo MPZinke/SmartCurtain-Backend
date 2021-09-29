@@ -21,7 +21,7 @@ from threading import Lock;
 from Class.ZWidget import ZWidget;
 from DB.DBCredentials import *;
 from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from DB.DBFunctions import SELECT_Curtains, SELECT_Options, UPDATE_all_prior_CurtainsEvent_is_activated;
+from DB.DBFunctions import SELECT_Curtains, SELECT_Options, UPDATE_all_prior_CurtainsEvents_is_activated;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00;
 from System.Curtains import Curtains;
@@ -43,7 +43,7 @@ class System(ZWidget):
 		try:
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
-			print(f"{UPDATE_all_prior_CurtainsEvent_is_activated(cnx, cursor)} old events cleared");
+			print(f"{UPDATE_all_prior_CurtainsEvents_is_activated(cnx, cursor)} old events cleared");
 			selected_curtains = SELECT_Curtains(cursor);
 			self._Curtains = {curtain["id"]: Curtains(**{**curtain, "System": self}) for curtain in selected_curtains};
 			self._Options = {option["id"]: Options(option) for option in SELECT_Options(cursor)};

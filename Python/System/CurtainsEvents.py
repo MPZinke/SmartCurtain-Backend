@@ -20,10 +20,11 @@ from time import sleep;
 from typing import Union;
 from warnings import warn as Warn;
 
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CLOSE__, __CONNECT__;
 from Class.DBClass import DBClass;
 from Class.ZThreadSingle import ZThreadSingle;
+from DB.DBCredentials import *;
+from DB.DBFunctions import __CLOSE__, __CONNECT__;
+from DB.DBFunctions import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
 from Other.Global import *;
 from Other.Logger import log_error;
 
@@ -34,7 +35,7 @@ class CurtainsEvents(DBClass):
 	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
 
 	def __init__(self, **event_info):
-		DBClass.__init__(self, "set_CurtainsEvent", **event_info);
+		DBClass.__init__(self, "UPDATE_CurtainsEvents", **event_info);
 
 		from System.Curtains import Curtains as Curtains_Class;  # must be imported here to prevent circular importing
 		keys = ["Curtain", "id", "desired_position", "is_activated", "is_current", "time"];
@@ -48,7 +49,6 @@ class CurtainsEvents(DBClass):
 	# Creates a new entry in the DB and returns the newly created CurtainsEvents object
 	@staticmethod
 	def New(**info) -> object:
-		from DB.DBFunctions import SELECT_CurtainsEvent, INSERT_CurtainsEvents;
 
 		# Check attributes are present
 		from System.Curtains import Curtains as Curtains_Class;
@@ -81,7 +81,7 @@ class CurtainsEvents(DBClass):
 
 	def delete(self):
 		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
-		finally: del self._Curtains.CurtainsEvents()[self._id];  # clear event from structure (later tater)
+		finally: del self._Curtain.CurtainsEvents()[self._id];  # clear event from structure (later tater)
 
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
@@ -112,7 +112,7 @@ class CurtainsEvents(DBClass):
 
 
 	def activate(self):
-		Curtain = self._Curtains;
+		Curtain = self._Curtain;
 
 		post_json = self.json();
 		print("Post data:", end="");
@@ -131,7 +131,7 @@ class CurtainsEvents(DBClass):
 
 
 	def json(self):
-		Curtain = self._Curtains;
+		Curtain = self._Curtain;
 		System = Curtain.System();
 		return	{
 					"auto calibrate" : int(Curtain.CurtainsOption(System.Option_name("Auto Calibrate")).is_on()), 
