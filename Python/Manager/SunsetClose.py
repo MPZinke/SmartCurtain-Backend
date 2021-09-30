@@ -21,14 +21,12 @@ from datetime import datetime, timedelta;
 import warnings;
 from warnings import warn as Warn;
 
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, Curtains_ids, CurtainsOptions_for_curtain_and_option;
+from Class.ZWidget import ZWidget;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00, warning_message;
 from Other.Logger import log_error;
-from Class.ZWidget import ZWidget;
 
 
 class SunsetClose(ZWidget):
@@ -54,20 +52,20 @@ class SunsetClose(ZWidget):
 		sunset = self.sunset_time().replace(tzinfo=None);
 		if(sunset < datetime.now()): return Warn("Sunset has already passed for today. Skipping today");
 
-		option_id = self._System.Option_name("Sunset Close");
+		option_id = self._System.Option_name("Sunset Close").id();
 		for curtain_id in self._System.Curtains():
 			try:
 				curtain = self._System.Curtains()[curtain_id];
-				curtain_option = curtain.CurtainsOption(option_id);
+				curtain_option = curtain.CurtainOption(option_id);
 				if(not curtain_option.is_on()): continue;
 
 				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();
 				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision 
-				if(curtain.CurtainsEvents_for_range(earliest=sunset-buffer_td, latest=sunset+buffer_td)):
+				if(curtain.CurtainEvents_for_range(earliest=sunset-buffer_td, latest=sunset+buffer_td)):
 					Warn("Event already set for sunset time.");
 					continue;  # don't duplicate sunset
 
-				curtain_option_key_values = curtain_option.CurtainsOptionsKeyValues();
+				curtain_option_key_values = curtain_option.CurtainOptionKeyValues();
 				position = curtain_option_key_values[0].value() if curtain_option_key_values else 0;
 				curtain.open(desired_position=position, Options_id=option_id, time=sunset);
 

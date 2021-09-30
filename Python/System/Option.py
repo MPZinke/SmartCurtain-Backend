@@ -14,37 +14,18 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Union;
+from Class.DBClass import DBClass;
 
 
-class Options:
-	def __init__(self, option_info : dict):
-		self._id : int = option_info["id"];
-		self._description : str = option_info["description"];
-		self._is_current : bool = bool(option_info["is_current"]);
-		self._name : str = option_info["name"];
+class Option(DBClass):
+	def __init__(self, **option_info):
+		DBClass.__init__(self, "UPDATE_Option", **option_info);
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
 
-	def id(self, new_id : int=None) -> Union[int, None]:
-		if(isinstance(new_id, type(None))): return self._id;
-		self._id = new_id;
-
-
-	def description(self, new_description : str=None) -> Union[str, None]:
-		if(isinstance(new_description, type(None))): return self._description;
-		self._description = new_description;
-
-
-	def is_current(self, new_is_current : bool=None) -> Union[bool, None]:
-		if(isinstance(new_is_current, type(None))): return self._is_current;
-		self._is_current = new_is_current;
-
-
-	def name(self, new_name : str=None) -> Union[str, None]:
-		if(isinstance(new_name, type(None))): return self._name;
-		self._name = new_name;
+	def id(self) -> int:
+		return self._id;
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
