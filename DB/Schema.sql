@@ -22,9 +22,10 @@ CREATE TABLE IF NOT EXISTS `Curtains`
 	`buffer_time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Curtain travel deci-seconds (prevent event overlap)
 	`current_position` INT UNSIGNED NOT NULL DEFAULT 0,
 	`direction` BOOLEAN NOT NULL DEFAULT FALSE,
+	`ip_address` VARCHAR(15) NOT NULL,
 	`is_activated` BOOLEAN NOT NULL DEFAULT FALSE,
 	`is_current` BOOLEAN NOT NULL DEFAULT TRUE,
-	`ip_address` VARCHAR(15) NOT NULL,
+	`is_smart` BOOLEAN NOT NULL DEFAULT TRUE,
 	`port` SMALLINT UNSIGNED NOT NULL DEFAULT 80,
 	`last_connection` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`length` INT UNSIGNED NOT NULL,
