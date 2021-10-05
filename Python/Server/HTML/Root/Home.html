@@ -4,33 +4,49 @@
 
 <title>{{ header.selected_curtain().name() }}</title>
 <div style='width:100%; padding-top:32px; margin:auto;'>
-	<h1 style='text-align:center;'>Curtain is {{ header.selected_curtain().state_string() }}</h1>
+	<h1 id='curtain_state_header' style='text-align:center;'>
+		Curtain is {{ header.state_string() }}
+	</h1>
 
-	<form method='post' onsubmit='confirm_if_redundant_movement();'>
-		<div class='input_div' style='width:100%;'>
-			<input id='desired_position_input' name='desired_position_input' class='input' type='number' 
-			  min='0' max='100' step='1' value='{{ header.selected_curtain().current_position_percent_int() }}'
-			  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
-		</div>
+	<form method='post' onsubmit='check_movement_features();'>
+		{% if header.selected_curtain().is_smart() %}
+			<div class='input_div' style='width:100%;'>
+				<input id='desired_position_input' name='desired_position_input' class='input' type='number' 
+				  min='0' max='100' step='1' value='{{ header.selected_curtain().current_position_percent_int() }}'
+				  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
+			</div>
 
-		<table style='margin-top:20px;width:100%;' width='100%'>
-			<tr width='100%'>
-				<td width='20%' align='right'>
-					<button name='close_button' class='button background_color' style='background-color:inherit;'>Closed</button>
-				</td>
-				<td width='60%' align='middle'>
-					<input id='slider_input' value='{{ header.selected_curtain().current_position_percent_int() }}'
-					  type='range' min='0' max='100'/>
-				</td>
-				<td width='20%' align='left'>
-					<button name='open_button' class='button' style='background-color:inherit;'>Open</button>
-				</td>
-			</tr>
-		</table>
+			<table style='margin-top:20px;width:100%;' width='100%'>
+				<tr width='100%'>
+					<td width='20%' align='right'>
+						<button name='close_button' class='button background_color' style='background-color:inherit;'>Closed</button>
+					</td>
+					<td width='60%' align='middle'>
+						<input id='slider_input' value='{{ header.selected_curtain().current_position_percent_int() }}'
+						  type='range' min='0' max='100'/>
+					</td>
+					<td width='20%' align='left'>
+						<button name='open_button' class='button' style='background-color:inherit;'>Open</button>
+					</td>
+				</tr>
+			</table>
 
-		<button class='button' name='set_button' style='display:block; margin:auto; margin-top:25px;'>
-			Set Curtain
-		</button>
+			<button class='button' name='set_button' style='display:block; margin:auto; margin-top:25px;'>
+				Set Curtain
+			</button>
+		{% else %}
+			<input id='desired_position_input' name='desired_position_input' type='number' style='display:none;'
+			  value='{{ 0 if header.selected_curtain().current_position_percent_int() else 100 }}' hidden/>
+			<button id='set_button' name='set_button' class='button'
+			  style='display:block; margin:auto; margin-top:25px;'>
+				{% if header.selected_curtain().current_position_percent_int() %}
+					Close
+				{% else %}
+					Open
+				{% endif %}
+			</button>
+		{% endif %}
+
 	</form>
 </div>
 
@@ -44,26 +60,68 @@
 	// Checks whether the desired position is the current position.
 	// Gets the desired position and known last known position. If values are the same, calls a confirm dialog to
 	//  see if user wants to call a possibly redundant (SmartCurtain) call or an overriding (DumbCurtain) call.
-	function confirm_if_redundant_movement()
+	function check_movement_features()
 	{
-		var desired_position = document.getElementById("desired_position_input").value;
 		var current_position = __WRAPPER__current_known_position;
-		console.log(`current_position: ${current_position}\ndesired_position: ${desired_position}`);
 
-		if(desired_position != current_position) return true;
+		{% if header.selected_curtain().is_smart() %}
+			var desired_position = document.getElementById("desired_position_input").value;
 
-		var text =	`Desired position ${desired_position}% matches current position of ${current_position}%\n`
-					  + `Please confirm event`;
-		return confirm(text);
+			if(desired_position != current_position) return true;
+
+			var text =	`Desired position ${desired_position}% matches current position of ${current_position}%\n`
+						  + `Please confirm event`;
+			return confirm(text);
+		{% else %}
+			if(current_position) current_position = 0;
+			else current_position = 100;
+			document.getElementById("desired_position_input").value = current_position;
+			return true;
+		{% endif %}
 	}
 
 
-
-	// Update the current slider value (each time you drag the slider handle)
-	document.getElementById("slider_input").oninput = function()
+	function update_curtain_state()
 	{
-		document.getElementById("desired_position_input").value = this.value;
+		var color = "rgb(51, 255, 51)";
+		if(document.getElementById("__WRAPPER__current_light_td_middle").style["background-color"] == color)
+		{
+			document.getElementById("curtain_state_header").innerHTML = "Curtain is Moving";
+		}
+		else if(__WRAPPER__current_known_position)
+		{
+			if(__WRAPPER__current_known_position == 100)
+			{
+				document.getElementById("curtain_state_header").innerHTML = "Curtain is Fully Open";
+			}
+			else
+			{
+				document.getElementById("curtain_state_header").innerHTML = "Curtain is Open";
+			}
+			{% if header.selected_curtain().is_smart() %}
+				document.getElementById("set_button").innerHTML = "Close";
+			{% endif %}
+		}
+		else
+		{
+			document.getElementById("curtain_state_header").innerHTML = "Curtain is Closed";
+			{% if header.selected_curtain().is_smart() %}
+				document.getElementById("set_button").innerHTML = "Open";
+			{% endif %}
+		}
 	}
+
+
+	{% if header.selected_curtain().is_smart() %}
+		// Update the current slider value (each time you drag the slider handle)
+		document.getElementById("slider_input").oninput = function()
+		{
+			document.getElementById("desired_position_input").value = this.value;
+		}
+	{% endif %}
+
+
+	setInterval(update_curtain_state, 1000);
 </script>
 
 {% endblock %}
