@@ -6,7 +6,7 @@
 <div style='width:100%; padding-top:32px; margin:auto;'>
 	<h1 style='text-align:center;'>Curtain is {{ header.selected_curtain().state_string() }}</h1>
 
-	<form method='post'>
+	<form method='post' onsubmit='confirm_if_redundant_movement();'>
 		<div class='input_div' style='width:100%;'>
 			<input id='desired_position_input' name='desired_position_input' class='input' type='number' 
 			  min='0' max='100' step='1' value='{{ header.selected_curtain().current_position_percent_int() }}'
@@ -39,6 +39,25 @@
 		document.getElementById("slider_input").value = value;
 		set_slider_light(value);
 	}
+
+
+	// Checks whether the desired position is the current position.
+	// Gets the desired position and known last known position. If values are the same, calls a confirm dialog to
+	//  see if user wants to call a possibly redundant (SmartCurtain) call or an overriding (DumbCurtain) call.
+	function confirm_if_redundant_movement()
+	{
+		var desired_position = document.getElementById("desired_position_input").value;
+		var current_position = __WRAPPER__current_known_position;
+		console.log(`current_position: ${current_position}\ndesired_position: ${desired_position}`);
+
+		if(desired_position != current_position) return true;
+
+		var text =	`Desired position ${desired_position}% matches current position of ${current_position}%\n`
+					  + `Please confirm event`;
+		return confirm(text);
+	}
+
+
 
 	// Update the current slider value (each time you drag the slider handle)
 	document.getElementById("slider_input").oninput = function()
