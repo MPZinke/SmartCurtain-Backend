@@ -4,21 +4,23 @@
 
 <title>{{ header.selected_curtain().name() }}</title>
 <div style='width:100%; padding-top:32px; margin:auto;'>
-	<table>
-		<tr>
-			<th>
+	<table class='alternate' style='margin-top:20px;width:100%;' width='100%'>
+		<tr width='100%'>
+			<th width='50%' align='center'>
 				Time
 			</th>
-			<th>
+			<th width='50%' align='center'>
 				Position
 			</th>
 		</tr>
 		{% for event in header.selected_curtain().CurtainEvents() %}
-				<tr>
-					<td>
-						{{ header.selected_curtain().CurtainEvents()[event].time() }}
+				<tr width='100%' align='center'>
+					<td width='50%' align='center'>
+						{{ header.datetime_to_datetext(header.selected_curtain().CurtainEvents()[event].time()) }}
+						at
+						{{ header.datetime_to_timetext(header.selected_curtain().CurtainEvents()[event].time()) }}
 					</td>
-					<td>
+					<td width='50%' align='center'>
 						{{ header.selected_curtain().CurtainEvents()[event].desired_position() }}
 					</td>
 				</tr>
@@ -27,17 +29,7 @@
 </div>
 
 <script>
-	function change_slider(value)
-	{
-		document.getElementById("slider_input").value = value;
-		set_slider_light(value);
-	}
 
-	// Update the current slider value (each time you drag the slider handle)
-	document.getElementById("slider_input").oninput = function()
-	{
-		document.getElementById("desired_position_input").value = this.value;
-	}
 </script>
 
 {% endblock %}

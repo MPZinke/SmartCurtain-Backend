@@ -84,6 +84,10 @@
 	</body>
 </html>
 <script>
+	// Current known position
+	var __WRAPPER__current_known_position = {{ header.selected_curtain().current_position_percent_int() }};
+
+
 	function __WRAPPER__close_nav()
 	{
 		document.getElementById("__WRAPPER__side_menu").style.width = "0%";
@@ -118,7 +122,8 @@
 			success: function(response)
 			{
 				if("error" in response) return;
-				console.log(response);
+				
+				__WRAPPER__current_known_position = response["current_position_percent_int"];
 
 				if(response["is_activated"]) __WRAPPER__set_current_light(100, "#33FF33");
 				else __WRAPPER__set_current_light(response["current_position_percent_int"]);

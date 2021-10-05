@@ -14,7 +14,8 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import session
+from datetime import datetime, timedelta;
+from flask import session;
 from typing import Union;
 
 
@@ -44,3 +45,21 @@ class Header:
 	def selected_curtain(self, Curtains_id : int=None) -> Union[object, None]:
 		if(isinstance(Curtains_id, type(None))): return self._selected_curtain;
 		if(Curtains_id in self._Curtains): self._selected_curtain = self._Curtains[Curtains_id];
+
+
+	# —————————————————————————————————————————————————— CONVERSION —————————————————————————————————————————————————— #
+
+	def datetime_to_datetext(self, time: object):
+		now = datetime.now();
+
+		today = datetime(year=now.year, month=now.month, day=now.day);
+		day = datetime(year=time.year, month=time.month, day=time.day);
+
+		if(today == day): return "Today";
+		elif((day - today).days == 1): return "Tomorrow";
+		elif((day - today).days < 7): return day.strftime("%A");
+		else: return day.strftime("%b %d, %Y");
+
+
+	def datetime_to_timetext(self, time: object):
+		return time.strftime("%I:%M %p");
