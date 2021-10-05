@@ -146,11 +146,6 @@ class Curtain(DBClass):
 		return int(100 / self._length * self._current_position);
 
 
-	def state_string(self) -> str:
-		if(self._is_activated): return "Moving";
-		return {0: "Closed", self._length: "Fully Open"}.get(self._current_position, "Open");
-
-
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
 	def _new_event(self, *, desired_position: int=0, Options_id: int=None, time: object=None) -> int:

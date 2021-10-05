@@ -12,7 +12,8 @@
 		<table style='width:100%;'>
 			<tr style='width:100%;'>
 				<td style='width:20%'>
-					<span style="font-size:30px;cursor:pointer;background-color:#262626;color:#FFFFFF;" onclick="__WRAPPER__open_nav()" class="header">
+					<span style="font-size:30px;cursor:pointer;background-color:#262626;color:#FFFFFF;" 
+					  onclick="__WRAPPER__open_nav()" class="header">
 						&nbsp; &#9776;
 					</span>
 				</td>
@@ -43,13 +44,17 @@
 				&times;
 			</a>
 			<a href='/' onclick='__WRAPPER__close_nav()'>
-				Curtain {% if request.path == "/" %} <span>&bull;</span> {% endif %} </a>
+				Curtain {% if request.path == "/" %} <span>&bull;</span> {% endif %}
+			</a>
 			<a href='/new' onclick='__WRAPPER__close_nav()'>
-				Create {% if request.path == "/new" %} <span>&bull;</span> {% endif %} </a>
+				Create {% if request.path == "/new" %} <span>&bull;</span> {% endif %}
+			</a>
 			<a href='/events' onclick='__WRAPPER__close_nav()'>
-				Events {% if request.path == "/events" %} <span>&bull;</span> {% endif %} </a>
+				Events {% if request.path == "/events" %} <span>&bull;</span> {% endif %}
+			</a>
 			<a href='/edit' onclick='__WRAPPER__close_nav()'>
-				Edit {% if request.path == "/edit" %} <span>&bull;</span> {% endif %} </a>
+				Edit {% if request.path == "/edit" %} <span>&bull;</span> {% endif %}
+			</a>
 		</div>
 		<div>
 			<table style='width:100%'>
@@ -71,7 +76,8 @@
 					  {% if header.selected_curtain().is_activated() %} 0%;
 					  {% else %}
 						{{ ((100 - header.selected_curtain().current_position_percent_int()) / 2) | int }}%
-					  {% endif %}'></td>
+					  {% endif %}'>
+					</td>
 				</tr>
 			</table>
 		</div>
