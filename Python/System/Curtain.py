@@ -61,6 +61,24 @@ class Curtain(DBClass):
 		return self._CurtainOptions.get(CurtainOption_id);
 
 
+	def CurtainOptionKey(self, CurtainOptionKey: str):
+		for option in self._CurtainOptions:
+			option_key_value = self._CurtainOptions[option].CurtainOptionKey(CurtainOptionKey);
+			if(option_key_value):
+				return option_key_value;
+
+		return None;
+
+
+	def CurtainOptionKeyValue(self, CurtainOptionKeyValue: str):
+		for option in self._CurtainOptions:
+			option_key_value = self._CurtainOptions[option].CurtainOptionKeyValue(CurtainOptionKeyValue);
+			if(option_key_value):
+				return option_key_value;
+
+		return None;
+
+
 	def CurtainOptions(self):
 		return self._CurtainOptions;
 

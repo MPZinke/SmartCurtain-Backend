@@ -38,6 +38,22 @@ class CurtainOption(DBClass):
 		return self._id;
 
 
+	def CurtainOptionKey(self, CurtainOptionKey: str):
+		for option_key_value in self._CurtainOptionKeyValues:
+			if(option_key_value.key() == CurtainOptionKey):
+				return option_key_value;
+
+		return None;
+
+
+	def CurtainOptionKeyValue(self, CurtainOptionKeyValue: str):
+		for option_key_value in self._CurtainOptionKeyValues:
+			if(option_key_value.value() == CurtainOptionKeyValue):
+				return option_key_value;
+
+		return None;
+
+
 	def CurtainOptionKeyValues(self) -> list:
 		return [CurtOptKV for CurtOptKV in self._CurtainOptionKeyValues];
 

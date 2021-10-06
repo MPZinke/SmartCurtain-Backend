@@ -43,7 +43,7 @@ class System(ZWidget):
 		try:
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
-			print(f"{UPDATE_all_prior_CurtainsEvents_is_activated(cnx, cursor)} old events cleared");
+			print(f"{UPDATE_all_prior_CurtainsEvents_is_activated(cnx, cursor)} old events cleared");  #TESTING
 			selected_curtains = SELECT_Curtains(cursor);
 			self._Curtains = {curtain["id"]: Curtain(**{**curtain, "System": self}) for curtain in selected_curtains};
 			self._Options = {option["id"]: Option(**option) for option in SELECT_Options(cursor)};
