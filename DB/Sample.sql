@@ -49,8 +49,8 @@ INSERT INTO `CurtainsOptions` (`id`, `Curtains.id`, `Options.id`, `is_on`, `note
 
 INSERT INTO `CurtainsOptionsKeyValues` (`CurtainsOptions.id`, `key`, `value`) VALUES
 (1, 'office.curtain-close', NULL),
-(2, 'office-curtain-open', NULL),
+(2, 'office.curtain-open', NULL),
 (5, NULL, '1.0'),
-(10, 'office.curtain-close', NULL),
-(11, 'office-curtain-open', NULL),
+(10, 'bedroom.curtain-close', NULL),
+(11, 'bedroom.curtain-open', NULL),
 (14, NULL, '1.0');
