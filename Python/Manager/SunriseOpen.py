@@ -53,7 +53,7 @@ class SunriseOpen(ZWidget):
 		if(sunrise < datetime.now()): return Warn("Sunrise has already passed for today. Skipping today");
 
 		option_id = self._System.Option_name("Sunrise Open").id();
-		for curtain_id in self._System.Curtain():
+		for curtain_id in self._System.Curtains():
 			try:
 				curtain = self._System.Curtain(curtain_id);
 				curtain_option = curtain.CurtainOption(option_id);
