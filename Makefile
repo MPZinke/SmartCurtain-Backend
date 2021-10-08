@@ -18,6 +18,15 @@ all:
 	sudo mkdir /usr/SmartCurtain/Logs || echo "Failed to make directory /usr/SmartCurtain/Logs" > ./Installation/InstallErrors.log
 	sudo cp -R ./Python/* /usr/SmartCurtain/ || echo "Failed to copy into directory /usr/SmartCurtain/ with command: sudo cp -R ./Python/* /usr/SmartCurtain/" > ./Installation/InstallErrors.log
 
+	# Setup for updater
+	git describe > ./Python/Update/Version
+	sudo mkdir /usr/SmartCurtain/Repo.git || echo "Failed to make directory /usr/SmartCurtain/Repo.git" > ./Installation/InstallErrors.log
+	sudo cp -R ../.git /usr/SmartCurtain/Repo.git/ || echo "Failed to copy into directory /usr/SmartCurtain/Repo.git" > ./Installation/InstallErrors.log
+	CURRENT_INSTALLATION_DIRECTORY=$(pwd)
+	cd /usr/SmartCurtain/Repo.git || echo "Failed to cd into directory /usr/SmartCurtain/Repo.git" > ./Installation/InstallErrors.log
+	sudo git config --bool core.bare true || echo "Failed to run command sudo git config --bool core.bare true" > ./Installation/InstallErrors.log
+	cd "$CURRENT_INSTALLATION_DIRECTORY" || echo "Failed to return to install directory" > ./Installation/InstallErrors.log
+
 	# Python setup
 	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log
 	pip3 install adafruit-io || echo "Failed to install adafruit-io with command: pip3 install adafruit-io" > ./Installation/InstallErrors.log
