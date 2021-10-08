@@ -98,14 +98,14 @@
 			{
 				document.getElementById("curtain_state_header").innerHTML = "Curtain is Open";
 			}
-			{% if header.selected_curtain().is_smart() %}
+			{% if not header.selected_curtain().is_smart() %}
 				document.getElementById("set_button").innerHTML = "Close";
 			{% endif %}
 		}
 		else
 		{
 			document.getElementById("curtain_state_header").innerHTML = "Curtain is Closed";
-			{% if header.selected_curtain().is_smart() %}
+			{% if not header.selected_curtain().is_smart() %}
 				document.getElementById("set_button").innerHTML = "Open";
 			{% endif %}
 		}
