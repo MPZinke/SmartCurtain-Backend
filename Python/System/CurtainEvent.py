@@ -115,8 +115,8 @@ class CurtainEvent(DBClass):
 		Curtain = self._Curtain;
 		System = Curtain.System();
 		return	{
-					"auto calibrate" : int(Curtain.CurtainOption(System.Option_name("Auto Calibrate").id()).is_on()), 
-					"auto correct" : int(Curtain.CurtainOption(System.Option_name("Auto Correct").id()).is_on()),
+					"auto calibrate" : int(Curtain.CurtainOption("Auto Calibrate").is_on()),
+					"auto correct" : int(Curtain.CurtainOption("Auto Correct").is_on()),
 
 					"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
 					"is smart" : int(Curtain.is_smart()),

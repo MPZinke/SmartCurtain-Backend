@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
+from typing import Union;
 
 from Class.DBClass import DBClass;
 from DB.DBCredentials import *;
@@ -57,8 +58,12 @@ class Curtain(DBClass):
 		return self._CurtainEvents;
 
 
-	def CurtainOption(self, CurtainOption_id: int=None):
-		return self._CurtainOptions.get(CurtainOption_id);
+	def CurtainOption(self, Option_identifier: Union[int, str]=None):
+		if(type(Option_identifier) == int): return self._CurtainOptions.get(Option_identifier);
+		elif(type(Option_identifier) == str):
+			options = self._CurtainOptions;
+			option = [options[_id] for _id in options if options[_id].name() == Option_identifier];
+			return option[0] if len(option)	== 1 else None;
 
 
 	def CurtainOptions(self):
