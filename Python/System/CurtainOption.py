@@ -24,7 +24,7 @@ from System.CurtainOptionKeyValue import CurtainOptionKeyValue;
 
 class CurtainOption(DBClass):
 	def __init__(self, **curtain_option):
-		DBClass.__init__(self, "UPDATE_CurtainsOption", **curtain_option)
+		DBClass.__init__(self, "UPDATE_CurtainsOption", **curtain_option);
 
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		option_key_values = SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id(cursor, self._id);
@@ -36,6 +36,10 @@ class CurtainOption(DBClass):
 
 	def id(self) -> int:
 		return self._id;
+
+
+	def name(self) -> str:
+		return self._name;
 
 
 	def CurtainOptionKeyValues(self) -> list:

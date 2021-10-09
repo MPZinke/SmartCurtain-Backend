@@ -134,7 +134,12 @@ def SELECT_CurtainsEvents_in_range_for_Options_id(cursor: object, Curtains_id: i
 
 
 def SELECT_CurtainsOptions(cursor: object, Curtains_id: int) -> list:
-	return __UTILITY__query(cursor, "SELECT * FROM `CurtainsOptions` WHERE `Curtains.id` = %s;", Curtains_id);
+	query =	"""
+			SELECT `CurtainsOptions`.*, `Options`.`name` FROM `CurtainsOptions`
+			JOIN `Options` ON `CurtainsOptions`.`Options.id` = `Options`.`id`  -- added for easier searching
+			WHERE `Curtains.id` = %s;
+			""";
+	return __UTILITY__query(cursor, query, Curtains_id);
 
 
 def SELECT_CurtainsOptions_for_curtain_and_option(cursor: object, Curtains_id: int, Options_name: str) -> dict:

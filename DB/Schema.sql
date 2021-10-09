@@ -25,11 +25,13 @@ CREATE TABLE IF NOT EXISTS `Curtains`
 	`ip_address` VARCHAR(15) NOT NULL,
 	`is_activated` BOOLEAN NOT NULL DEFAULT FALSE,
 	`is_current` BOOLEAN NOT NULL DEFAULT TRUE,
+	-- `is_safe`: prevents actions from going to a position it thinks is harmful (EG opening farther while 'fully open')
+	`is_safe` BOOLEAN NOT NULL DEFAULT TRUE,
 	`is_smart` BOOLEAN NOT NULL DEFAULT TRUE,
 	`port` SMALLINT UNSIGNED NOT NULL DEFAULT 80,
 	`last_connection` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`length` INT UNSIGNED NOT NULL,
-	`name` VARCHAR(32) NOT NULL
+	`name` VARCHAR(32) NOT NULL UNIQUE
 ) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -39,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `Options`
 	`id` INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
 	`description` VARCHAR(256) NOT NULL DEFAULT '',
 	`is_current` BOOLEAN NOT NULL DEFAULT TRUE,
-	`name` VARCHAR(32) NOT NULL
+	`name` VARCHAR(32) NOT NULL UNIQUE
 ) CHARACTER SET utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

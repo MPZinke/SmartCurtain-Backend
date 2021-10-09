@@ -99,14 +99,19 @@ class CurtainEvent(DBClass):
 		print("Post data:", end="");  #TESTING
 		print(post_json);  #TESTING
 		try:
+			if(not Curtain.is_smart() and Curtain.is_safe() and Curtain.current_position() == self._desired_position):
+				raise Exception("Curtain will not move to a state it believes itself to already be in [is_safe=TRUE]");
+
 			response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
 			if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
 			if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
 			print(response.json());  #TESTING
-		except Exception as error: log_error(error);
 
-		if(not self.is_activated(True) or not self._is_activated): raise Exception("Could not set event as activated");
-		if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain as activated");
+			if(not self.is_activated(True) or not self._is_activated): raise Exception("Failed to set event activated");
+			if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain activated");
+			if(not Curtain.current_position(self._desired_position)): raise Exception("Failed to set curtain position");
+
+		except Exception as error: log_error(error);
 
 		self.delete();
 
@@ -115,8 +120,8 @@ class CurtainEvent(DBClass):
 		Curtain = self._Curtain;
 		System = Curtain.System();
 		return	{
-					"auto calibrate" : int(Curtain.CurtainOption(System.Option_name("Auto Calibrate").id()).is_on()), 
-					"auto correct" : int(Curtain.CurtainOption(System.Option_name("Auto Correct").id()).is_on()),
+					"auto calibrate" : int(Curtain.CurtainOption("Auto Calibrate").is_on()),
+					"auto correct" : int(Curtain.CurtainOption("Auto Correct").is_on()),
 
 					"current position" : Curtain.current_position(), "direction" : int(Curtain.direction()),
 					"is smart" : int(Curtain.is_smart()),
