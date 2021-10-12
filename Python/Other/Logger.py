@@ -19,6 +19,8 @@ from sys import stderr;
 import traceback;
 from typing import Union;
 
+from Other.Global import SMARTCURTAIN_DIR;
+
 
 # Writes error to log file. If issue occurs writing error, error is sent to stderr along with previous function call.
 # Takes error object or string.
@@ -30,7 +32,7 @@ def log_error(error : Union[Exception, str]) -> bool:
 		except: module = "Unknown traceback";
 		error_message = "%s|%s|%s\n" % (datetime.now().strftime("%H:%M:%S"), module, error);
 
-		log_name = "/usr/SmartCurtain/Logs/"+datetime.now().strftime("%Y.%m.%d")+".log";
+		log_name = LOG_DIR+"/"+datetime.now().strftime("%Y.%m.%d")+".log";
 		with open(log_name, "a") as log: log.write(error_message);
 		print(error_message);
 		return True;

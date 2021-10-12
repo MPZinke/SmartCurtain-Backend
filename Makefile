@@ -14,19 +14,11 @@ all:
 	sudo mariadb -uroot -praspberry < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
 
 	# Local folder setup
-	sudo mkdir /usr/SmartCurtain || echo "Failed to make directory /usr/SmartCurtain" > ./Installation/InstallErrors.log
-	sudo mkdir /usr/SmartCurtain/Logs || echo "Failed to make directory /usr/SmartCurtain/Logs" > ./Installation/InstallErrors.log
-	sudo cp -R ./Python/* /usr/SmartCurtain/ || echo "Failed to copy into directory /usr/SmartCurtain/ with command: sudo cp -R ./Python/* /usr/SmartCurtain/" > ./Installation/InstallErrors.log
-
+	sudo mkdir /usr/local/SmartCurtain || echo "Failed to make directory /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
 	# Setup for updater
-	git describe > ./Python/Update/Version
-	sudo mkdir /usr/SmartCurtain/Repo.git || echo "Failed to make directory /usr/SmartCurtain/Repo.git" > ./Installation/InstallErrors.log
-	sudo cp -R ../.git /usr/SmartCurtain/Repo.git/ || echo "Failed to copy into directory /usr/SmartCurtain/Repo.git" > ./Installation/InstallErrors.log
-	CURRENT_INSTALLATION_DIRECTORY=$(pwd)
-	cd /usr/SmartCurtain/Repo.git || echo "Failed to cd into directory /usr/SmartCurtain/Repo.git" > ./Installation/InstallErrors.log
-	sudo git config --bool core.bare true || echo "Failed to run command sudo git config --bool core.bare true" > ./Installation/InstallErrors.log
-	cd "$CURRENT_INSTALLATION_DIRECTORY" || echo "Failed to return to install directory" > ./Installation/InstallErrors.log
-
+	git clone --sparse --depth=1 https://github.com/MPZinke/SmartCurtain.git /usr/local/SmartCurtain || echo "Failed to sparse clone repository into dir /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
+	git -C /usr/local/SmartCurtain sparse-checkout set Hub/Python Hub/DB/Updates || echo "Failed to set sparse-checkout directories" > ./Installation/InstallErrors.log
+	
 	# Python setup
 	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log
 	pip3 install adafruit-io || echo "Failed to install adafruit-io with command: pip3 install adafruit-io" > ./Installation/InstallErrors.log
@@ -52,5 +44,5 @@ update:
 	git stash
 	git checkout Production
 	git pull
-	sudo cp -R ./Python/* /usr/SmartCurtain/
+	sudo cp -R ./Python/* /usr/local/SmartCurtain/
 	sudo systemctl restart SmartCurtain.service
