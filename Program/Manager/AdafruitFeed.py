@@ -20,8 +20,8 @@ from time import sleep;
 import warnings;
 from warnings import warn as Warn;
 
-from Class import ZWidget;
 from Manager.ManagerGlobal import *;
+from Other.Class.ZWidget import ZWidget;
 from Other.Global import *;
 from Other.Global import warning_message;
 from Other.Logger import log_error;
