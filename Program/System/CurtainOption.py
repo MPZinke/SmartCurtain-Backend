@@ -16,9 +16,9 @@ __author__ = "MPZinke"
 
 from typing import Union;
 
-from Class.DBClass import DBClass;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__, __CLOSE__, SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id;
+from Other.Class.DBClass import DBClass;
+from Other.DB.DBCredentials import *;
+from Other.DB.DBFunctions import __CONNECT__, __CLOSE__, SELECT_current_CurtainsOptionsKeyValues_for_CurtainsOptions_id;
 from System.CurtainOptionKeyValue import CurtainOptionKeyValue;
 
 

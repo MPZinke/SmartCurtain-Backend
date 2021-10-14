@@ -16,72 +16,56 @@ __author__ = "MPZinke"
 #                                                                                                                      #
 ########################################################################################################################
 
-###########################################################################
-#
-#	created by: MPZinke
-#	on ..
-#
-#	DESCRIPTION: K-Means clustering is used to determine possible events for day based
-#		on events for that particular day of week for the last 4 weeks (hard coded).  Events 
-#		contain the datetime object pulled from the DB, and converts it to a decimal 
-#		representation of it for smoother calculation  A centroid is created for the ceil(average
-#		number of events for that weekdat).  This centroid then finds its surrounding event 
-#		times over 20 iterations or once all the centroid averages remain constant over 2 
-#		iterations.  Each centroid then checks if it is valid—3 events within ±30 minutes 
-#		(hardcoded) of the average.  Commented is code that will find the tightest grouping & 
-#		check that it is valid, however it is deemed as unnecessary at the moment.  If a 
-#		centroid is valid, it will average the position of each event and create a new event at
-#		that position average.
-#	BUGS:
-#	FUTURE:
-#
-###########################################################################
-
 
 from datetime import datetime, timedelta;
 import warnings;
 from warnings import warn as Warn;
 
-from Class.ZWidget import ZWidget;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
+from Other.Class.ZWidget import ZWidget;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00, warning_message;
 from Other.Logger import log_error;
 
 
-class EventTime:
-	def __init__(self, eventtime_datetime, position):
-		self._datetime = eventtime_datetime;
-		self._position = position;
-
-
-	def decimal(self):
-		return self._datetime.hour + self._datetime.minute / 60;
-
-
-	def position(self):
-		return self._position
-
-
-class EventPredictor(ZWidget):
+class SunriseOpen(ZWidget):
 	def __init__(self, System):
-		ZWidget.__init__(self, "EventPredictor", System);
+		ZWidget.__init__(self, "SunriseOpen", System);
 
 		warnings.formatwarning = warning_message;
 
 
-	def predicted_events_for_past_events(self, past_events : list) -> list:
-		pass
+	def sunrise_time(self):
+		from astral import Astral;
+
+		astr_object = Astral();
+		astr_object.solar_depression = "civil";
+		return astr_object[CITY].sun(local=True)["sunrise"];
+
+
+	def sleep_time(self) -> int:
+		return (tomorrow_00_00() - datetime.now()).seconds;
 
 
 	def _loop_process(self):
-		option = self._System.Option_name("Event Predictor");
+		sunrise = self.sunrise_time().replace(tzinfo=None);
+		if(sunrise < datetime.now()): return Warn("Sunrise has already passed for today. Skipping today");
+
 		for curtain_id in self._System.Curtain():
 			try:
 				curtain = self._System.Curtain(curtain_id);
-				curtain_option = curtain.CurtainOptions(option.id());
+				curtain_option = curtain.CurtainOption("Sunrise Open");
 				if(not curtain_option.is_on()): continue;
 
-				
+				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();
+				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision
+				if(curtain.CurtainEvents_for_range(earliest=sunrise-buffer_td, latest=sunrise+buffer_td)):
+					Warn("Event already set for sunrise time.");
+					continue;  # don't duplicate sunrise
+
+				curtain_option_key_values = curtain_option.CurtainOptionKeyValues();
+				position = curtain_option_key_values[0].value() if curtain_option_key_values else curtain.length();
+				curtain.open(desired_position=position, Options_id=curtain_option.Options_id(), time=sunrise);
+
 			except Exception as error: log_error(error);
