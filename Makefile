@@ -10,8 +10,8 @@ all:
 
 	# DB setup
 	sudo apt-get install mariadb-server -y || echo "Failed to install mariadb-server with command: sudo apt-get install mariadb-server -y" > ./Installation/InstallErrors.log
-	sudo mariadb -uroot -praspberry < DB/Schema.sql || echo "Failed to setup DB with command: sudo mariadb -uroot -praspberry < DB/Schema.sql" > ./Installation/InstallErrors.log
-	sudo mariadb -uroot -praspberry < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
+	sudo mysql -uroot < DB/Schema.sql || echo "Failed to setup DB with command: sudo mysql -uroot -praspberry < DB/Schema.sql" > ./Installation/InstallErrors.log
+	sudo mysql -uroot < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
 
 	# Local folder setup
 	sudo mkdir /usr/local/SmartCurtain || echo "Failed to make directory /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
@@ -38,11 +38,3 @@ all:
 	echo "Finished"
 	cat ./Installation/InstallErrors.log
 	rm ./Installation/InstallErrors.log
-
-
-update:
-	git stash
-	git checkout Production
-	git pull
-	sudo cp -R ./Python/* /usr/local/SmartCurtain/
-	sudo systemctl restart SmartCurtain.service
