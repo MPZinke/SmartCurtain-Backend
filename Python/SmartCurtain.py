@@ -18,6 +18,7 @@ __author__ = "MPZinke"
 from Manager.Manager import Manager;
 from Server.Server import Server;
 from System.System import System;
+from Updater.Updater import Updater;
 
 
 class SmartCurtain:
@@ -25,6 +26,7 @@ class SmartCurtain:
 		self._System = System();
 		self._Manager = Manager(self._System);
 		self._Server = Server(self._System);
+		self._Updater = Updater();
 
 
 	def start(self):

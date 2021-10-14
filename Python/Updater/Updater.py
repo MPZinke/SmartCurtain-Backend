@@ -15,7 +15,7 @@ __author__ = "MPZinke"
 
 
 from os import listdir as os_listdir;
-from os.path import basename as os_path_basename, exists as os_path_exists isfile as os_path_isfile, join as os_path_join;
+import os.path;
 from re import search as re_search;
 from subprocess import call as subprocess_call, check_output as subprocess_check_output;
 
@@ -30,6 +30,7 @@ class Updater(ZWidget):
 
 		self.local_version = self.get_local_version();
 		self.origin_Production_version = self.get_remote_version();
+
 
 	# ——————————————————————————————————————————————————— ZWIDGET  ——————————————————————————————————————————————————— #
 
@@ -55,9 +56,9 @@ class Updater(ZWidget):
 		git_describe = subprocess_check_output(["git", "describe"]);
 		if(not git_describe): raise Exception("git describe was unable to get version number");
 
-		describe_version = Version.version_string(git_describe)
+		describe_version = Version.version_string(git_describe.decode("utf-8"))
 		if(not describe_version): raise Exception("Unable to search version number from git describe");
-		return describe_version;
+		return Version(describe_version);
 
 
 	# Get remote version from remote repo
@@ -65,10 +66,10 @@ class Updater(ZWidget):
 		git_ls_remote = subprocess_check_output(["git", "ls-remote", "--tag", "origin"]);
 		if(not git_ls_remote): raise Exception("git describe was unable to get version number");
 
-		remote_version = Version.version_string(git_ls_remote);
+		remote_version = Version.version_string(git_ls_remote.decode("utf-8"));
 		if(not remote_version):  raise Exception("Unable to search version number from git describe");
 
-		return remote_version;
+		return Version(remote_version);
 
 
 	# ———————————————————————————————————————————————————— UPDATE ———————————————————————————————————————————————————— #
@@ -87,14 +88,14 @@ class Updater(ZWidget):
 				update_files.append(filepath);
 
 		files_versions = [];
-		for file in files_versions:
+		for file in update_files:
 			files_versions.append({"path": file, "version": Version(Version.version_string(os.path.basename(file)))});
 		files_versions.sort(key=lambda file_version : file_version["version"]);
 
 		for file in files_versions:
 			if(file["version"] > self.local_version):
 				if(self.call_shell_command(["sudo", "mysql", "-u", "root", "<", file["path"]])):
-					raise Exception(f"Failed to update DB with file {file["path"]}");
+					raise Exception(f"Failed to update DB with file {file['path']}");
 
 
 	# Updates the Python and DB repository for the Hub.
