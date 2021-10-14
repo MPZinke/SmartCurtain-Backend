@@ -16,7 +16,7 @@ all:
 	# Local folder setup
 	sudo mkdir /usr/SmartCurtain || echo "Failed to make directory /usr/SmartCurtain" > ./Installation/InstallErrors.log
 	sudo mkdir /usr/SmartCurtain/Logs || echo "Failed to make directory /usr/SmartCurtain/Logs" > ./Installation/InstallErrors.log
-	sudo cp -R ./Python/* /usr/SmartCurtain/ || echo "Failed to copy into directory /usr/SmartCurtain/ with command: sudo cp -R ./Python/* /usr/SmartCurtain/" > ./Installation/InstallErrors.log
+	sudo cp -R ./Program/* /usr/SmartCurtain/ || echo "Failed to copy into directory /usr/SmartCurtain/ with command: sudo cp -R ./Program/* /usr/SmartCurtain/" > ./Installation/InstallErrors.log
 
 	# Python setup
 	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log
@@ -43,5 +43,5 @@ update:
 	git stash
 	git checkout Production
 	git pull
-	sudo cp -R ./Python/* /usr/SmartCurtain/
+	sudo cp -R ./Program/* /usr/SmartCurtain/
 	sudo systemctl restart SmartCurtain.service
