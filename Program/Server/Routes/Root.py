@@ -17,8 +17,8 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta;
 from flask import redirect, render_template, request, session;
 
-from Class.Header import Header;
-from Other.Logger import log_error;
+from Other.Class.Header import Header;
+import Other.Logger as Logger;
 from Server.ServerGlobal import *;
 from Server.ServerGlobal import add_error_and_redirect, posted, set_session;
 
@@ -41,7 +41,7 @@ def index(self):
 				header.selected_curtain().open_percentage(desired_position=position);
 				session["success"] = "Successfully created event";
 		except Exception as error:
-			log_error(error);
+			Logger.log_error(error);
 			session["error"] = f"Error setting event {str(error)}";
 		return redirect("/");
 
@@ -72,7 +72,7 @@ def new(self):
 			elif(not posted("position_input")): raise Exception("Value position_input not found");
 
 		except Exception as error:
-			log_error(error);
+			Logger.log_error(error);
 			session["error"] = f"Error setting event {str(error)}";
 
 		return redirect("/new");

@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.29                                                                                                      #
+#   on 2020.12.23                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,14 +14,12 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Union;
-
-from Class.DBClass import DBClass;
+from Other.Class.DBClass import DBClass;
 
 
-class CurtainOptionKeyValue(DBClass):
-	def __init__(self, **curtain_option_key_value_info):
-		DBClass.__init__(self, "UPDATE_CurtainsOptionsKeyValues", **curtain_option_key_value_info);
+class Option(DBClass):
+	def __init__(self, **option_info):
+		DBClass.__init__(self, "UPDATE_Option", **option_info);
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -33,10 +31,10 @@ class CurtainOptionKeyValue(DBClass):
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
 
 	def dict(self):
-		attrs = ["_id", "_CurtainsOptions_id", "_is_current", "_key", "_value"];
+		attrs = ["_id", "_description", "_is_current", "_name"];
 		return {attr : getattr(self, attr) for attr in attrs};
 
 
 	def print(self, tab=0, next_tab=0):
-		attrs = ["_id", "_CurtainsOptions_id", "_is_current", "_key", "_value"];
+		attrs = ["_id", "_description", "_is_current", "_name"];
 		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));

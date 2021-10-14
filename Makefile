@@ -17,8 +17,8 @@ all:
 	sudo mkdir /usr/local/SmartCurtain || echo "Failed to make directory /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
 	# Setup for updater
 	git clone --sparse --depth=1 https://github.com/MPZinke/SmartCurtain.git /usr/local/SmartCurtain || echo "Failed to sparse clone repository into dir /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
-	git -C /usr/local/SmartCurtain sparse-checkout set Hub/Python Hub/DB/Updates || echo "Failed to set sparse-checkout directories" > ./Installation/InstallErrors.log
-	
+	git -C /usr/local/SmartCurtain sparse-checkout set Hub/Program Hub/DB/Updates || echo "Failed to set sparse-checkout directories" > ./Installation/InstallErrors.log
+
 	# Python setup
 	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log
 	pip3 install adafruit-io || echo "Failed to install adafruit-io with command: pip3 install adafruit-io" > ./Installation/InstallErrors.log

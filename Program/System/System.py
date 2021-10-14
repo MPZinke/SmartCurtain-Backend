@@ -18,10 +18,10 @@ from datetime import datetime, timedelta;
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
 from threading import Lock;
 
-from Class.ZWidget import ZWidget;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from DB.DBFunctions import SELECT_Curtains, SELECT_Options, UPDATE_all_prior_CurtainsEvents_is_activated;
+from Other.Class.ZWidget import ZWidget;
+from Other.DB.DBCredentials import *;
+from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Other.DB.DBFunctions import SELECT_Curtains, SELECT_Options, UPDATE_all_prior_CurtainsEvents_is_activated;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00;
 from System.Curtain import Curtain;

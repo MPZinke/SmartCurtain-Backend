@@ -22,7 +22,7 @@ import sys;
 # ———— Directories ————
 REPO_DIR = str(__pathlib__Path(__file__).parent.parent.parent.parent);  # /usr/local/SmartCurtain
 HUB_DIR = str(__pathlib__Path(__file__).parent.parent.parent);  # /usr/local/SmartCurtain/Hub
-DB_DIR = str(__pathlib__Path(__file__).parent.parent)+"/DB";  # /usr/local/SmartCurtain/Hub/DB
+DB_DIR = str(__pathlib__Path(__file__).parent.parent.parent)+"/DB";  # /usr/local/SmartCurtain/Hub/DB
 PYTHON_DIR = str(__pathlib__Path(__file__).parent.parent);  # /usr/local/SmartCurtain/Hub/Program
 # ———— Directories::Other ————
 LOG_DIR = "/var/log/SmartCurtain"
