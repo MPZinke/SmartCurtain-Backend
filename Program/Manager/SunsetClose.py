@@ -21,9 +21,9 @@ from datetime import datetime, timedelta;
 import warnings;
 from warnings import warn as Warn;
 
-from Class.ZWidget import ZWidget;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
+from Other.Class.ZWidget import ZWidget;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00, warning_message;
 from Other.Logger import log_error;

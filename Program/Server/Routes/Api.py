@@ -19,8 +19,8 @@ from datetime import datetime;
 from json import loads as JSON_loads;
 from re import search as RE_search;
 
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CONNECT__;
+from Other.DB.DBCredentials import *;
+from Other.DB.DBFunctions import __CONNECT__;
 from Other.Logger import log_error;
 
 

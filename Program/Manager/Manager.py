@@ -15,9 +15,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Class.ZWidget import ZWidget;
 from Manager.SunriseOpen import SunriseOpen;
 from Manager.SunsetClose import SunsetClose;
+from Other.Class.ZWidget import ZWidget;
 
 
 class Manager(ZWidget):

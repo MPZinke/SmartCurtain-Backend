@@ -14,9 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from DB.DBCredentials import *;
-import DB.DBFunctions as DBFunctions;
-from DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Other.DB.DBCredentials import *;
+import Other.DB.DBFunctions as DBFunctions;
+from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
 
 
 

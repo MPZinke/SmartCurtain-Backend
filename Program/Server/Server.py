@@ -22,7 +22,7 @@ from time import sleep;
  # Add parent directory to path for testing purposes
 if(__name__ == '__main__'): __SYS__path.append(str(__pathlib__Path(__file__).parent.parent));
 from Server.ServerGlobal import *;
-from Class.ZWidget import ZWidget;
+from Other.Class.ZWidget import ZWidget;
 import Other.Logger as Logger;
 
 

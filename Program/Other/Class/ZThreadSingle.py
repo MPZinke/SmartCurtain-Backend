@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 
 from collections.abc import Callable;
 
-from Class.ZThread import ZThread;
+from Other.Class.ZThread import ZThread;
 from Other.Logger import log_error;
 
 

@@ -14,9 +14,10 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Other.Logger import log_error;
 from typing import Union;
-from Class.ZThread import ZThread;
+
+from Other.Class.ZThread import ZThread;
+from Other.Logger import log_error;
 
 
 class ZWidget:
