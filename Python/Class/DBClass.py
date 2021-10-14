@@ -23,9 +23,10 @@ from DB.DBFunctions import __CLOSE__, __CONNECT__;
 class DBClass:
 	def __init__(self, db_prefix, **table_values: dict):
 		for attribute in table_values:
-			attribute_name = "_" + attribute.replace(".", "_")
+			attribute_name = "_" + attribute.replace(".", "_");
+			method_name = attribute.replace(".", "_");
 			setattr(self, attribute_name, table_values[attribute] if table_values[attribute] else 0);
-			setattr(self, attribute, self._get_or_set_attribute(db_prefix, attribute_name));
+			setattr(self, method_name, self._get_or_set_attribute(db_prefix, attribute_name));
 
 
 	# Helper function for managing what happens to DB data & attributes.
