@@ -20,11 +20,11 @@ from time import sleep;
 from typing import Union;
 from warnings import warn as Warn;
 
-from Class.DBClass import DBClass;
-from Class.ZThreadSingle import ZThreadSingle;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from DB.DBFunctions import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
+from Other.Class.DBClass import DBClass;
+from Other.Class.ZThreadSingle import ZThreadSingle;
+from Other.DB.DBCredentials import *;
+from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Other.DB.DBFunctions import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
 from Other.Global import *;
 from Other.Logger import log_error;
 

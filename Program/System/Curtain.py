@@ -17,10 +17,10 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta;
 from typing import Union;
 
-from Class.DBClass import DBClass;
-from DB.DBCredentials import *;
-from DB.DBFunctions import __CLOSE__, __CONNECT__;
-from DB.DBFunctions import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
+from Other.Class.DBClass import DBClass;
+from Other.DB.DBCredentials import *;
+from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Other.DB.DBFunctions import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
 from Other.Logger import log_error;
 from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
