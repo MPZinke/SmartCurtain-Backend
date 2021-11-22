@@ -26,7 +26,7 @@ from Other.DB.DBCredentials import *;
 from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
 from Other.DB.DBFunctions import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
 from Other.Global import *;
-from Other.Logger import log_error;
+import Other.Logger as Logger;
 
 
 
@@ -111,7 +111,8 @@ class CurtainEvent(DBClass):
 			if(not Curtain.is_activated(True)): raise Exception("Failed to set curtain activated");
 			if(not Curtain.current_position(self._desired_position)): raise Exception("Failed to set curtain position");
 
-		except Exception as error: log_error(error);
+		except Exception as error:
+			Logger.log_error(error);
 
 		self.delete();
 

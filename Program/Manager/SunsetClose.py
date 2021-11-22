@@ -26,7 +26,7 @@ from Manager.ManagerGlobal import datetime_to_utc;
 from Other.Class.ZWidget import ZWidget;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00, warning_message;
-from Other.Logger import log_error;
+import Other.Logger as Logger;
 
 
 class SunsetClose(ZWidget):
@@ -68,4 +68,5 @@ class SunsetClose(ZWidget):
 				position = curtain_option_key_values[0].value() if curtain_option_key_values else 0;
 				curtain.open(desired_position=position, Options_id=curtain_option.Options_id(), time=sunset);
 
-			except Exception as error: log_error(error);
+			except Exception as error:
+				Logger.log_error(error);

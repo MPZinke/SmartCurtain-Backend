@@ -21,7 +21,7 @@ from re import search as RE_search;
 
 from Other.DB.DBCredentials import *;
 from Other.DB.DBFunctions import __CONNECT__;
-from Other.Logger import log_error;
+import Other.Logger as Logger;
 
 
 # /api/create/future
@@ -44,7 +44,7 @@ def api_create_future(self):
 		return "{\"success\" : \"True\", \"event\" : {}}".format(event_id);
 
 	except Exception as error:
-		log_error(error);
+		Logger.log_error(error);
 		if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
 		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 
@@ -64,7 +64,7 @@ def api_create_now(self):
 		return "{\"success\" : \"True\"}";
 
 	except Exception as error:
-		log_error(error);
+		Logger.log_error(error);
 		if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
 		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 
@@ -91,7 +91,7 @@ def api_update_deactivatecurtain(self):
 		return "{\"success\" : \"Updated event\"}";
 
 	except Exception as error:
-		log_error(error);
+		Logger.log_error(error);
 		if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
 		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 
@@ -123,7 +123,7 @@ def api_update_deactivateevent(self):
 		return "{\"success\" : \"Updated event\"}";
 
 	except Exception as error:
-		log_error(error);
+		Logger.log_error(error);
 		if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
 		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 

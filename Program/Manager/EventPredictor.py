@@ -47,7 +47,7 @@ from Manager.ManagerGlobal import datetime_to_utc;
 from Other.Class.ZWidget import ZWidget;
 from Other.Global import *;
 from Other.Global import tomorrow_00_00, warning_message;
-from Other.Logger import log_error;
+import Other.Logger as Logger;
 
 
 class EventTime:
@@ -84,4 +84,5 @@ class EventPredictor(ZWidget):
 				if(not curtain_option.is_on()): continue;
 
 				
-			except Exception as error: log_error(error);
+			except Exception as error:
+				Logger.log_error(error);

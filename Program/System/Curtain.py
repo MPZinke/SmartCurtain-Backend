@@ -21,7 +21,7 @@ from Other.Class.DBClass import DBClass;
 from Other.DB.DBCredentials import *;
 from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
 from Other.DB.DBFunctions import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
-from Other.Logger import log_error;
+import Other.Logger as Logger;
 from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
 
