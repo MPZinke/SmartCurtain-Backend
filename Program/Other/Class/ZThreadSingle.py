@@ -18,7 +18,7 @@ __author__ = "MPZinke"
 from collections.abc import Callable;
 
 from Other.Class.ZThread import ZThread;
-from Other.Logger import log_error;
+import Other.Logger as Logger;
 
 
 
@@ -34,5 +34,5 @@ class ZThreadSingle(ZThread):
 			self.sleep(self._sleep_time());
 			self._loop_process();
 		except Exception as error:
-			try: log_error(error);
+			try: Logger.log_error(error);
 			except: pass;
