@@ -48,6 +48,13 @@ def index(self):
 	return render_template("Home.html", header=header, session=session);
 
 
+def edit(self):
+	set_session();
+	header = Header(self._System);
+	return render_template("Edit.html", header=header, session=session);
+
+
+
 def events(self):
 	set_session();
 	header = Header(self._System);

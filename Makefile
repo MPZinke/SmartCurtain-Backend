@@ -10,13 +10,14 @@ all:
 
 	# DB setup
 	sudo apt-get install mariadb-server -y || echo "Failed to install mariadb-server with command: sudo apt-get install mariadb-server -y" > ./Installation/InstallErrors.log
-	sudo mariadb -uroot -praspberry < DB/Schema.sql || echo "Failed to setup DB with command: sudo mariadb -uroot -praspberry < DB/Schema.sql" > ./Installation/InstallErrors.log
-	sudo mariadb -uroot -praspberry < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
+	sudo mysql -uroot < DB/Schema.sql || echo "Failed to setup DB with command: sudo mysql -uroot -praspberry < DB/Schema.sql" > ./Installation/InstallErrors.log
+	sudo mysql -uroot < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
 
 	# Local folder setup
-	sudo mkdir /usr/SmartCurtain || echo "Failed to make directory /usr/SmartCurtain" > ./Installation/InstallErrors.log
-	sudo mkdir /usr/SmartCurtain/Logs || echo "Failed to make directory /usr/SmartCurtain/Logs" > ./Installation/InstallErrors.log
-	sudo cp -R ./Program/* /usr/SmartCurtain/ || echo "Failed to copy into directory /usr/SmartCurtain/ with command: sudo cp -R ./Program/* /usr/SmartCurtain/" > ./Installation/InstallErrors.log
+	sudo mkdir /usr/local/SmartCurtain || echo "Failed to make directory /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
+	# Setup for updater
+	git clone --sparse --depth=1 https://github.com/MPZinke/SmartCurtain.git /usr/local/SmartCurtain || echo "Failed to sparse clone repository into dir /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
+	git -C /usr/local/SmartCurtain sparse-checkout set Hub/Program Hub/DB/Updates || echo "Failed to set sparse-checkout directories" > ./Installation/InstallErrors.log
 
 	# Python setup
 	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log
@@ -37,11 +38,3 @@ all:
 	echo "Finished"
 	cat ./Installation/InstallErrors.log
 	rm ./Installation/InstallErrors.log
-
-
-update:
-	git stash
-	git checkout Production
-	git pull
-	sudo cp -R ./Program/* /usr/SmartCurtain/
-	sudo systemctl restart SmartCurtain.service

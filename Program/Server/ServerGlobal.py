@@ -23,8 +23,8 @@ from typing import Union;
 from Other.Global import *;
 
 
-MAIN_HTML_DIR = SMARTCURTAIN_DIR+"/Server/HTML/Root";
-STATIC_HTML_DIR = SMARTCURTAIN_DIR+"/Server/HTML/Static";
+MAIN_HTML_DIR = PYTHON_DIR+"/Server/HTML/Root";
+STATIC_HTML_DIR = PYTHON_DIR+"/Server/HTML/Static";
 
 
 def add_error_and_redirect(error_message: str, redirect_url: str):

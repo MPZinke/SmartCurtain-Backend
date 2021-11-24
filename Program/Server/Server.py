@@ -29,7 +29,7 @@ import Other.Logger as Logger;
 class Server(ZWidget):
 	# ———— ROUTES INCLUSION ————
 	# https://stackoverflow.com/a/47562412
-	from Server.Routes.Root import index, events, new, favicon, test;
+	from Server.Routes.Root import index, edit, events, new, favicon, test;
 	from Server.Routes.State import state;
 	from Server.Routes.Api import api_create_future;
 	from Server.Routes.Api import api_create_now;
@@ -54,7 +54,8 @@ class Server(ZWidget):
 	def add_routes(self):
 		routes =	{
 						"/" : [self.index, ["GET", "POST"]],
-						"/events" : [self.events, ["GET", "POST"]],
+						"/edit" : [self.edit],
+						"/events" : [self.events],
 						"/new" : [self.new, ["GET", "POST"]],
 						"/favicon" : [self.favicon],
 						"/test" : [self.test, ["GET", "POST"]],
