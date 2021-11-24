@@ -72,6 +72,11 @@ class System(ZWidget):
 		return self._Curtains;
 
 
+	def Curtains_list(self) -> list:
+		curtains = self._Curtains;
+		return [curtains[curtain_id] for curtain_id in curtains];
+
+
 	def Event_Curtain(self, CurtainEvent_id: int):
 		for curtain in self._Curtains:
 			if(self._Curtains[curtain].CurtainEvent(CurtainEvent_id)):

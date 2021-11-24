@@ -16,6 +16,7 @@ __author__ = "MPZinke"
 
 from Adafruit_IO import MQTTClient;
 from datetime import datetime, timedelta;
+from os import getenv as os_getenv;
 from time import sleep;
 import warnings;
 from warnings import warn as Warn;
@@ -23,14 +24,16 @@ from warnings import warn as Warn;
 from Manager.ManagerGlobal import *;
 from Other.Class.ZWidget import ZWidget;
 from Other.Global import *;
-from Other.Global import warning_message;
-from Other.Logger import log_error;
+from Other.Global import try_convert, warning_message;
+import Other.Logger as Logger;
 
 
 
 class AdafruitIO(ZWidget):
 	def __init__(self, System):
 		ZWidget.__init__(self, "AdafruitIO", System);
+
+		self._option_id = self._System.Option_name("Adafruit Feed").id();
 
 		warnings.formatwarning = warning_message;
 
@@ -40,38 +43,63 @@ class AdafruitIO(ZWidget):
 		return [curtains[curtain_id] for curtain_id in curtains];
 
 
-	def _curtain_for_feed_id(feed_id):
-		curtains = self._curtain_list();
+	def _curtain_for_feed_id(self, feed_id):
+		curtains = self._System.Curtains_list();
 		for curtain in curtains:
-			if(curtain.CurtainOptionKeyValue(CurtainOptionKeyValue)):
+			if(curtain.CurtainOptionKeyValue(feed_id)):
 				return curtain;
 
 		return None;
 
 
+	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
+
 	def _activate(self, client, feed_id, position_payload):
 		try:
+			# Get the curtain for feed ID
 			curtain = self._curtain_for_feed_id(feed_id);
 			if(not curtain): raise Exception(f"Feed ID: {feed_id} not found");
 
+			# Convert Option to position
+			curtain_option = curtain.CurtainOptionKeyValue(feed_id);
+			position = try_convert(curtain_option.value(), int) or try_convert(position_payload, int);
+			if(isinstance(position, NONETYPE)): raise Exception("Could not get a valid position");
+
+			# For selected curtain add event for position
+			curtain.open_immediately(position, self._option_id);
+
 		except Exception as error:
-			log_error(error);
+			Logger.log_error(error);
 
 
 	def _connect(self, client):
 		for curtain in self._curtain_list():
-			# if curtain has CurtainOption for AdafruitIO && CurtainOption for AdafruitIO has CurtainOptionKeyValue:
-				# connect
-			if(curtain.CurtainOption(self.))
+			curtain_option = curtain.CurtainOption(self._option_id);
+			# if curtain has active CurtainOption for AdafruitIO && CurtainOption has 2 CurtainOptionKeyValue:
+			if(not curtain_option or not curtain_option.is_on()): continue;
+			#HARDCODED: then minimum number of feeds per curtain
+			current_key_values = [option for option in curtain_option.CurtainOptionKeyValues() if option.is_current()];
+			if(len(current_key_values) < 2): continue;
+
+			[client.subscribe(option.key()) for option in current_key_values];
+
+
+	def _null(self, *args) -> None:
+		return;
 
 
 	def _loop_process(self):
-		client = MQTTClient()  #TODO: populate
+		username = os_getenv("ADAFRUIT_IO_USERNAME");
+		key = os_getenv("ADAFRUIT_IO_KEY");
+		assert(username);
+		assert(key);
+
+		client = MQTTClient(username, key);
 
 		client.on_connect = self._connect;
 		client.on_disconnect = self._disconnect;
 		client.on_message = self._activate;
-		client.on_subscribe  = self._null
+		client.on_subscribe  = self._null;
 		
 		client.connect();
 		client.loop_blocking();

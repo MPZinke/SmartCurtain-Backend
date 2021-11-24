@@ -84,6 +84,10 @@ class Curtain(DBClass):
 		return None;
 
 
+	def CurtainOption(self, CurtainOption_id: int):
+		return self._CurtainOptions.get(CurtainOption_id);
+
+
 	def CurtainOptions(self):
 		return self._CurtainOptions;
 
@@ -134,7 +138,6 @@ class Curtain(DBClass):
 		if(not CurtainEvents_data or event.Curtains_id() != self._id): return None;
 		self._CurtainEvents[event.id()] = event;
 		return event;
-
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
