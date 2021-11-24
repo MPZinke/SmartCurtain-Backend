@@ -19,9 +19,25 @@ from pathlib import Path as __pathlib__Path;
 import sys;
 
 
-SMARTCURTAIN_DIR = str(__pathlib__Path(__file__).parent.parent);
+# ———— Directories ————
+# __file__ == "SmartCurtain/Hub/Program/Other/Global.py"
+REPO_DIR = str(__pathlib__Path(__file__).parent.parent.parent.parent);  # /usr/local/SmartCurtain
+HUB_DIR = str(__pathlib__Path(__file__).parent.parent.parent);  # /usr/local/SmartCurtain/Hub
+DB_DIR = HUB_DIR+"/DB";  # /usr/local/SmartCurtain/Hub/DB
+PYTHON_DIR = str(__pathlib__Path(__file__).parent.parent);  # /usr/local/SmartCurtain/Hub/Program
+# ———— Directories::Other ————
+LOG_DIR = "/var/log/SmartCurtain"
+
+
 NONETYPE = type(None);
 
+
+# SUGAR
+# Gets the substring from a string using a list parameter.
+# Takes the string to get substring from, list of start and end points.
+# Uses standard substring method
+def substr(string: str, span: list) -> str:
+	return string[span[0]: span[1]];
 
 
 # Get the datetime object for the next day at 00:00:00.

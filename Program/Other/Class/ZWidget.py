@@ -21,7 +21,7 @@ import Other.Logger as Logger;
 
 
 class ZWidget:
-	def __init__(self, name : str, system : object, sleep_time : Union[int, float]=0):
+	def __init__(self, name: str, system: object=None, sleep_time: Union[int, float]=0):
 		self._System = system;
 		self._sleep_time = sleep_time;
 		self._zthread = ZThread(name, self._loop_process, self.sleep_time);  # main driver of widget
