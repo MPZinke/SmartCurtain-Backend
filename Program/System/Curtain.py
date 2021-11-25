@@ -37,7 +37,8 @@ class Curtain(DBClass):
 		self._CurtainEvents = {event["id"]: CurtainEvent(**{**event, "Curtain": self}) for event in current_events};
 
 		curtains_options = SELECT_CurtainsOptions(cursor, self._id);
-		self._CurtainOptions = {option["Options.id"]: CurtainOption(**option) for option in curtains_options};
+		self._CurtainOptions_dict = {option["Options.id"]: CurtainOption(**option) for option in curtains_options};
+		self._CurtainOptions_list = [self._CurtainOptions_dict[co_id] for co_id in self._CurtainOptions_dict];
 
 		__CLOSE__(cnx, cursor);
 
@@ -58,39 +59,27 @@ class Curtain(DBClass):
 		return self._CurtainEvents;
 
 
-	def CurtainOption(self, Option_identifier: Union[int, str]=None):
-		if(type(Option_identifier) == int): return self._CurtainOptions.get(Option_identifier);
-		elif(type(Option_identifier) == str):
-			options = self._CurtainOptions;
-			option = [options[_id] for _id in options if options[_id].name() == Option_identifier];
-			return option[0] if len(option)	== 1 else None;
-
-
-	def CurtainOptionKey(self, CurtainOptionKey: str):
-		for option in self._CurtainOptions:
-			option_key_value = self._CurtainOptions[option].CurtainOptionKey(CurtainOptionKey);
+	# Gets the CurtainOptionKeyValue object for a given param.
+	# Takes keyward args to search by.
+	# Iterates through CurtainsOptions to return existing CurtainOptionKeyValue.
+	def CurtainOptionKeyValue(self, **kwargs):
+		for curtain_option in self._CurtainOptions_list:
+			option_key_value = curtain_option.CurtainOptionKeyValue(**kwargs);
 			if(option_key_value):
 				return option_key_value;
 
 		return None;
 
 
-	def CurtainOptionKeyValue(self, CurtainOptionKeyValue: str):
-		for option in self._CurtainOptions:
-			option_key_value = self._CurtainOptions[option].CurtainOptionKeyValue(CurtainOptionKeyValue);
-			if(option_key_value):
-				return option_key_value;
-
-		return None;
-
-
+	# Gets the CurtainOption based on either name or id.
+	# Takes a string or an int for the name of the CurtainOption.Option or the id of the CurtainOption.Option.id.
 	def CurtainOption(self, CurtainOption: Union[int, str]):
-		if(isinstance(CurtainOption, int)): return self._CurtainOptions.get(CurtainOption_id);
-		return self._CurtainOptions.get(self._System.Option_by_name(CurtainOption));
+		if(isinstance(CurtainOption, int)): return self._CurtainOptions_dict.get(CurtainOption);
+		return self._CurtainOptions_dict.get(self._System.Option_by_name(CurtainOption).id());
 
 
-	def CurtainOptions(self):
-		return self._CurtainOptions;
+	def CurtainOptions(self) -> dict:
+		return self._CurtainOptions_dict;
 
 
 	def System(self):
@@ -150,7 +139,7 @@ class Curtain(DBClass):
 		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
 		class_dict = {attr : getattr(self, attr) for attr in attrs};
 		class_dict["_CurtainsEvents"] = {ce : self._CurtainEvents[cd].dict() for ce in self._CurtainEvents};
-		class_dict["_CurtainOptions"] = {co : self._CurtainOptions[co].dict() for co in self._CurtainOptions};
+		class_dict["_CurtainOptions"] = {co : self._CurtainOptions_dict[co].dict() for co in self._CurtainOptions_dict};
 		return class_dict;
 
 
@@ -160,7 +149,7 @@ class Curtain(DBClass):
 		print('\t'*tab, "_CurtainsEvents : ");
 		for event in self._CurtainEvents: self._CurtainEvents[event].print(tab+next_tab, next_tab);
 		print('\t'*tab, "_CurtainOptions : ");
-		for option in self._CurtainOptions: self._CurtainOptions[option].print(tab+next_tab, next_tab);
+		for option in self._CurtainOptions_dict: self._CurtainOptions_dict[option].print(tab+next_tab, next_tab);
 
 
 	# ——————————————————————————————————————————————————————— UI ———————————————————————————————————————————————————————

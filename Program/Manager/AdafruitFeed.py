@@ -42,7 +42,7 @@ class AdafruitFeed(ZWidget):
 	def _curtain_for_feed_id(self, feed_id):
 		curtains = self._System.Curtains_list();
 		for curtain in curtains:
-			if(curtain.CurtainOptionKeyValue(feed_id)):
+			if(curtain.CurtainOptionKeyValue(key=feed_id)):
 				return curtain;
 
 		return None;
@@ -58,20 +58,19 @@ class AdafruitFeed(ZWidget):
 			if(not curtain): raise Exception(f"Feed ID: {feed_id} not found");
 
 			# Convert Option to position
-			curtain_option = curtain.CurtainOptionKeyValue(feed_id);
-			position = try_convert(curtain_option.value(), int) or try_convert(position_payload, int);
+			curtain_option = curtain.CurtainOptionKeyValue(key=feed_id);
+			position = try_convert(position_payload, int) or try_convert(curtain_option.value(), int);
+			print(f"Curtain: {curtain.name()}, feed: {feed_id}, position: {position}");
 			if(isinstance(position, NONETYPE)): raise Exception("Could not get a valid position");
 
 			# For selected curtain add event for position
-			curtain.open_immediately(position, self._option_id);
+			curtain.open_percentage(desired_position=position, Options_id=self._option_id);
 
 		except Exception as error:
 			Logger.log_error(error);
 
 
 	def _connect(self, client):
-		username = os_getenv("ADAFRUIT_IO_USERNAME");
-
 		for curtain in self._System.Curtains_list():
 			curtain_option = curtain.CurtainOption(self._option_id);
 			# if curtain has active CurtainOption for AdafruitIO && CurtainOption has 2 CurtainOptionKeyValue:
@@ -80,10 +79,7 @@ class AdafruitFeed(ZWidget):
 			current_key_values = [option for option in curtain_option.CurtainOptionKeyValues() if option.is_current()];
 			if(len(current_key_values) < 2): continue;
 
-			for option in current_key_values:
-				print(f"Adafruit::_connect::option::key {option.key()}");
-				client.subscribe(option.key(), username);
-			# [client.subscribe(option.key()) for option in current_key_values];
+			[client.subscribe(option.key()) for option in current_key_values];
 
 
 	def _disconnect(self):
@@ -103,7 +99,7 @@ class AdafruitFeed(ZWidget):
 
 		ssl.SSLContext.verify_mode = ssl.VerifyMode.CERT_OPTIONAL
 
-		client = MQTTClient(username, key);
+		client = MQTTClient(username, key, secure=False);
 
 		client.on_connect = self._connect;
 		client.on_disconnect = self._disconnect;

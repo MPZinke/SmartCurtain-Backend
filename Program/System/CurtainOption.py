@@ -38,17 +38,13 @@ class CurtainOption(DBClass):
 		return self._id;
 
 
-	def CurtainOptionKey(self, CurtainOptionKey: str):
+	def CurtainOptionKeyValue(self, **kwargs):
+		for arg in kwargs:
+			if arg not in ["id", "key", "value"]:
+				raise Exception(f"Keyword {arg} must be 'id', 'key', 'value'");
+
 		for option_key_value in self._CurtainOptionKeyValues:
-			if(option_key_value.key() == CurtainOptionKey):
-				return option_key_value;
-
-		return None;
-
-
-	def CurtainOptionKeyValue(self, CurtainOptionKeyValue: str):
-		for option_key_value in self._CurtainOptionKeyValues:
-			if(option_key_value.value() == CurtainOptionKeyValue):
+			if(all(getattr(option_key_value, arg)() == kwargs[arg] for arg in kwargs)):
 				return option_key_value;
 
 		return None;
