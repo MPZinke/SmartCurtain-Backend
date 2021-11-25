@@ -3,7 +3,9 @@ Description=Main Smart Curtain Manager
 After=mariadb.service
 
 [Service]
-ExecStart=sudo /usr/bin/python3 /usr/SmartCurtain/Hub/Program/SmartCurtain.py
+Environment=ADAFRUIT_IO_USERNAME=<POPULATE>
+Environment=ADAFRUIT_IO_KEY=<POPULATE>
+ExecStart=sudo -E /usr/bin/python3 /usr/local/SmartCurtain/Hub/Program/SmartCurtain.py
 Restart=always
 StandardOutput=syslog
 StandardError=syslog

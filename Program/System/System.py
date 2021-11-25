@@ -89,7 +89,7 @@ class System(ZWidget):
 
 
 	# Get an Option by its name.
-	def Option_name(self, Options_name: str):
+	def Option_by_name(self, Options_name: str):
 		return self._Options_names.get(Options_name);
 
 

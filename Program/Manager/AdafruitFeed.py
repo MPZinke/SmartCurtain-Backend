@@ -17,6 +17,7 @@ __author__ = "MPZinke"
 from Adafruit_IO import MQTTClient;
 from datetime import datetime, timedelta;
 from os import getenv as os_getenv;
+import ssl;
 from time import sleep;
 import warnings;
 from warnings import warn as Warn;
@@ -29,18 +30,13 @@ import Other.Logger as Logger;
 
 
 
-class AdafruitIO(ZWidget):
+class AdafruitFeed(ZWidget):
 	def __init__(self, System):
 		ZWidget.__init__(self, "AdafruitIO", System);
 
-		self._option_id = self._System.Option_name("Adafruit Feed").id();
+		self._option_id = self._System.Option_by_name("Adafruit Feed").id();
 
 		warnings.formatwarning = warning_message;
-
-
-	def _curtain_list(self):
-		curtains = self._System.Curtains();
-		return [curtains[curtain_id] for curtain_id in curtains];
 
 
 	def _curtain_for_feed_id(self, feed_id):
@@ -55,6 +51,7 @@ class AdafruitIO(ZWidget):
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
 
 	def _activate(self, client, feed_id, position_payload):
+		print(f"AdafruitFeed: client: {client}, feed_id: {feed_id}, position: {position_payload}");
 		try:
 			# Get the curtain for feed ID
 			curtain = self._curtain_for_feed_id(feed_id);
@@ -73,7 +70,9 @@ class AdafruitIO(ZWidget):
 
 
 	def _connect(self, client):
-		for curtain in self._curtain_list():
+		username = os_getenv("ADAFRUIT_IO_USERNAME");
+
+		for curtain in self._System.Curtains_list():
 			curtain_option = curtain.CurtainOption(self._option_id);
 			# if curtain has active CurtainOption for AdafruitIO && CurtainOption has 2 CurtainOptionKeyValue:
 			if(not curtain_option or not curtain_option.is_on()): continue;
@@ -81,7 +80,14 @@ class AdafruitIO(ZWidget):
 			current_key_values = [option for option in curtain_option.CurtainOptionKeyValues() if option.is_current()];
 			if(len(current_key_values) < 2): continue;
 
-			[client.subscribe(option.key()) for option in current_key_values];
+			for option in current_key_values:
+				print(f"Adafruit::_connect::option::key {option.key()}");
+				client.subscribe(option.key(), username);
+			# [client.subscribe(option.key()) for option in current_key_values];
+
+
+	def _disconnect(self):
+		raise Exception("MQTTClient disconnected")
 
 
 	def _null(self, *args) -> None:
@@ -91,8 +97,11 @@ class AdafruitIO(ZWidget):
 	def _loop_process(self):
 		username = os_getenv("ADAFRUIT_IO_USERNAME");
 		key = os_getenv("ADAFRUIT_IO_KEY");
+		print(f"AdafruitFeed::_loop_process::username, key: {username}, {key}");
 		assert(username);
 		assert(key);
+
+		ssl.SSLContext.verify_mode = ssl.VerifyMode.CERT_OPTIONAL
 
 		client = MQTTClient(username, key);
 
@@ -101,5 +110,7 @@ class AdafruitIO(ZWidget):
 		client.on_message = self._activate;
 		client.on_subscribe  = self._null;
 		
+		print("Adafruit::_loop_process");
+
 		client.connect();
 		client.loop_blocking();

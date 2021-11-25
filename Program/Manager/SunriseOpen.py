@@ -33,6 +33,8 @@ class SunriseOpen(ZWidget):
 	def __init__(self, System):
 		ZWidget.__init__(self, "SunriseOpen", System);
 
+		self._option_id = self._System.Option_by_name("Sunrise Open").id();
+
 		warnings.formatwarning = warning_message;
 
 
@@ -52,10 +54,9 @@ class SunriseOpen(ZWidget):
 		sunrise = self.sunrise_time().replace(tzinfo=None);
 		if(sunrise < datetime.now()): return Warn("Sunrise has already passed for today. Skipping today");
 
-		for curtain_id in self._System.Curtain():
+		for curtain in self._System.Curtains_list():
 			try:
-				curtain = self._System.Curtain(curtain_id);
-				curtain_option = curtain.CurtainOption("Sunrise Open");
+				curtain_option = curtain.CurtainOption(self._option_id);
 				if(not curtain_option.is_on()): continue;
 
 				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();

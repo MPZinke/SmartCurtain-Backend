@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from Manager.AdafruitFeed import AdafruitFeed;
 from Manager.SunriseOpen import SunriseOpen;
 from Manager.SunsetClose import SunsetClose;
 from Other.Class.ZWidget import ZWidget;
@@ -24,15 +25,16 @@ class Manager(ZWidget):
 	def __init__(self, System):
 		ZWidget.__init__(self, "Manager", System, 60);
 
-		# self._AdafruitFeed = AdafruitFeed(self._System);
+		self._AdafruitFeed = AdafruitFeed(self._System);
 		# self._EventPredictor = EventPredictor(self._System);
 		self._SunriseOpen = SunriseOpen(self._System);
 		self._SunsetClose = SunsetClose(self._System);
 
 		self._widget_list =	[
-		# 						self._AdafruitFeed, 
+								self._AdafruitFeed, 
 								# self._EventPredictor,
-								self._SunriseOpen, self._SunsetClose
+								self._SunriseOpen,
+								self._SunsetClose
 							];
 		for widget in self._widget_list: widget.start();
 

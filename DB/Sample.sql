@@ -26,28 +26,28 @@ INSERT INTO `Options` (`id`, `name`, `description`) VALUES
 
 
 INSERT INTO `CurtainsOptions` (`id`, `Curtains.id`, `Options.id`, `is_on`, `notes`) VALUES
-(1, 1, 1, TRUE, NULL),
-(2, 1, 2, TRUE, NULL),
-(3, 1, 3, TRUE, NULL),
-(4, 1, 4, TRUE, 'Value is for clustering leniency in hours'),
-(5, 1, 5, FALSE, NULL),
-(6, 1, 6, TRUE, 'Value is for time before/after sunrise that curtain opens'),
-(7, 1, 7, TRUE, 'Value is for time before/after sunset that curtain closes'),
-(8, 1, 8, FALSE, NULL),
-(9, 2, 1, TRUE, NULL),
-(10, 2, 2, TRUE, NULL),
-(11, 2, 3, TRUE, NULL),
-(12, 2, 4, TRUE, 'Value is for clustering leniency in hours'),
-(13, 2, 5, FALSE, NULL),
-(14, 2, 6, TRUE, 'Value is for time before/after sunrise that curtain opens'),
-(15, 2, 7, TRUE, 'Value is for time before/after sunset that curtain closes'),
-(16, 2, 8, FALSE, NULL);
+(1, 1, 1, TRUE, NULL),  -- Adafruit Feed
+(2, 1, 2, TRUE, NULL),  -- Auto Calibrate
+(3, 1, 3, TRUE, NULL),  -- Auto Correct
+(4, 1, 4, TRUE, 'Value is for clustering leniency in hours'),  -- Event Prediction
+(5, 1, 5, FALSE, NULL),  -- Google Calendar
+(6, 1, 6, TRUE, 'Value is for time before/after sunrise that curtain opens'),  -- Sunrise Open
+(7, 1, 7, TRUE, 'Value is for time before/after sunset that curtain closes'),  -- Sunset Close
+(8, 1, 8, FALSE, NULL),  -- Temperature Setting
+(9, 2, 1, TRUE, NULL),  -- Adafruit Feed
+(10, 2, 2, TRUE, NULL),  -- Auto Calibrate
+(11, 2, 3, TRUE, NULL),  -- Auto Correct
+(12, 2, 4, TRUE, 'Value is for clustering leniency in hours'),  -- Event Prediction
+(13, 2, 5, FALSE, NULL),  -- Google Calendar
+(14, 2, 6, TRUE, 'Value is for time before/after sunrise that curtain opens'),  -- Sunrise Open
+(15, 2, 7, TRUE, 'Value is for time before/after sunset that curtain closes'),  -- Sunset Close
+(16, 2, 8, FALSE, NULL);  -- Temperature Setting
 
 
 INSERT INTO `CurtainsOptionsKeyValues` (`CurtainsOptions.id`, `key`, `value`) VALUES
-(1, 'office.curtain-close', 0),
-(1, 'office.curtain-open', 100),
-(4, NULL, '1.0'),
-(9, 'bedroom.curtain-close', 0),
-(9, 'bedroom.curtain-open', 100),
-(12, NULL, '1.0');
+(1, 'office.curtain-close', 0),  -- Adafruit Feed
+(1, 'office.curtain-open', 100),  -- Adafruit Feed
+(4, NULL, '1.0'),  -- Event Prediction
+(9, 'bedroom.curtain-close', 0),  -- Adafruit Feed
+(9, 'bedroom.curtain-open', 100),  -- Adafruit Feed
+(12, NULL, '1.0');  -- Event Prediction

@@ -84,8 +84,9 @@ class Curtain(DBClass):
 		return None;
 
 
-	def CurtainOption(self, CurtainOption_id: int):
-		return self._CurtainOptions.get(CurtainOption_id);
+	def CurtainOption(self, CurtainOption: Union[int, str]):
+		if(isinstance(CurtainOption, int)): return self._CurtainOptions.get(CurtainOption_id);
+		return self._CurtainOptions.get(self._System.Option_by_name(CurtainOption));
 
 
 	def CurtainOptions(self):
