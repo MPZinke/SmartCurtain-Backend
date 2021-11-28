@@ -102,7 +102,7 @@ class CurtainEvent(DBClass):
 			if(not Curtain.is_smart() and Curtain.is_safe() and Curtain.current_position() == self._desired_position):
 				raise Exception("Curtain will not move to a state it believes itself to already be in [is_safe=TRUE]");
 
-			response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=3);
+			response = post(url=f"http://{Curtain.ip_address()}", json=post_json, timeout=buffer_time/10+1);
 			if(response.status_code != 200): raise Exception(f"Status code for event: {self._id} is invalid");
 			if("error" in response.json()): raise Exception(f"Received error message: {response.json()['error']}");
 			print(response.json());  #TESTING
