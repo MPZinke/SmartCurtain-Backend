@@ -143,11 +143,16 @@ def api_update_invalidateevent(self):
 		if(not isinstance(curtain_id, int)): raise Exception("\\\"event::id\\\" value is wrong type");
 		if(not isinstance(event_id, int)): raise Exception("\\\"event::id\\\" value is wrong type");
 
-		
-		if(not (curtain := self._System.Curtain(curtain_id))): raise Exception("No curtain for ID found");
-		if(not (event := curtain.CurtainEvents().get(event_id))): raise Exception("No curtain event for ID found");
+		# if(not (curtain := self._System.Curtain(curtain_id))): raise Exception("No curtain for ID found");
+		curtain = self._System.Curtain(curtain_id)
+		if(not curtain): raise Exception("No curtain for ID found");
+		# if(not (event := curtain.CurtainEvents().get(event_id))): raise Exception("No curtain event for ID found");
+		event = curtain.CurtainEvents().get(event_id)
+		if(not event): raise Exception("No curtain event for ID found");
 
 		if(not event.delete()): raise Exception("Failed to delete event");
+
+		return "{\"success\" : \"Deleted event\"}";
 
 	except Exception as error:
 		Logger.log_error(error);
