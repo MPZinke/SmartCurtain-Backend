@@ -61,7 +61,9 @@ def events(self):
 	header = Header(self._System);
 	if(request.method == "POST"):
 		try:
-			if(not (event_id := try_convert(*get_posted_value("event_id"), int)) or not isinstance(event_id, int)):
+			# if(not (event_id := try_convert(*get_posted_value("event_id"), int)) or not isinstance(event_id, int)):
+			event_id = try_convert(*get_posted_value("event_id"), int);
+			if(not event_id or not isinstance(event_id, int)):
 				raise Exception(f"{event_id} is not of correct type int");
 
 			curtain = header.selected_curtain();
