@@ -32,7 +32,7 @@ def log_error(error : Union[Exception, str]) -> bool:
 		try: module = traceback.format_exc();
 		except: module = "Unknown traceback";
 		error_data = {"time": datetime.now().strftime("%H:%M:%S"), "module": module, "error": str(error)};
-		error_message = json_dumps(error_data, indent=4);
+		error_message = json_dumps(error_data, indent=4)+"\n";
 
 		print(error_message);
 

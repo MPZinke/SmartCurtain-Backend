@@ -69,6 +69,7 @@ def api_create_now(self):
 		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 
 
+# ———————————————————————————————————————————————————— DEACTIVATE ———————————————————————————————————————————————————— #
 
 # /api/update/deactivatecurtain
 def api_update_deactivatecurtain(self):
@@ -96,8 +97,6 @@ def api_update_deactivatecurtain(self):
 		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
 
 
-
-
 # /api/update/deactivateevent
 def api_update_deactivateevent(self):
 	try:
@@ -121,6 +120,34 @@ def api_update_deactivateevent(self):
 		if(not curtain.length(length)): raise Exception("Unable to update length");
 
 		return "{\"success\" : \"Updated event\"}";
+
+	except Exception as error:
+		Logger.log_error(error);
+		if(not isinstance(error, KeyError)): return "{\"error\" : \"{}\"}".format(str(error));
+		return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
+
+
+# ———————————————————————————————————————————————————— INVALIDATE ———————————————————————————————————————————————————— #
+
+def api_update_invalidateevent(self):
+	try:
+		json: dict = request.get_json();
+
+		if("curtain" not in json): raise Exception("\\\"curtain\\\" value is missing from request");
+		if("id" not in json["curtain"]): raise Exception("\\\"curtain::id\\\" value is missing from request");
+		if("event" not in json): raise Exception("\\\"event\\\" value is missing from request");
+		if("id" not in json["event"]): raise Exception("\\\"event::id\\\" value is missing from request");
+
+		curtain_id = json["curtain"]["id"]
+		event_id = json["event"]["id"];
+		if(not isinstance(curtain_id, int)): raise Exception("\\\"event::id\\\" value is wrong type");
+		if(not isinstance(event_id, int)): raise Exception("\\\"event::id\\\" value is wrong type");
+
+		
+		if(not (curtain := self._System.Curtain(curtain_id))): raise Exception("No curtain for ID found");
+		if(not (event := curtain.CurtainEvents().get(event_id))): raise Exception("No curtain event for ID found");
+
+		if(not event.delete()): raise Exception("Failed to delete event");
 
 	except Exception as error:
 		Logger.log_error(error);

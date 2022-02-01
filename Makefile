@@ -18,6 +18,7 @@ all:
 	# Setup for updater
 	git clone --sparse --depth=1 https://github.com/MPZinke/SmartCurtain.git /usr/local/SmartCurtain || echo "Failed to sparse clone repository into dir /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
 	git -C /usr/local/SmartCurtain sparse-checkout set Hub/Program Hub/DB/Updates || echo "Failed to set sparse-checkout directories" > ./Installation/InstallErrors.log
+	git -C /usr/local/SmartCurtain/ config core.filemode false
 
 	# Python setup
 	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log

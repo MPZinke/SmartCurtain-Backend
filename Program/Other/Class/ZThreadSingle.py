@@ -32,7 +32,8 @@ class ZThreadSingle(ZThread):
 	def _thread_loop(self) -> None:
 		try:  # make it safe!!!
 			self.sleep(self._sleep_time());
-			self._loop_process();
+			if(self._is_active):
+				self._loop_process();
 		except Exception as error:
 			try: Logger.log_error(error);
 			except: pass;
