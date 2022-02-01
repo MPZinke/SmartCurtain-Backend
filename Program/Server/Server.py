@@ -35,6 +35,7 @@ class Server(ZWidget):
 	from Server.Routes.Api import api_create_now;
 	from Server.Routes.Api import api_update_deactivateevent;
 	from Server.Routes.Api import api_update_deactivatecurtain;
+	from Server.Routes.Api import api_update_invalidateevent;
 
 
 	def __init__(self, System):
@@ -55,7 +56,7 @@ class Server(ZWidget):
 		routes =	{
 						"/" : [self.index, ["GET", "POST"]],
 						"/edit" : [self.edit],
-						"/events" : [self.events],
+						"/events" : [self.events, ["GET", "POST"]],
 						"/new" : [self.new, ["GET", "POST"]],
 						"/favicon" : [self.favicon],
 						"/test" : [self.test, ["GET", "POST"]],
@@ -63,7 +64,8 @@ class Server(ZWidget):
 						"/api/create/future" : [self.api_create_future, ["POST"]],
 						"/api/create/now" : [self.api_create_now, ["POST"]],
 						"/api/update/deactivateevent" : [self.api_update_deactivateevent, ["POST"]],
-						"/api/update/deactivatecurtain" : [self.api_update_deactivatecurtain, ["POST"]]
+						"/api/update/deactivatecurtain" : [self.api_update_deactivatecurtain, ["POST"]],
+						"/api/update/invalidateevent" : [self.api_update_invalidateevent, ["POST"]]
 					};
 		for route in routes: self.add_route(route, *routes[route]);
 

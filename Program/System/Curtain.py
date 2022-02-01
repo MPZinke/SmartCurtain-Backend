@@ -124,7 +124,7 @@ class Curtain(DBClass):
 		__CLOSE__(cnx, cursor);
 
 		# return if found in DB
-		if(CurtainEvents_data): event = CurtainEvents(**{**CurtainEvents_data, "Curtain": self});
+		if(CurtainEvents_data): event = CurtainEvent(**{**CurtainEvents_data, "Curtain": self});
 		if(not CurtainEvents_data or event.Curtains_id() != self._id): return None;
 		self._CurtainEvents[event.id()] = event;
 		return event;

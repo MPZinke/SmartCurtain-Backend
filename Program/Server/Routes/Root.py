@@ -18,6 +18,7 @@ from datetime import datetime, timedelta;
 from flask import redirect, render_template, request, session;
 
 from Other.Class.Header import Header;
+from Other.Global import try_convert;
 import Other.Logger as Logger;
 from Server.ServerGlobal import *;
 from Server.ServerGlobal import add_error_and_redirect, posted, set_session;
@@ -58,6 +59,19 @@ def edit(self):
 def events(self):
 	set_session();
 	header = Header(self._System);
+	if(request.method == "POST"):
+		try:
+			if(not (event_id := try_convert(*get_posted_value("event_id"), int)) or not isinstance(event_id, int)):
+				raise Exception(f"{event_id} is not of correct type int");
+
+			curtain = header.selected_curtain();
+			event = curtain.CurtainEvent(event_id);
+			event.delete();
+
+		except Exception as error:
+			Logger.log_error(error);
+			session["error"] = f"Error setting event {str(error)}";
+
 	return render_template("Events.html", header=header, session=session);
 
 
@@ -66,7 +80,7 @@ def new(self):
 	header = Header(self._System);
 	if(request.method == "POST"):
 		try:
-			if(posted("date_input") and  posted("time_input") and  posted("position_input")):
+			if(posted("date_input") and posted("time_input") and posted("position_input")):
 				date_input, time_input, position_input = get_posted_value("date_input", "time_input", "position_input");
 				date_time = datetime.strptime(f"{date_input} {time_input}", "%Y-%m-%d %H:%M");
 				position = int(position_input);
