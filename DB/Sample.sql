@@ -51,3 +51,33 @@ INSERT INTO `CurtainsOptionsKeyValues` (`CurtainsOptions.id`, `key`, `value`) VA
 (9, 'bedroom.curtain-close', 0),  -- Adafruit Feed
 (9, 'bedroom.curtain-open', 100),  -- Adafruit Feed
 (12, NULL, '1.0');  -- Event Prediction
+
+
+-- —————————————————————————————————————————————————— CREATE VIEWS —————————————————————————————————————————————————— --
+
+SET @sql = NULL;
+SELECT GROUP_CONCAT(
+    DISTINCT CONCAT(
+        'max(case when `CurtainsOptions`.`Options.id` = \'',
+        `CurtainsOptions`.`Options.id`,
+        '\' then `CurtainsOptions`.`is_on` end) \'',
+        `Options`.`name`,
+        '\' '
+    )
+)
+INTO @sql
+FROM `CurtainsOptions`
+JOIN `Options` ON `CurtainsOptions`.`Options.id` = `Options`.`id`;
+
+SET @sql = CONCAT(
+    'CREATE VIEW `OptionsForCurtains` AS
+    SELECT `Curtains`.`name`, ', @sql, ' 
+    FROM `CurtainsOptions`
+    JOIN `Curtains` ON `CurtainsOptions`.`Curtains.id` = `Curtains`.`id`
+    JOIN `Options` ON `CurtainsOptions`.`Options.id` = `Options`.`id`
+    GROUP BY `CurtainsOptions`.`Curtains.id`'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
