@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+import json;
 from typing import Any, Union;
 
 
@@ -71,7 +72,9 @@ class DBClass:
 
 
 	def __str__(self):
-		return self.try_call(json.dumps, self.dict(), default="")
+		attribute_dict = {key: value for key, value in self.dict().items() if(key[0] == "_")};
+		str_dict = {key: str(value) if(isinstance(value, object)) else value for key, value in attribute_dict.items()};
+		return self.try_call(json.dumps, str_dict, default="");
 
 
 	# Check key value types of dictonary for attributes to be passed to dictionary.

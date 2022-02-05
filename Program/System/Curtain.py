@@ -32,15 +32,13 @@ class Curtain(DBClass):
 
 		# Get associated relations
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-
 		current_events = SELECT_current_CurtainsEvents(cursor, self._id)
-		self._CurtainEvents = {event["id"]: CurtainEvent(**{**event, "Curtain": self}) for event in current_events};
-
 		curtains_options = SELECT_CurtainsOptions(cursor, self._id);
-		self._CurtainOptions_dict = {option["Options.id"]: CurtainOption(**option) for option in curtains_options};
-		self._CurtainOptions_list = [self._CurtainOptions_dict[co_id] for co_id in self._CurtainOptions_dict];
-
 		__CLOSE__(cnx, cursor);
+
+		self._CurtainEvents = {event["id"]: CurtainEvent(**{**event, "Curtain": self}) for event in current_events};
+		self._CurtainOptions_dict = {option["Options.id"]: CurtainOption(**option) for option in curtains_options};
+		self._CurtainOptions_list = self._CurtainOptions_dict.values();
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -116,28 +114,6 @@ class Curtain(DBClass):
 		if(not CurtainEvents_data or event.Curtains_id() != self._id): return None;
 		self._CurtainEvents[event.id()] = event;
 		return event;
-
-
-	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
-
-	def dict(self, desired_attrs=[]):
-		ignore_attrs = ["_CurtainsEvents", "_CurtainOptions"];
-		if(desired_attrs): return {attr : getattr(self, attr)() for attr in desired_attrs if attr not in ignore_attrs};
-
-		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
-		class_dict = {attr : getattr(self, attr) for attr in attrs};
-		class_dict["_CurtainsEvents"] = {ce : self._CurtainEvents[cd].dict() for ce in self._CurtainEvents};
-		class_dict["_CurtainOptions"] = {co : self._CurtainOptions_dict[co].dict() for co in self._CurtainOptions_dict};
-		return class_dict;
-
-
-	def print(self, tab=0, next_tab=0):
-		attrs = ["_id", "_current_position", "_direction", "_is_activated", "_last_connection", "_length", "_name"];
-		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));
-		print('\t'*tab, "_CurtainsEvents : ");
-		for event in self._CurtainEvents: self._CurtainEvents[event].print(tab+next_tab, next_tab);
-		print('\t'*tab, "_CurtainOptions : ");
-		for option in self._CurtainOptions_dict: self._CurtainOptions_dict[option].print(tab+next_tab, next_tab);
 
 
 	# ——————————————————————————————————————————————————————— UI ———————————————————————————————————————————————————————
