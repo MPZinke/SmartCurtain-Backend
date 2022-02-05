@@ -48,7 +48,6 @@
 		var button_tds = $(".__td__delete");
 		for(var x = 0; x < button_tds.length; x++)
 		{
-			console.log(button_tds[x].hidden);
 			button_tds[x].hidden = !button_tds[x].hidden;
 		}
 	}
@@ -59,7 +58,6 @@
 		var event_input = document.createElement("input");
 		event_input.setAttribute("type", "hidden"); 
 		event_input.setAttribute("name", "event_id");
-		console.log(event_id);
 		event_input.setAttribute("value", event_id);
 
 		var form = document.createElement("form");

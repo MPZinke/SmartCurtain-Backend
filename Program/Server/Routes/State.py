@@ -29,4 +29,4 @@ def state(self, Curtains_id : int):
 	if(Curtains_id not in self._System.Curtains()): return {"error"};
 
 	if("current_position_percent__is_activated" in request.form):
-		return dumps(self._System.Curtain(Curtains_id).dict(["is_activated", "current_position_percent_int"]));
+		return str(self._System.Curtain(Curtains_id));
