@@ -58,8 +58,8 @@ class AdafruitFeed(ZWidget):
 			if(not curtain): raise Exception(f"Feed ID: {feed_id} not found");
 
 			# Convert Option to position
-			curtain_option = curtain.CurtainOptionKeyValue(key=feed_id);
-			position = try_convert(position_payload, int) or try_convert(curtain_option.value(), int);
+			curtain_option = curtain.CurtainOption(self._option_id);
+			position = try_convert(position_payload, int) or try_convert(curtain_option.data().get(feed_id, 0), int);
 			print(f"Curtain: {curtain.name()}, feed: {feed_id}, position: {position}");
 			if(isinstance(position, NONETYPE)): raise Exception("Could not get a valid position");
 

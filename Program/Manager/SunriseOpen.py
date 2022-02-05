@@ -65,8 +65,7 @@ class SunriseOpen(ZWidget):
 					Warn("Event already set for sunrise time.");
 					continue;  # don't duplicate sunrise
 
-				curtain_option_key_values = curtain_option.CurtainOptionKeyValues();
-				position = curtain_option_key_values[0].value() if curtain_option_key_values else curtain.length();
+				position = curtain_option.data() if curtain_option.data() else curtain.length();
 				curtain.open(desired_position=position, Options_id=curtain_option.Options_id(), time=sunrise);
 
 			except Exception as error:
