@@ -65,8 +65,7 @@ class SunsetClose(ZWidget):
 					Warn("Event already set for sunset time.");
 					continue;  # don't duplicate sunset
 
-				curtain_option_key_values = curtain_option.CurtainOptionKeyValues();
-				position = curtain_option_key_values[0].value() if curtain_option_key_values else 0;
+				position = curtain_option.data() if curtain_option.data() else 0;
 				curtain.open(desired_position=position, Options_id=curtain_option.Options_id(), time=sunset);
 
 			except Exception as error:

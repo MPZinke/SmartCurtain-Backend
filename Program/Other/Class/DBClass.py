@@ -14,6 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from typing import Any, Union;
+
+
 from Other.DB.DBCredentials import *;
 import Other.DB.DBFunctions as DBFunctions;
 from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
@@ -52,11 +55,23 @@ class DBClass:
 
 		return function;
 
+	# ——————————————————————————————————————————————————— UTILITY  ——————————————————————————————————————————————————— #
+
+	def try_call(self, function: callable, *params: list, default: Union[Any, None]=None) -> Union[Any, None]:
+		try:
+			return function(*params)
+		except:
+			return default;
 
 
-	# def __getattr__(self, attribute_name):
-	# 	if("_"+attribute_name not in self.__dict__.items()):
-	# 		raise Exception(f"_{attribute_name} is not initialized for object {type(self)}");
+	# —————————————————————————————————————————————————— CONVERSION —————————————————————————————————————————————————— #
+
+	def dict(self) -> dict:
+		return {attr : getattr(self, attr) for attr in self.__dict__};
+
+
+	def __str__(self):
+		return self.try_call(json.dumps, self.dict(), default="")
 
 
 	# Check key value types of dictonary for attributes to be passed to dictionary.

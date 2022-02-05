@@ -59,18 +59,6 @@ class Curtain(DBClass):
 		return self._CurtainEvents;
 
 
-	# Gets the CurtainOptionKeyValue object for a given param.
-	# Takes keyward args to search by.
-	# Iterates through CurtainsOptions to return existing CurtainOptionKeyValue.
-	def CurtainOptionKeyValue(self, **kwargs):
-		for curtain_option in self._CurtainOptions_list:
-			option_key_value = curtain_option.CurtainOptionKeyValue(**kwargs);
-			if(option_key_value):
-				return option_key_value;
-
-		return None;
-
-
 	# Gets the CurtainOption based on either name or id.
 	# Takes a string or an int for the name of the CurtainOption.Option or the id of the CurtainOption.Option.id.
 	def CurtainOption(self, CurtainOption: Union[int, str]):
