@@ -1,0 +1,20 @@
+{# [/new] #}
+{% extends "Dependencies/Wrapper.html" %}
+{% block body %}
+
+<title>Log for {{ header.selected_curtain().name() }}</title>
+<div class='overflow-auto' style='width:100%; padding-top:32px; margin:auto;'>
+	
+</div>
+
+<select class="select">
+	{% for log in logs %}
+		<option value="{{ log }}">{{ log }}</option>
+	{% endfor %}
+</select>
+
+<script>
+
+</script>
+
+{% endblock %}

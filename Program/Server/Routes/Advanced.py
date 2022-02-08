@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.23                                                                                                      #
+#   on 2020.02.07                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,27 +14,23 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import request, session;
-from os import getcwd as __OS__getcwd;
-from pathlib import Path as __pathlib__Path;
-import sys;
-from typing import Union;
-
-from Other.Global import *;
+from flask import redirect, render_template, request, session;
+import os;
 
 
-MAIN_HTML_DIR = PYTHON_DIR+"/Server/HTML/Root";
-STATIC_HTML_DIR = PYTHON_DIR+"/Server/HTML/Static";
+from Other.Global import LOG_DIR;
+import Other.Logger as Logger;
 
 
-def add_error_and_redirect(error_message: str, redirect_url: str) -> str:
-	session["error"] = error_message;
-	return redirect(redirect_url);
+# /advanced/log/<str:log_filename>
+def advanced_log__id(self, log_filename: str):
+	pass;
 
 
-def get_posted_value(*args)-> list:
-	return [request.form[value] for value in args];
+# /advanced/logs
+def advanced_logs(self):
+	header = self.set_session_and_header();
 
+	logs = [os.path.join(LOG_DIR, log) for log in os.listdir(LOG_DIR) if(os.path.isfile(os.path.join(LOG_DIR, log)))];
 
-def posted(post : str) -> bool:
-	return post in request.form;
+	return render_template("Advanced/Logs.html", header=self._header, logs=logs);

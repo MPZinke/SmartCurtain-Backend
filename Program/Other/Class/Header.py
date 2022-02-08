@@ -20,7 +20,7 @@ from typing import Union;
 
 
 class Header:
-	def __init__(self, system, *, error : str="", success : str="") -> None:
+	def __init__(self, system, *, error : str="", success : str=""):
 		if("_CURTAIN_current" not in session):
 			raise Exception("No curtain set: session curtain id must be set before calling Header instance");
 
@@ -30,7 +30,7 @@ class Header:
 		self._selected_curtain = self._Curtains.get(session["_CURTAIN_current"]);
 
 
-	def Curtains(self):
+	def Curtains(self) -> list:
 		return self._Curtains;
 
 
@@ -42,20 +42,20 @@ class Header:
 		return self._success;
 
 
-	def selected_curtain(self, Curtains_id : int=None) -> Union[object, None]:
+	def selected_curtain(self, Curtains_id: int=None) -> Union[object, None]:
 		if(isinstance(Curtains_id, type(None))): return self._selected_curtain;
 		if(Curtains_id in self._Curtains): self._selected_curtain = self._Curtains[Curtains_id];
 
 
 	# —————————————————————————————————————————————————— CONVERSION —————————————————————————————————————————————————— #
 
-	def state_string(self, curtain: object=None):
+	def state_string(self, curtain: object=None) -> str:
 		if(not curtain): curtain = self._selected_curtain;
 		if(curtain.is_activated()): return "Moving";
 		return {0: "Closed", 100: "Fully Open"}.get(curtain.current_position_percent_int(), "Open");
 
 
-	def datetime_to_datetext(self, time: object):
+	def datetime_to_datetext(self, time: object) -> str:
 		now = datetime.now();
 
 		today = datetime(year=now.year, month=now.month, day=now.day);
@@ -67,5 +67,5 @@ class Header:
 		else: return day.strftime("%b %d, %Y");
 
 
-	def datetime_to_timetext(self, time: object):
+	def datetime_to_timetext(self, time: object) -> str:
 		return time.strftime("%I:%M %p");
