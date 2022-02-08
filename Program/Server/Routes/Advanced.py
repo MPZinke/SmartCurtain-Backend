@@ -22,15 +22,20 @@ from Other.Global import LOG_DIR;
 import Other.Logger as Logger;
 
 
-# /advanced/log/<str:log_filename>
-def advanced_log__id(self, log_filename: str):
-	pass;
+# /advanced/log/<string:log_filename>
+def advanced_log__log_filename(self, log_filename: str):
+	self.set_session_and_header();
+
+	with open(os.path.join(LOG_DIR, log_filename), "r") as file:
+		contents = "<br/>".join(file.readlines());
+
+	return render_template("Advanced/Log.html", header=self._header, contents=contents);
 
 
 # /advanced/logs
 def advanced_logs(self):
-	header = self.set_session_and_header();
+	self.set_session_and_header();
 
-	logs = [os.path.join(LOG_DIR, log) for log in os.listdir(LOG_DIR) if(os.path.isfile(os.path.join(LOG_DIR, log)))];
+	logs = [log for log in os.listdir(LOG_DIR) if(os.path.isfile(os.path.join(LOG_DIR, log)))];
 
 	return render_template("Advanced/Logs.html", header=self._header, logs=logs);

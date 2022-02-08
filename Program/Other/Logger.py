@@ -32,9 +32,9 @@ def log_error(error : Union[Exception, str]) -> bool:
 		try: module = traceback.format_exc();
 		except: module = "Unknown traceback";
 		error_data = {"time": datetime.now().strftime("%H:%M:%S"), "module": module, "error": str(error)};
-		error_message = json_dumps(error_data, indent=4)+"\n";
+		error_message = json_dumps(error_data)+"\n";
 
-		print(error_message);
+		print(json_dumps(error_data, indent=4)+"\n");
 
 		log_name = LOG_DIR+"/"+datetime.now().strftime("%Y.%m.%d")+".log";
 		with open(log_name, "a") as log: log.write(error_message);

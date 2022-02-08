@@ -39,14 +39,7 @@ def try_decorator(function):
 
 
 # ————————————————————————————————————————————————————— CURTAINS ————————————————————————————————————————————————————— #
-
-# /api/curtains/<int:curtain_id>/is_activated
-def api_curtains__id__is_activated(self, curtain_id: int):
-	if(curtain_id not in self._System.Curtains()): return {"error"};
-
-	if("current_position_percent__is_activated" in request.form):
-		return str(self._System.Curtain(curtain_id));
-
+# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 # /api/curtains/<int:curtain_id>/is_activated/<int:is_activated>
 @try_decorator
@@ -72,9 +65,11 @@ def api_curtains__id__is_activated__is_activated(self, curtain_id: int, is_activ
 	return "{\"success\" : \"Updated event\"}";
 
 
-# /api/curtains/<int:curtain_id>/event/new/future
+# ————————————————————————————————————————————————— CURTAINS::EVENTS ————————————————————————————————————————————————— #
+
+# /api/curtains/<int:curtain_id>/events/new
 @try_decorator
-def api_curtains__id__event_new_future(self):
+def api_curtains__id__events_new(self):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
 	# get from JSON, check types
@@ -92,10 +87,9 @@ def api_curtains__id__event_new_future(self):
 	return "{\"success\" : \"True\", \"event\" : {}}".format(event_id);
 
 
-
-# /api/curtains/<int:curtain_id>/event/new/now
+# /api/curtains/<int:curtain_id>/events/new/now
 @try_decorator
-def api_curtains__id__event_new_now(self):
+def api_curtains__id__events_new_now(self):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
 	curtain, desired_position = [json[key] for key in ["curtain", "desired position"]];
@@ -106,6 +100,44 @@ def api_curtains__id__event_new_now(self):
 	if(not curtain): raise Exception("No curtain for ID found");
 	if(not curtain.open_immediately(desired_position)): raise Exception("Could not create event");
 	return "{\"success\" : \"True\"}";
+
+
+# /api/curtains/<int:curtain_id>/events/new/now/close
+@try_decorator
+def api_curtains__id__events_new_now_close(self):
+	json = JSON_loads("["+request.get_json()+"]")[0];
+
+	curtain, desired_position = [json[key] for key in ["curtain", "desired position"]];
+	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
+
+	curtain = self._System.Curtain(curtain);
+	if(not curtain): raise Exception("No curtain for ID found");
+	if(not curtain.close_immediately()): raise Exception("Could not create event");
+	return "{\"success\" : \"True\"}";
+
+
+# /api/curtains/<int:curtain_id>/events/new/now/open
+@try_decorator
+def api_curtains__id__events_new_now_open(self):
+	json = JSON_loads("["+request.get_json()+"]")[0];
+
+	curtain, desired_position = [json[key] for key in ["curtain", "desired position"]];
+	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
+
+	curtain = self._System.Curtain(curtain);
+	if(not curtain): raise Exception("No curtain for ID found");
+	if(not curtain.open_percentage(desired_position=100)): raise Exception("Could not create event");
+	return "{\"success\" : \"True\"}";
+
+
+# ———————————————————————————————————————————— CURTAINS::GETTERS/SETTERS ———————————————————————————————————————————— #
+
+# /api/curtains/<int:curtain_id>/is_activated
+def api_curtains__id__is_activated(self, curtain_id: int):
+	if(curtain_id not in self._System.Curtains()): return {"error"};
+
+	if("current_position_percent__is_activated" in request.form):
+		return str(self._System.Curtain(curtain_id));
 
 
 # /api/curtains/<int:curtain_id>/deactivate
