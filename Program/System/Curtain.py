@@ -111,7 +111,10 @@ class Curtain(DBClass):
 
 		# return if found in DB
 		if(CurtainEvents_data): event = CurtainEvent(**{**CurtainEvents_data, "Curtain": self});
-		if(not CurtainEvents_data or event.Curtains_id() != self._id): return None;
+		if(not CurtainEvents_data): return None;
+		if(event.Curtains_id() != self._id):
+			event.delete();
+			return None;
 		self._CurtainEvents[event.id()] = event;
 		return event;
 

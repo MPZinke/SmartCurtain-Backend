@@ -25,3 +25,8 @@ class Route:
 	# https://stackoverflow.com/a/40466535
 	def add_to_server(self, server: object) -> None:
 		server.add_url_rule(self._endpoint, self._endpoint, self._function, methods=self._methods);
+
+
+	def __str__(self):
+		f"{self._methods} {self._endpoint}"
+

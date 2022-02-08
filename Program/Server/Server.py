@@ -36,10 +36,14 @@ class Server(ZWidget):
 	from Server.Routes.Root import index, index_POST, edit, events, events_POST, new, new_GET, new_POST, favicon;
 
 	from Server.Routes.Advanced import advanced_logs;
+	from Server.Routes.Advanced import advanced_log__log_filename;
+
 	from Server.Routes.Api import api_update_deactivateevent;  # LEGACY
 	from Server.Routes.Api import api_curtains__id__is_activated;
-	from Server.Routes.Api import api_curtains__id__event_new_future;
-	from Server.Routes.Api import api_curtains__id__event_new_now;
+	from Server.Routes.Api import api_curtains__id__events_new;
+	from Server.Routes.Api import api_curtains__id__events_new_now;
+	from Server.Routes.Api import api_curtains__id__events_new_now_close;
+	from Server.Routes.Api import api_curtains__id__events_new_now_open;
 	from Server.Routes.Api import api_curtains__id__deactivate;
 	from Server.Routes.Api import api_curtains__id__is_activated__is_activated;
 	# from Server.Routes.Api import api_create_future;
@@ -65,15 +69,24 @@ class Server(ZWidget):
 		  Route("/favicon", self.favicon),
 		  # Advanced
 		  Route("/advanced/logs", self.advanced_logs),
+		  Route("/advanced/log/<string:log_filename>", self.advanced_log__log_filename),
 		  # API
 		  # API::LEGACY
 		  Route("/api/update/deactivateevent", self.api_update_deactivateevent, "POST"),
 		  # API::CURRENT
+		  # Route("/api", self., "GET"),  # Docs
+		  # Route("/api/curtains", self., "GET"),  # Docs
+		  # Route("/api/curtains/<int:curtain_id>", self., "GET"),
+		  # Route("/api/curtains/<int:curtain_id>/events", self., "GET"),
 		  Route("/api/curtains/<int:curtain_id>/is_activated", self.api_curtains__id__is_activated, "POST"),
-		  Route("/api/curtains/<int:curtain_id>/event/new/future", self.api_curtains__id__event_new_future, "POST"),
-		  Route("/api/curtains/<int:curtain_id>/event/new/now", self.api_curtains__id__event_new_now, "POST"),
-		  Route("/api/curtains/<int:curtain_id>/deactivate", self.api_curtains__id__deactivate, "POST"),
-		  Route("/api/curtains/<int:curtain_id>/is_activated/<int:is_activated>", self.api_curtains__id__is_activated__is_activated, "POST"),
+		  # Route("/api/curtains/<int:curtain_id>/events/<int:event_id>", self., "GET"),
+		  # Route("/api/curtains/<int:curtain_id>/events/<int:event_id>/kill", self., "DELETE"),
+		  Route("/api/curtains/<int:curtain_id>/events/new", self.api_curtains__id__events_new, "POST"),
+		  Route("/api/curtains/<int:curtain_id>/events/new/now", self.api_curtains__id__events_new_now, "POST"),
+		  Route("/api/curtains/<int:curtain_id>/events/new/now/close", self.api_curtains__id__events_new_now_close, "POST"),
+		  Route("/api/curtains/<int:curtain_id>/events/new/now/open", self.api_curtains__id__events_new_now_open, "POST"),
+		  Route("/api/curtains/<int:curtain_id>/deactivate", self.api_curtains__id__deactivate, "PATCH"),
+		  Route("/api/curtains/<int:curtain_id>/is_activated/<int:is_activated>", self.api_curtains__id__is_activated__is_activated, "PATCH"),
 		];
 		self.add_routes();
 
