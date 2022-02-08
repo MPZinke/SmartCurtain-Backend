@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.23                                                                                                      #
+#   on 2022.02.07                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,27 +14,14 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import request, session;
-from os import getcwd as __OS__getcwd;
-from pathlib import Path as __pathlib__Path;
-import sys;
-from typing import Union;
-
-from Other.Global import *;
+class Route:
+	def __init__(self, endpoint: str, function: callable, *methods: list):
+		self._endpoint: str = endpoint;
+		self._function: callable = function;
+		self._methods: list = methods if(methods) else ["GET"];
 
 
-MAIN_HTML_DIR = PYTHON_DIR+"/Server/HTML/Root";
-STATIC_HTML_DIR = PYTHON_DIR+"/Server/HTML/Static";
-
-
-def add_error_and_redirect(error_message: str, redirect_url: str) -> str:
-	session["error"] = error_message;
-	return redirect(redirect_url);
-
-
-def get_posted_value(*args)-> list:
-	return [request.form[value] for value in args];
-
-
-def posted(post : str) -> bool:
-	return post in request.form;
+	# Instead of @app.route decorator, adds a route to the server.
+	# https://stackoverflow.com/a/40466535
+	def add_to_server(self, server: object) -> None:
+		server.add_url_rule(self._endpoint, self._endpoint, self._function, methods=self._methods);

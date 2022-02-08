@@ -55,6 +55,12 @@
 			<a href='/edit' onclick='__WRAPPER__close_nav()'>
 				Edit {% if request.path == "/edit" %} <span>&bull;</span> {% endif %}
 			</a>
+			<a href='/advanced/logs' onclick='__WRAPPER__close_nav()'>
+				Logs 
+				{% if request.path == "/advanced/logs" or request.path == "/advanced/log" %}
+					<span>&bull;</span>
+				{% endif %}
+			</a>
 		</div>
 		<div>
 			<table style='width:100%'>
@@ -121,7 +127,7 @@
 	function __WRAPPER__update_current_light()
 	{
 		$.ajax({
-			url: "/state/{{ header.selected_curtain().id() }}",
+			url: "/api/curtains/{{ header.selected_curtain().id() }}/is_activated",
 			type: "POST",
 			dataType: "json",
 			data: {"current_position_percent__is_activated" : true},
