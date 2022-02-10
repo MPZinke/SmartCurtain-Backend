@@ -32,19 +32,21 @@ class System(ZWidget):
 	def __init__(self):
 		ZWidget.__init__(self, "System", self);
 		self._mutex = Lock();
-		self._Curtains = None;
-		self._Options = None;
-		self._Options_names = None;
+		self._Curtains: dict = {};
+		self._Options: dict = {};
+		self._Options_names: dict = {};
 		self.refresh();
 
 
+	# SUMMARY: Used for if DB values have changed and System information needs to be refreshed.
 	def refresh(self) -> None:
 		self._mutex.acquire();  # just to ensure things are executed properly
 		try:
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
 			selected_curtains = SELECT_Curtains(cursor);
-			[curtain.delete_events() for curtain in self._Curtains];  # Cleanup events since destructor doesn't work
+			# Cleanup events since destructor doesn't work, especially when called by dict reassignment.
+			[curtain.delete_events() for curtain in self._Curtains.values()];
 			self._Curtains = {curtain["id"]: Curtain(**{**curtain, "System": self}) for curtain in selected_curtains};
 			self._Options = {option["id"]: Option(**option) for option in SELECT_Options(cursor)};
 			self._Options_names = {self._Options[opt].name(): self._Options[opt] for opt in self._Options};

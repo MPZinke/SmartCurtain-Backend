@@ -46,7 +46,7 @@ class Curtain(DBClass):
 
 	# Call event destructors, because they are not called simply from leaving scope, which leaves straggling threads.
 	def delete_events(self):
-		for curtain_event in self._CurtainEvents.values():
+		for curtain_event in [value for value in self._CurtainEvents.values()]:
 			curtain_event.delete();
 
 
