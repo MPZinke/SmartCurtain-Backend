@@ -79,8 +79,12 @@ class CurtainEvent(DBClass):
 
 
 	def delete(self):
-		try: self.__activation_thread.kill();  # kill here just incase it isn't found in the dictionary
-		finally: del self._Curtain.CurtainEvents()[self._id];  # clear event from structure (later tater)
+		# kill here since destructor doesn't kill very well
+		try:
+			self.__activation_thread.kill();
+		# clear event from structure (later tater)
+		finally:
+			del self._Curtain.CurtainEvents()[self._id];
 
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————

@@ -41,10 +41,10 @@ class System(ZWidget):
 	def refresh(self) -> None:
 		self._mutex.acquire();  # just to ensure things are executed properly
 		try:
-			self._delete_curtains()
 			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 
 			selected_curtains = SELECT_Curtains(cursor);
+			[curtain.delete_events() for curtain in self._Curtains];  # Cleanup events since destructor doesn't work
 			self._Curtains = {curtain["id"]: Curtain(**{**curtain, "System": self}) for curtain in selected_curtains};
 			self._Options = {option["id"]: Option(**option) for option in SELECT_Options(cursor)};
 			self._Options_names = {self._Options[opt].name(): self._Options[opt] for opt in self._Options};
@@ -53,14 +53,6 @@ class System(ZWidget):
 
 		finally:
 			self._mutex.release();
-
-
-	# Designed to call curtain destructor (because it is not called immediately when going out of scope)
-	def _delete_curtains(self):
-		if(not isinstance(self._Curtains, dict)): return
-
-		for curtain in self._Curtains.values():
-			del curtain
 
 
 	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
