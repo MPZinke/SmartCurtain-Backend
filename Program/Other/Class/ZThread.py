@@ -42,7 +42,8 @@ class ZThread(Thread):
 	# Ends a thread.
 	# Releases loop, wakes sleeping condition, joins thread with rest of program.
 	def kill(self) -> None:
-		if(not self._is_active and not self.is_alive()): raise Exception("Thread is already killed");
+		if(not self._is_active and not self.is_alive()):
+			raise Exception(f"Thread {self.name} is already killed");
 
 		self._is_active = False;
 		with self._condition: self._condition.notify();

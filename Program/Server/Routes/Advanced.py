@@ -37,5 +37,6 @@ def advanced_logs(self):
 	self.set_session_and_header();
 
 	logs = [log for log in os.listdir(LOG_DIR) if(os.path.isfile(os.path.join(LOG_DIR, log)))];
+	logs.sort(reverse=True)
 
 	return render_template("Advanced/Logs.html", header=self._header, logs=logs);

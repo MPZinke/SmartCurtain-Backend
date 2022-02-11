@@ -76,10 +76,9 @@ class AdafruitFeed(ZWidget):
 			# if curtain has active CurtainOption for AdafruitIO && CurtainOption has 2 CurtainOptionKeyValue:
 			if(not curtain_option or not curtain_option.is_on()): continue;
 			#HARDCODED: then minimum number of feeds per curtain
-			current_key_values = [option for option in curtain_option.CurtainOptionKeyValues() if option.is_current()];
-			if(len(current_key_values) < 2): continue;
+			if(len(curtain_option.data()) < 2): continue;
 
-			[client.subscribe(option.key()) for option in current_key_values];
+			[client.subscribe(option) for option in curtains_option.data()];
 
 
 	def _disconnect(self):
