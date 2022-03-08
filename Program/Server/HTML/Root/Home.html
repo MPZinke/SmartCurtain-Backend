@@ -12,7 +12,7 @@
 		{% if header.selected_curtain().is_smart() %}
 			<div class='input_div' style='width:100%;'>
 				<input id='desired_position_input' name='desired_position_input' class='input' type='number' 
-				  min='0' max='100' step='1' value='{{ header.selected_curtain().current_position_percent_int() }}'
+				  min='0' max='100' step='1' value='{{ header.selected_curtain().current_percentage() }}'
 				  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
 			</div>
 
@@ -22,7 +22,7 @@
 						<button name='close_button' class='button background_color' style='background-color:inherit;'>Closed</button>
 					</td>
 					<td width='60%' align='middle'>
-						<input id='slider_input' value='{{ header.selected_curtain().current_position_percent_int() }}'
+						<input id='slider_input' value='{{ header.selected_curtain().current_percentage() }}'
 						  type='range' min='0' max='100'/>
 					</td>
 					<td width='20%' align='left'>
@@ -36,10 +36,10 @@
 			</button>
 		{% else %}
 			<input id='desired_position_input' name='desired_position_input' type='number' style='display:none;'
-			  value='{{ 0 if header.selected_curtain().current_position_percent_int() else 100 }}' hidden/>
+			  value='{{ 0 if header.selected_curtain().current_percentage() else 100 }}' hidden/>
 			<button id='set_button' name='set_button' class='button'
 			  style='display:block; margin:auto; margin-top:25px;'>
-				{% if header.selected_curtain().current_position_percent_int() %}
+				{% if header.selected_curtain().current_percentage() %}
 					Close
 				{% else %}
 					Open

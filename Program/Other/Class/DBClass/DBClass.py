@@ -15,9 +15,11 @@ __author__ = "MPZinke"
 
 
 import json;
-from typing import Any, Union;
+from typing import Any, List, Type, Union;
 
 
+from Other.Class.DBClass.AttributeType import AttributeType;
+from Other.Class.DBClass.AttributeValue import AttributeValue;
 from Other.DB.DBCredentials import *;
 import Other.DB.DBFunctions as DBFunctions;
 from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
@@ -77,23 +79,52 @@ class DBClass:
 		return self.try_call(json.dumps, str_dict, default="");
 
 
+	def __call__(self, attribute_name: str, conversion_type: Type=AttributeType):
+		if(not hasattr(self, attribute_name)):
+			raise TypeError(f"DB Object is missing attribute: {attribute_name}");
+
+		if(conversion_type == AttributeType):
+			return AttributeType(attribute_name, type(getattr(self, attribute_name)));
+
+		elif(conversion_type == AttributeValue):
+			return AttributeValue(attribute_name, getattr(self, attribute_name));
+
+
 	# Check key value types of dictonary for attributes to be passed to dictionary.
+	def validate(self, attribute_types: Union[List[AttributeType], None]=None) -> None:
+		if(attribute_types is None):
+			attribute_types = self.attribute_types;
+
+		print("I'M FREAKING SCREAMING AT YOU")
+		print(attribute_types)
+		for attribute_type in attribute_types:
+			attribute_value: AttributeValue = self(attribute_type.name());
+			if(attribute_type != attribute_value):
+				print(f"Key: {key} is bad");
+				key: str = attribute_type.name();
+				value: Any = attribute_value.value();
+				value_type_name: str = type(attribute_value.value()).__name__;
+				required_type_name: str = attribute_type.allowed_types();
+				raise TypeError(f"'{key}' value {value}, type: {value_type_name} is not of type {required_type_name}");
+			print(f"Key: {key} is good");
+
+
+
 	@staticmethod
-	def validate_data(keys: list, types: list, values: dict) -> None:
-		for key in keys:
-			if(key not in values):
-				raise Exception(f"Missing argument: {key}");
+	def validate_values(attribute_types: List[AttributeType], attribute_values: List[AttributeValue]):
+		for attribute_type in attribute_types:
+			# Get attribute_value for the attribute_type
+			corresponding_attribute_values: List[AttributeValue] = [];
+			for attribute_value in attribute_values:
+				if(attribute_value.name() == attribute_type.name()):
+					corresponding_attribute_value.append(attribute_value);
+			if(not len(corresponding_attribute_values)):
+				raise TypeError(f"attribute_types are missing attribute: {attribute_value.name()}");
 
-		if(len(keys) != len(types)):
-			raise Exception("Length of keys does not equal length of types");
-
-		for x in range(len(keys)):
-			value = values[keys[x]];
-			type_list = types[x] if(isinstance(types[x], list)) else [types[x]];
-			
-			if(any(isinstance(value, t) for t in type_list)): continue
-
-			key = keys[x];
-			value_type_name = type(value).__name__;
-			required_type_name = " or".join([t.__name__ for t in type_list]);
-			raise TypeError(f"'{key}' value {value}, type: {value_type_name} is not of type {required_type_name}");
+			attribute_value: AttributeValue = corresponding_attribute_values[0];
+			if(attribute_type != attribute_value):
+				key: str = attribute_type.name();
+				value: Any = attribute_value.value();
+				value_type_name: str = type(attribute_value.value()).__name__;
+				required_type_name: str = attribute_type.allowed_types();
+				raise TypeError(f"'{key}' value {value}, type: {value_type_name} is not of type {required_type_name}");

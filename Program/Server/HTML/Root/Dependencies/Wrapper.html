@@ -69,19 +69,19 @@
 					  style='width: 
 					  {% if header.selected_curtain().is_activated() %} 0%;
 					  {% else %}
-						{{ ((100 - header.selected_curtain().current_position_percent_int()) / 2) | int }}%
+						{{ ((100 - header.selected_curtain().current_percentage()) / 2) | int }}%
 					  {% endif %}'></td>
 					<td id='__WRAPPER__current_light_td_middle'
 					  style='width: 
 					  {% if header.selected_curtain().is_activated() %} 100%; background-color:#33FF33;
 					  {% else %}
-						{{ header.selected_curtain().current_position_percent_int() }}%; background-color:#FFFFAA;
+						{{ header.selected_curtain().current_percentage() }}%; background-color:#FFFFAA;
 					  {% endif %}'></td>
 					<td id='__WRAPPER__current_light_td_right'
 					  style='width: 
 					  {% if header.selected_curtain().is_activated() %} 0%;
 					  {% else %}
-						{{ ((100 - header.selected_curtain().current_position_percent_int()) / 2) | int }}%
+						{{ ((100 - header.selected_curtain().current_percentage()) / 2) | int }}%
 					  {% endif %}'>
 					</td>
 				</tr>
@@ -97,7 +97,7 @@
 </html>
 <script>
 	// Current known position
-	var __WRAPPER__current_known_position = {{ header.selected_curtain().current_position_percent_int() }};
+	var __WRAPPER__current_known_position = {{ header.selected_curtain().current_percentage() }};
 
 
 	function __WRAPPER__close_nav()
@@ -135,10 +135,10 @@
 			{
 				if("error" in response) return;
 				
-				__WRAPPER__current_known_position = response["current_position_percent_int"];
+				__WRAPPER__current_known_position = response["current_percentage"];
 
 				if(response["is_activated"]) __WRAPPER__set_current_light(100, "#33FF33");
-				else __WRAPPER__set_current_light(response["current_position_percent_int"]);
+				else __WRAPPER__set_current_light(response["current_percentage"]);
 			},
 			error: function(response)
 			{

@@ -52,7 +52,7 @@ class Header:
 	def state_string(self, curtain: object=None) -> str:
 		if(not curtain): curtain = self._selected_curtain;
 		if(curtain.is_activated()): return "Moving";
-		return {0: "Closed", 100: "Fully Open"}.get(curtain.current_position_percent_int(), "Open");
+		return {0: "Closed", 100: "Fully Open"}.get(curtain.current_percentage(), "Open");
 
 
 	def datetime_to_datetext(self, time: object) -> str:

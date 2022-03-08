@@ -125,22 +125,12 @@ class Curtain(DBClass):
 		return event;
 
 
-	# ——————————————————————————————————————————————————————— UI ———————————————————————————————————————————————————————
-
-	def current_position_percent_float(self) -> float:
-		return 100 / self._length * self._current_position;
-
-
-	def current_position_percent_int(self) -> int:
-		return int(100 / self._length * self._current_position);
-
-
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
-	def _new_event(self, *, desired_position: int=0, Options_id: int=None, time: object=None) -> int:
+	def _new_event(self, *, desired_percentage: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		kwargs = {"Curtain": self, "Options.id": Options_id, "desired_position": desired_position, "time": time};
+		kwargs = {"Curtain": self, "Options.id": Options_id, "desired_percentage": desired_percentage, "time": time};
 		new_CurtainEvent = CurtainEvent.New(**kwargs);
 		self._CurtainEvents[new_CurtainEvent.id()] = new_CurtainEvent;
 
@@ -150,26 +140,26 @@ class Curtain(DBClass):
 	def close(self, *, Options_id: int=None, time: object=None):
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		return self._new_event(desired_position=0, Options_id=Options_id, time=time);
+		return self._new_event(desired_percentage=0, Options_id=Options_id, time=time);
 
 
 	def close_immediately(self, Options_id : int=None) -> int:
 		return self._new_event(Options_id=Options_id);
 
 
-	def open(self, *, desired_position: int=0, Options_id: int=None, time: object=None) -> int:
+	def open(self, *, desired_percentage: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		return self._new_event(desired_position=desired_position, Options_id=Options_id, time=time);
+		return self._new_event(desired_percentage=desired_percentage, Options_id=Options_id, time=time);
 
 
-	def open_immediately(self, desired_position: int=0, Options_id: int=None) -> int:
-		CurtainEvent_id = self._new_event(desired_position=desired_position, Options_id=Options_id);
+	def open_immediately(self, desired_percentage: int=0, Options_id: int=None) -> int:
+		CurtainEvent_id = self._new_event(desired_percentage=desired_percentage, Options_id=Options_id);
 		return CurtainEvent_id if CurtainEvent_id else False;
 
 
-	def open_percentage(self, *, desired_position: int=0, Options_id: int=None, time: object=None) -> int:
+	def open_percentage(self, *, desired_percentage: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		desired_position = int(desired_position * self._length / 100);
-		return self._new_event(Options_id=Options_id, desired_position=desired_position, time=time);
+		desired_percentage = int(desired_percentage * self._length / 100);
+		return self._new_event(Options_id=Options_id, desired_percentage=desired_percentage, time=time);
