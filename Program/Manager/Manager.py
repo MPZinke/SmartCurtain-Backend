@@ -18,7 +18,7 @@ __author__ = "MPZinke"
 from Manager.AdafruitFeed import AdafruitFeed;
 from Manager.SunriseOpen import SunriseOpen;
 from Manager.SunsetClose import SunsetClose;
-from Other.Class.ZWidget import ZWidget;
+from Utility.ZThread import ZWidget;
 
 
 class Manager(ZWidget):

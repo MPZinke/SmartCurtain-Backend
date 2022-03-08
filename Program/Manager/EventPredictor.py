@@ -42,12 +42,13 @@ from datetime import datetime, timedelta;
 import warnings;
 from warnings import warn as Warn;
 
+
+from Global import *;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
-from Other.Class.ZWidget import ZWidget;
-from Other.Global import *;
-from Other.Global import tomorrow_00_00, warning_message;
-import Other.Logger as Logger;
+from Utility import tomorrow_00_00, warning_message;
+import Utility.Logger as Logger;
+from Utility.ZThread import ZWidget;
 
 
 class EventTime:

@@ -96,8 +96,8 @@
 	</body>
 </html>
 <script>
-	// Current known position
-	var __WRAPPER__current_known_position = {{ header.selected_curtain().current_percentage() }};
+	// Current known percentage
+	var __WRAPPER__current_known_percentage = {{ header.selected_curtain().current_percentage() }};
 
 
 	function __WRAPPER__close_nav()
@@ -130,12 +130,12 @@
 			url: "/api/curtains/{{ header.selected_curtain().id() }}/is_activated",
 			type: "POST",
 			dataType: "json",
-			data: {"current_position_percent__is_activated" : true},
+			data: {"current_percentage_percent__is_activated" : true},
 			success: function(response)
 			{
 				if("error" in response) return;
 				
-				__WRAPPER__current_known_position = response["current_percentage"];
+				__WRAPPER__current_known_percentage = response["current_percentage"];
 
 				if(response["is_activated"]) __WRAPPER__set_current_light(100, "#33FF33");
 				else __WRAPPER__set_current_light(response["current_percentage"]);

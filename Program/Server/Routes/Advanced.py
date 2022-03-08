@@ -18,8 +18,8 @@ from flask import redirect, render_template, request, session;
 import os;
 
 
-from Other.Global import LOG_DIR;
-import Other.Logger as Logger;
+from Global import LOG_DIR;
+import Utility.Logger as Logger;
 
 
 # /advanced/log/<string:log_filename>

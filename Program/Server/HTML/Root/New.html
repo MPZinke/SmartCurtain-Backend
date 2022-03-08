@@ -9,13 +9,13 @@
 		<input id='time_input' name='time_input' class='input mobile_input' type='time' value='{{ time_plus_hour }}'/>
 		
 		{% if header.selected_curtain().is_smart() %}
-			<input id='position_input' name='position_input'  class='input mobile_input' type='number' min='0' max='100' step='1'
+			<input id='percentage_input' name='percentage_input'  class='input mobile_input' type='number' min='0' max='100' step='1'
 			  value='{{ 100 - header.selected_curtain().current_percentage() }}'
 			  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
 			<input id='slider_input' value='{{ 100 - header.selected_curtain().current_percentage() }}' type='range' 
 			  min='0' max='100'/>
 		{% else %}
-			<select id='position_input' name='position_input' class='input mobile_input'>
+			<select id='percentage_input' name='percentage_input' class='input mobile_input'>
 				<option value='0'>
 					Close
 				</option>

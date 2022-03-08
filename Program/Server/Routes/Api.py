@@ -19,9 +19,8 @@ from datetime import datetime;
 from json import loads as JSON_loads;
 from re import search as RE_search;
 
-from Other.DB.DBCredentials import *;
-from Other.DB.DBFunctions import __CONNECT__;
-import Other.Logger as Logger;
+
+import Utility.Logger as Logger;
 
 
 def try_decorator(function):
@@ -49,9 +48,9 @@ def api_curtains__id__is_activated__is_activated(self, curtain_id: int, is_activ
 	print(json);  #TESTING
 
 	# Scrub & validate data from JSON
-	keys = ["current position", "event", "length"]
-	current_position, event_id, length = [json.get(key) for key in keys];
-	if(not isinstance(current_position, int)): raise Exception("\\\"current position\\\" value is wrong type");
+	keys = ["current percentage", "event", "length"]
+	current_percentage, event_id, length = [json.get(key) for key in keys];
+	if(not isinstance(current_percentage, int)): raise Exception("\\\"current percentage\\\" value is wrong type");
 	if(not isinstance(curtain_id, int)): raise Exception("\\\"curtain\\\" value is wrong type");
 	if(not isinstance(length, int)): raise Exception("\\\"length\\\" value is wrong type");
 
@@ -59,7 +58,7 @@ def api_curtains__id__is_activated__is_activated(self, curtain_id: int, is_activ
 	curtain = self._System.Curtain(curtain_id);
 	if(not curtain): raise Exception("No curtain for ID found");
 	if(not curtain.is_activated(is_activated)): raise Exception("Unable to update Curtain activation");
-	if(not curtain.current_position(current_position)): raise Exception("Unable to update position");
+	if(not curtain.current_percentage(current_percentage)): raise Exception("Unable to update percentage");
 	if(not curtain.length(length)): raise Exception("Unable to update length");
 
 	return "{\"success\" : \"Updated event\"}";
@@ -73,16 +72,16 @@ def api_curtains__id__events_new(self):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
 	# get from JSON, check types
-	curtain, desired_position, time = [json[key] for key in ["curtain", "desired position", "time"]];
+	curtain, desired_percentage, time = [json[key] for key in ["curtain", "desired percentage", "time"]];
 	if(not isinstance(curtain, int)): raise Exception("\\\"event\\\" value is wrong type");
-	if(not isinstance(desired_position, int)): raise Exception("\\\"desired position\\\" value is wrong type");
+	if(not isinstance(desired_percentage, int)): raise Exception("\\\"desired percentage\\\" value is wrong type");
 
 	# get/check curtain, convert time
 	curtain = self._System.Curtain(curtain);
 	if(not curtain): raise Exception("No curtain for ID found");
 	time = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S");
 	# execute curtain
-	event_id = curtain.open(desired_position=desired_position, time=time)
+	event_id = curtain.open(desired_percentage=desired_percentage, time=time)
 	if(not event_id): raise Exception("Could not create event");
 	return "{\"success\" : \"True\", \"event\" : {}}".format(event_id);
 
@@ -92,13 +91,13 @@ def api_curtains__id__events_new(self):
 def api_curtains__id__events_new_now(self):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
-	curtain, desired_position = [json[key] for key in ["curtain", "desired position"]];
+	curtain, desired_percentage = [json[key] for key in ["curtain", "desired percentage"]];
 	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
-	if(not isinstance(desired_position, int)): raise Exception("\\\"desired position\\\" value is wrong type");
+	if(not isinstance(desired_percentage, int)): raise Exception("\\\"desired percentage\\\" value is wrong type");
 
 	curtain = self._System.Curtain(curtain);
 	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.open_immediately(desired_position)): raise Exception("Could not create event");
+	if(not curtain.open_immediately(desired_percentage)): raise Exception("Could not create event");
 	return "{\"success\" : \"True\"}";
 
 
@@ -107,7 +106,7 @@ def api_curtains__id__events_new_now(self):
 def api_curtains__id__events_new_now_close(self):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
-	curtain, desired_position = [json[key] for key in ["curtain", "desired position"]];
+	curtain, desired_percentage = [json[key] for key in ["curtain", "desired percentage"]];
 	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
 
 	curtain = self._System.Curtain(curtain);
@@ -121,12 +120,12 @@ def api_curtains__id__events_new_now_close(self):
 def api_curtains__id__events_new_now_open(self):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
-	curtain, desired_position = [json[key] for key in ["curtain", "desired position"]];
+	curtain, desired_percentage = [json[key] for key in ["curtain", "desired percentage"]];
 	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
 
 	curtain = self._System.Curtain(curtain);
 	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.open_percentage(desired_position=100)): raise Exception("Could not create event");
+	if(not curtain.open_percentage(desired_percentage=100)): raise Exception("Could not create event");
 	return "{\"success\" : \"True\"}";
 
 
@@ -136,7 +135,7 @@ def api_curtains__id__events_new_now_open(self):
 def api_curtains__id__is_activated(self, curtain_id: int):
 	if(curtain_id not in self._System.Curtains()): return {"error"};
 
-	if("current_position_percent__is_activated" in request.form):
+	if("current_percentage_percent__is_activated" in request.form):
 		return str(self._System.Curtain(curtain_id));
 
 
@@ -145,7 +144,7 @@ def api_curtains__id__is_activated(self, curtain_id: int):
 def api_curtains__id__deactivate(self, curtain_id: int):
 	json = JSON_loads("["+request.get_json()+"]")[0];
 
-	current_pos, event, length = [json[key] for key in ["current position", "event", "length"]];
+	current_pos, event, length = [json[key] for key in ["current percentage", "event", "length"]];
 	if(not isinstance(current_pos, int)): raise Exception("\\\"current_pos\\\" value is wrong type");
 	if(not isinstance(event, int)): raise Exception("\\\"event\\\" value is wrong type");
 	if(not isinstance(length, int)): raise Exception("\\\"length\\\" value is wrong type");
@@ -154,7 +153,7 @@ def api_curtains__id__deactivate(self, curtain_id: int):
 	curtain = self._System.Curtain(curtain_id);
 	if(not curtain): raise Exception("No curtain for ID found");
 	if(not curtain.is_activated(False)): raise Exception("Unable to update Curtain activation");
-	if(not curtain.current_position(current_pos)): raise Exception("Unable to update position");
+	if(not curtain.current_percentage(current_pos)): raise Exception("Unable to update percentage");
 	if(not curtain.length(length)): raise Exception("Unable to update length");
 
 	return "{\"success\" : \"Updated Curtain\"}";

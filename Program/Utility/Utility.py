@@ -15,22 +15,7 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from pathlib import Path as __pathlib__Path;
 from typing import Any;
-import sys;
-
-
-# ———— Directories ————
-# __file__ == "SmartCurtain/Hub/Program/Other/Global.py"
-REPO_DIR = str(__pathlib__Path(__file__).absolute().parent.parent.parent.parent);  # /usr/local/SmartCurtain
-HUB_DIR = str(__pathlib__Path(__file__).absolute().parent.parent.parent);  # /usr/local/SmartCurtain/Hub
-DB_DIR = HUB_DIR+"/DB";  # /usr/local/SmartCurtain/Hub/DB
-PYTHON_DIR = str(__pathlib__Path(__file__).absolute().parent.parent);  # /usr/local/SmartCurtain/Hub/Program
-# ———— Directories::Other ————
-LOG_DIR = "/var/log/SmartCurtain"
-
-
-NONETYPE = type(None);
 
 
 # SUGAR

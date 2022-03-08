@@ -17,7 +17,8 @@ __author__ = "MPZinke"
 import json;
 from typing import Union;
 
-from Other.Class.DBClass import DBClass;
+
+from Utility.DBClass import DBClass;
 
 
 class CurtainOption(DBClass):

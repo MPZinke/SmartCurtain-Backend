@@ -20,7 +20,8 @@ from pathlib import Path as __pathlib__Path;
 import sys;
 from typing import Union;
 
-from Other.Global import *;
+
+from Global import *;
 
 
 MAIN_HTML_DIR = PYTHON_DIR+"/Server/HTML/Root";

@@ -14,7 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Other.Class.DBClass import DBClass;
+from Utility.DBClass import DBClass;
 
 
 class Option(DBClass):

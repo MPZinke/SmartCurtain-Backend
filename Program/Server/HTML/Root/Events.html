@@ -26,7 +26,7 @@
 						{{ header.datetime_to_timetext(header.selected_curtain().CurtainEvents()[event].time()) }}
 					</td>
 					<td width='50%' align='center'>
-						{{ header.selected_curtain().CurtainEvents()[event].desired_position() }}
+						{{ header.selected_curtain().CurtainEvents()[event].desired_percentage() }}
 					</td>
 					<td class="__td__delete" hidden>
 						<button onclick="delete_event({{ event }});"

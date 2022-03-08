@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2022.02.07                                                                                                      #
+#   on 2021.10.14                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,19 +14,6 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-class Route:
-	def __init__(self, endpoint: str, function: callable, *methods: list):
-		self._endpoint: str = endpoint;
-		self._function: callable = function;
-		self._methods: list = methods if(methods) else ["GET"];
-
-
-	# Instead of @app.route decorator, adds a route to the server.
-	# https://stackoverflow.com/a/40466535
-	def add_to_server(self, server: object) -> None:
-		server.add_url_rule(self._endpoint, self._endpoint, self._function, methods=self._methods);
-
-
-	def __str__(self):
-		f"{self._methods} {self._endpoint}"
-
+from Utility.DB.DBCredentials import *;
+from Utility.DB.DBFunctions import *;
+from Utility.DB.DBFunctions import __CLOSE__, __CONNECT__;

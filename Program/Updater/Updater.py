@@ -23,10 +23,10 @@ from subprocess import call as subprocess_call, check_output as subprocess_check
 from threading import Lock;
 
 # from Global import DB_DIR, substr;
-from Other.Global import *;
-from Other.Global import tomorrow_00_00;
+from Global import *;
 from Updater.Version import Version;
-from Other.Class.ZWidget import ZWidget;
+from Utility import tomorrow_00_00;
+from Utility.ZThread import ZWidget;
 
 
 class Updater(ZWidget):

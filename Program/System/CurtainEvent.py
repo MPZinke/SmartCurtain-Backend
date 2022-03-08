@@ -20,13 +20,12 @@ from time import sleep;
 from typing import Union;
 from warnings import warn as Warn;
 
-from Other.Class.DBClass import DBClass;
-from Other.Class.ZThreadSingle import ZThreadSingle;
-from Other.DB.DBCredentials import *;
-from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
-from Other.DB.DBFunctions import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
-from Other.Global import *;
-import Other.Logger as Logger;
+from Global import *;
+from Utility.DBClass import AttributeType, AttributeValue, DBClass;
+from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
+from Utility.DB import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
+from Utility.ZThread import ZThreadSingle;
+import Utility.Logger as Logger;
 
 
 class CurtainEvent(DBClass):
@@ -38,12 +37,12 @@ class CurtainEvent(DBClass):
 
 		from System.Curtain import Curtain as Curtain;  # must be imported here to prevent circular importing
 		self.attribute_types: AttributeType =	[
-													AttributeType("Curtain", Curtain),
-													AttributeType("id", int),
-													AttributeType("desired_percentage", [int, NONETYPE]),
-													AttributeType("is_activated", [int, bool, NONETYPE]),
-													AttributeType("is_current", [int, bool, NONETYPE]),
-													AttributeType("time", datetime)
+													AttributeType("_Curtain", Curtain),
+													AttributeType("_id", int),
+													AttributeType("_desired_percentage", [int, NONETYPE]),
+													AttributeType("_is_activated", [int, bool, NONETYPE]),
+													AttributeType("_is_current", [int, bool, NONETYPE]),
+													AttributeType("_time", datetime)
 												];
 		self.validate();
 
@@ -120,7 +119,7 @@ class CurtainEvent(DBClass):
 			if(not curtain.is_smart() and curtain.is_safe() and curtain.current_percentage() == self._desired_percentage):
 				raise Exception("Curtain will not move to a state it believes itself to already be in [is_safe=TRUE]");
 
-			response = post(url=f"http://{curtain.ip_address()}", json=post_json, timeout=buffer_time/10+1);
+			response = post(url=f"http://{curtain.ip_address()}", json=post_json, timeout=curtain.buffer_time()/10+1);
 			if(response.status_code != 200):
 				raise Exception(f"Status code for event: {self._id} is invalid");
 			if("error" in response.json()):

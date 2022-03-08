@@ -17,11 +17,12 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta;
 from flask import redirect, render_template, request, session;
 
-from Other.Class.Header import Header;
-from Other.Global import try_convert;
-import Other.Logger as Logger;
+
 from Server.ServerGlobal import *;
 from Server.ServerGlobal import posted;
+import Utility.Logger as Logger;
+from Utility import try_convert;
+from Utility.WebSite import Header;
 
 
 # —————————————————————————————————————————————————————— INDEX  —————————————————————————————————————————————————————— #
@@ -42,8 +43,8 @@ def index_POST(self):
 		if(posted("open_button")): header.selected_curtain().open_immediately(header.selected_curtain().length());
 		elif(posted("close_button")): header.selected_curtain().close_immediately();
 		elif(posted("set_button")):
-			position = int(request.form["desired_position_input"])
-			header.selected_curtain().open_percentage(desired_position=position);
+			percentage = int(request.form["desired_percentage_input"])
+			header.selected_curtain().open_percentage(desired_percentage=percentage);
 			session["success"] = "Successfully created event";
 
 	except Exception as error:
@@ -74,6 +75,8 @@ def events(self):
 
 def events_POST(self):
 	try:
+		header = self._header;
+
 		# if(not (event_id := try_convert(*get_posted_value("event_id"), int)) or not isinstance(event_id, int)):
 		event_id = try_convert(*get_posted_value("event_id"), int);
 		if(not event_id or not isinstance(event_id, int)):
@@ -110,17 +113,17 @@ def new_GET(self):
 
 def new_POST(self):
 	try:
-		if(posted("date_input") and posted("time_input") and posted("position_input")):
-			date_input, time_input, position_input = get_posted_value("date_input", "time_input", "position_input");
+		if(posted("date_input") and posted("time_input") and posted("percentage_input")):
+			date_input, time_input, percentage_input = get_posted_value("date_input", "time_input", "percentage_input");
 			date_time = datetime.strptime(f"{date_input} {time_input}", "%Y-%m-%d %H:%M");
-			position = int(position_input);
+			percentage = int(percentage_input);
 
-			self._header.selected_curtain().open_percentage(desired_position=position, time=date_time);
-			session["success"] = f"Successfully created event for {date_input} {time_input} at {position}";
+			self._header.selected_curtain().open_percentage(desired_percentage=percentage, time=date_time);
+			session["success"] = f"Successfully created event for {date_input} {time_input} at {percentage}";
 
 		elif(not posted("date_input")): raise Exception("Value date_input not found");
 		elif(not posted("time_input")): raise Exception("Value time_input not found");
-		elif(not posted("position_input")): raise Exception("Value position_input not found");
+		elif(not posted("percentage_input")): raise Exception("Value percentage_input not found");
 
 	except Exception as error:
 		Logger.log_error(error);

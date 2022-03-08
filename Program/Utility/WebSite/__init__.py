@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2022.03.07                                                                                                      #
+#   on 2021.10.14                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,21 +14,5 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Any, Union;
-
-
-from Other.Class.DBClass.Attribute import Attribute;
-
-
-class AttributeType(Attribute):
-	def __init__(self, name: Union[str, object], types: Union[Any, list]):
-		Attribute.__init__(self, name);
-		self._types: Union[Any, list] = types if(isinstance(types, list)) else [types];
-
-
-	def types() -> str:
-		return self._types;
-
-
-	def allowed_types(self) -> str:
-		return " or ".join([type_instance.__name__ for type_instance in self._types]);
+from Utility.WebSite.Header import Header;
+from Utility.WebSite.Route import Route;

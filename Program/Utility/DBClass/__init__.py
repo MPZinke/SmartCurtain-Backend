@@ -5,10 +5,15 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2021.10.14                                                                                                      #
+#   on 2022.03.07                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
 ########################################################################################################################
+
+
+from Utility.DBClass.AttributeType import AttributeType;
+from Utility.DBClass.AttributeValue import AttributeValue;
+from Utility.DBClass.DBClass import DBClass;

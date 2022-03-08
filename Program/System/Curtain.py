@@ -17,13 +17,15 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta;
 from typing import Union;
 
-from Other.Class.DBClass import DBClass;
-from Other.DB.DBCredentials import *;
-from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
-from Other.DB.DBFunctions import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
-import Other.Logger as Logger;
+
+from Global import NONETYPE;
 from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
+from Utility.DBClass import DBClass;
+from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
+from Utility.DB import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
+import Utility.Logger as Logger;
+from Utility.DBClass import AttributeType;
 
 
 class Curtain(DBClass):
@@ -35,6 +37,22 @@ class Curtain(DBClass):
 		current_events = SELECT_current_CurtainsEvents(cursor, self._id)
 		curtains_options = SELECT_CurtainsOptions(cursor, self._id);
 		__CLOSE__(cnx, cursor);
+
+		self.attribute_types: AttributeType =	[
+													AttributeType("_id", int),
+													AttributeType("_buffer_time", [int, bool, NONETYPE]),
+													AttributeType("_current_percentage", [int, NONETYPE]),
+													AttributeType("_direction", [int, bool, NONETYPE]),
+													AttributeType("_ip_address", [str, NONETYPE]),
+													AttributeType("_is_activated", [int, bool, NONETYPE]),
+													AttributeType("_is_current", [int, bool, NONETYPE]),
+													AttributeType("_is_safe", [int, bool, NONETYPE]),
+													AttributeType("_is_smart", [int, bool, NONETYPE]),
+													AttributeType("_port", [int, bool, NONETYPE]),
+													AttributeType("_length", [int, bool, NONETYPE]),
+													AttributeType("_name", [str])
+												];
+		self.validate();
 
 		self._CurtainEvents = {event["id"]: CurtainEvent(**{**event, "Curtain": self}) for event in current_events};
 		self._CurtainOptions_dict = {option["Options.id"]: CurtainOption(**option) for option in curtains_options};

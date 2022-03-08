@@ -14,17 +14,35 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Any;
+from typing import Any, Union;
 
 
-from Other.Class.DBClass.Attribute import Attribute;
+class Attribute:
+	def __init__(self, name: Union[str, object]):
+		self._name: str = name;
 
 
-class AttributeValue(Attribute):
-	def __init__(self, name, value):
-		Attribute.__init__(self, name);
-		self._value: Any = value;
+	def __eq__(self, AttrType_or_Value) -> bool:
+		from Utility.DBClass.AttributeType import AttributeType;
+		from Utility.DBClass.AttributeValue import AttributeValue;
+
+		if(not isinstance(AttrType_or_Value, AttributeType) and not isinstance(AttrType_or_Value, AttributeValue)):
+			raise Exception(f"'{type(AttrType_or_Value)}' is not of type AttributeType or AttributeValue");
+
+		if(self._name != AttrType_or_Value.name()):
+			return False;
+
+		if(isinstance(AttrType_or_Value, AttributeValue)):
+			return type(AttrType_or_Value.value()) in self._types;
+
+		# Compare AttributeTypes
+		attr_types = AttrType_or_Value.types();
+		return any(attr1_type == attr2_type for attr1_type in self._types for attr2_type in attr_types);
 
 
-	def value(self) -> Any:
-		return self._value;
+	def __ne__(self, AttrType_or_Value) -> bool:
+		return not (self == AttrType_or_Value);
+
+
+	def name(self) -> str:
+		return self._name;

@@ -11,7 +11,7 @@
 	<form method='post' onsubmit='check_movement_features();'>
 		{% if header.selected_curtain().is_smart() %}
 			<div class='input_div' style='width:100%;'>
-				<input id='desired_position_input' name='desired_position_input' class='input' type='number' 
+				<input id='desired_percentage_input' name='desired_percentage_input' class='input' type='number' 
 				  min='0' max='100' step='1' value='{{ header.selected_curtain().current_percentage() }}'
 				  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
 			</div>
@@ -35,7 +35,7 @@
 				Set Curtain
 			</button>
 		{% else %}
-			<input id='desired_position_input' name='desired_position_input' type='number' style='display:none;'
+			<input id='desired_percentage_input' name='desired_percentage_input' type='number' style='display:none;'
 			  value='{{ 0 if header.selected_curtain().current_percentage() else 100 }}' hidden/>
 			<button id='set_button' name='set_button' class='button'
 			  style='display:block; margin:auto; margin-top:25px;'>
@@ -57,25 +57,25 @@
 	}
 
 
-	// Checks whether the desired position is the current position.
-	// Gets the desired position and known last known position. If values are the same, calls a confirm dialog to
+	// Checks whether the desired percentage is the current percentage.
+	// Gets the desired percentage and known last known percentage. If values are the same, calls a confirm dialog to
 	//  see if user wants to call a possibly redundant (SmartCurtain) call or an overriding (DumbCurtain) call.
 	function check_movement_features()
 	{
-		var current_position = __WRAPPER__current_known_position;
+		var current_percentage = __WRAPPER__current_known_percentage;
 
 		{% if header.selected_curtain().is_smart() %}
-			var desired_position = document.getElementById("desired_position_input").value;
+			var desired_percentage = document.getElementById("desired_percentage_input").value;
 
-			if(desired_position != current_position) return true;
+			if(desired_percentage != current_percentage) return true;
 
-			var text =	`Desired position ${desired_position}% matches current position of ${current_position}%\n`
+			var text =	`Desired percentage ${desired_percentage}% matches current percentage of ${current_percentage}%\n`
 						  + `Please confirm event`;
 			return confirm(text);
 		{% else %}
-			if(current_position) current_position = 0;
-			else current_position = 100;
-			document.getElementById("desired_position_input").value = current_position;
+			if(current_percentage) current_percentage = 0;
+			else current_percentage = 100;
+			document.getElementById("desired_percentage_input").value = current_percentage;
 			return true;
 		{% endif %}
 	}
@@ -88,9 +88,9 @@
 		{
 			document.getElementById("curtain_state_header").innerHTML = "Curtain is Moving";
 		}
-		else if(__WRAPPER__current_known_position)
+		else if(__WRAPPER__current_known_percentage)
 		{
-			if(__WRAPPER__current_known_position == 100)
+			if(__WRAPPER__current_known_percentage == 100)
 			{
 				document.getElementById("curtain_state_header").innerHTML = "Curtain is Fully Open";
 			}
@@ -116,7 +116,7 @@
 		// Update the current slider value (each time you drag the slider handle)
 		document.getElementById("slider_input").oninput = function()
 		{
-			document.getElementById("desired_position_input").value = this.value;
+			document.getElementById("desired_percentage_input").value = this.value;
 		}
 	{% endif %}
 

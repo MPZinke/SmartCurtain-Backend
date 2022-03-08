@@ -22,11 +22,12 @@ from time import sleep;
 import warnings;
 from warnings import warn as Warn;
 
+
+from Global import *;
 from Manager.ManagerGlobal import *;
-from Other.Class.ZWidget import ZWidget;
-from Other.Global import *;
-from Other.Global import try_convert, warning_message;
-import Other.Logger as Logger;
+from Utility import try_convert, warning_message;
+import Utility.Logger as Logger;
+from Utility.ZThread import ZWidget;
 
 
 
@@ -50,21 +51,21 @@ class AdafruitFeed(ZWidget):
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
 
-	def _activate(self, client, feed_id, position_payload):
-		print(f"AdafruitFeed: client: {client}, feed_id: {feed_id}, position: {position_payload}");
+	def _activate(self, client, feed_id, percentage_payload):
+		print(f"AdafruitFeed: client: {client}, feed_id: {feed_id}, percentage: {percentage_payload}");
 		try:
 			# Get the curtain for feed ID
 			curtain = self._curtain_for_feed_id(feed_id);
 			if(not curtain): raise Exception(f"Feed ID: {feed_id} not found");
 
-			# Convert Option to position
+			# Convert Option to percentage
 			curtain_option = curtain.CurtainOption(self._option_id);
-			position = try_convert(position_payload, int) or try_convert(curtain_option.data().get(feed_id, 0), int);
-			print(f"Curtain: {curtain.name()}, feed: {feed_id}, position: {position}");
-			if(isinstance(position, NONETYPE)): raise Exception("Could not get a valid position");
+			percentage = try_convert(percentage_payload, int) or try_convert(curtain_option.data().get(feed_id,0), int);
+			print(f"Curtain: {curtain.name()}, feed: {feed_id}, percentage: {percentage}");
+			if(isinstance(percentage, NONETYPE)): raise Exception("Could not get a valid percentage");
 
-			# For selected curtain add event for position
-			curtain.open_percentage(desired_position=position, Options_id=self._option_id);
+			# For selected curtain add event for percentage
+			curtain.open_percentage(desired_percentage=percentage, Options_id=self._option_id);
 
 		except Exception as error:
 			Logger.log_error(error);

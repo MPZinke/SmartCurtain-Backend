@@ -18,11 +18,10 @@ import json;
 from typing import Any, List, Type, Union;
 
 
-from Other.Class.DBClass.AttributeType import AttributeType;
-from Other.Class.DBClass.AttributeValue import AttributeValue;
-from Other.DB.DBCredentials import *;
-import Other.DB.DBFunctions as DBFunctions;
-from Other.DB.DBFunctions import __CLOSE__, __CONNECT__;
+from Utility.DBClass.AttributeType import AttributeType;
+from Utility.DBClass.AttributeValue import AttributeValue;
+from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
+import Utility.DB.DBFunctions as DBFunctions;
 
 
 
@@ -95,19 +94,14 @@ class DBClass:
 		if(attribute_types is None):
 			attribute_types = self.attribute_types;
 
-		print("I'M FREAKING SCREAMING AT YOU")
-		print(attribute_types)
 		for attribute_type in attribute_types:
-			attribute_value: AttributeValue = self(attribute_type.name());
+			attribute_value: AttributeValue = self(attribute_type.name(), AttributeValue);
 			if(attribute_type != attribute_value):
-				print(f"Key: {key} is bad");
 				key: str = attribute_type.name();
 				value: Any = attribute_value.value();
 				value_type_name: str = type(attribute_value.value()).__name__;
 				required_type_name: str = attribute_type.allowed_types();
 				raise TypeError(f"'{key}' value {value}, type: {value_type_name} is not of type {required_type_name}");
-			print(f"Key: {key} is good");
-
 
 
 	@staticmethod
@@ -117,7 +111,7 @@ class DBClass:
 			corresponding_attribute_values: List[AttributeValue] = [];
 			for attribute_value in attribute_values:
 				if(attribute_value.name() == attribute_type.name()):
-					corresponding_attribute_value.append(attribute_value);
+					corresponding_attribute_values.append(attribute_value);
 			if(not len(corresponding_attribute_values)):
 				raise TypeError(f"attribute_types are missing attribute: {attribute_value.name()}");
 

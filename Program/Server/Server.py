@@ -24,10 +24,9 @@ from time import sleep;
 if(__name__ == '__main__'): sys.path.append(str(Path(__file__).parent.parent));
 from Server.ServerGlobal import *;
 
-from Other.Class.Header  import Header;
-from Other.Class.Route   import Route;
-from Other.Class.ZWidget import ZWidget;
-import Other.Logger as Logger;
+import Utility.Logger as Logger;
+from Utility.WebSite import Header, Route;
+from Utility.ZThread import ZWidget;
 
 
 class Server(ZWidget):

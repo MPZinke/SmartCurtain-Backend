@@ -12,3 +12,7 @@ __author__ = "MPZinke"
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
 ########################################################################################################################
+
+
+from Updater.Updater import Updater;
+from Updater.Version import Version;
