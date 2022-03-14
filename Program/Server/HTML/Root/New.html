@@ -10,9 +10,9 @@
 		
 		{% if header.selected_curtain().is_smart() %}
 			<input id='percentage_input' name='percentage_input'  class='input mobile_input' type='number' min='0' max='100' step='1'
-			  value='{{ 100 - header.selected_curtain().current_percentage() }}'
+			  value='{{ 100 - header.selected_curtain().percentage() }}'
 			  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
-			<input id='slider_input' value='{{ 100 - header.selected_curtain().current_percentage() }}' type='range' 
+			<input id='slider_input' value='{{ 100 - header.selected_curtain().percentage() }}' type='range' 
 			  min='0' max='100'/>
 		{% else %}
 			<select id='percentage_input' name='percentage_input' class='input mobile_input'>

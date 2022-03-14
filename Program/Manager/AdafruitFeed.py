@@ -65,7 +65,7 @@ class AdafruitFeed(ZWidget):
 			if(isinstance(percentage, NONETYPE)): raise Exception("Could not get a valid percentage");
 
 			# For selected curtain add event for percentage
-			curtain.open_percentage(desired_percentage=percentage, Options_id=self._option_id);
+			curtain.open_percentage(percentage=percentage, Options_id=self._option_id);
 
 		except Exception as error:
 			Logger.log_error(error);

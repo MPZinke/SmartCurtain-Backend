@@ -41,7 +41,7 @@ class Curtain(DBClass):
 		self.attribute_types: AttributeType =	[
 													AttributeType("_id", int),
 													AttributeType("_buffer_time", [int, bool, NONETYPE]),
-													AttributeType("_current_percentage", [int, NONETYPE]),
+													AttributeType("_percentage", [int, NONETYPE]),
 													AttributeType("_direction", [int, bool, NONETYPE]),
 													AttributeType("_ip_address", [str, NONETYPE]),
 													AttributeType("_is_activated", [int, bool, NONETYPE]),
@@ -145,10 +145,10 @@ class Curtain(DBClass):
 
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
 
-	def _new_event(self, *, desired_percentage: int=0, Options_id: int=None, time: object=None) -> int:
+	def _new_event(self, *, percentage: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		kwargs = {"Curtain": self, "Options.id": Options_id, "desired_percentage": desired_percentage, "time": time};
+		kwargs = {"Curtain": self, "Options.id": Options_id, "percentage": percentage, "time": time};
 		new_CurtainEvent = CurtainEvent.New(**kwargs);
 		self._CurtainEvents[new_CurtainEvent.id()] = new_CurtainEvent;
 
@@ -158,26 +158,25 @@ class Curtain(DBClass):
 	def close(self, *, Options_id: int=None, time: object=None):
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		return self._new_event(desired_percentage=0, Options_id=Options_id, time=time);
+		return self._new_event(percentage=0, Options_id=Options_id, time=time);
 
 
 	def close_immediately(self, Options_id : int=None) -> int:
 		return self._new_event(Options_id=Options_id);
 
 
-	def open(self, *, desired_percentage: int=0, Options_id: int=None, time: object=None) -> int:
+	def open(self, *, percentage: int=0, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		return self._new_event(desired_percentage=desired_percentage, Options_id=Options_id, time=time);
+		return self._new_event(percentage=percentage, Options_id=Options_id, time=time);
 
 
-	def open_immediately(self, desired_percentage: int=0, Options_id: int=None) -> int:
-		CurtainEvent_id = self._new_event(desired_percentage=desired_percentage, Options_id=Options_id);
+	def open_immediately(self, percentage: int=100, Options_id: int=None) -> int:
+		CurtainEvent_id = self._new_event(percentage=percentage, Options_id=Options_id);
 		return CurtainEvent_id if CurtainEvent_id else False;
 
 
-	def open_percentage(self, *, desired_percentage: int=0, Options_id: int=None, time: object=None) -> int:
+	def open_percentage(self, *, percentage: int=100, Options_id: int=None, time: object=None) -> int:
 		if(isinstance(time, type(None))): time = datetime.now();
 
-		desired_percentage = int(desired_percentage * self._length / 100);
-		return self._new_event(Options_id=Options_id, desired_percentage=desired_percentage, time=time);
+		return self._new_event(Options_id=Options_id, percentage=percentage, time=time);

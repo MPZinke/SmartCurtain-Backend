@@ -20,6 +20,7 @@ from time import sleep;
 from typing import Union;
 from warnings import warn as Warn;
 
+
 from Global import *;
 from Utility.DBClass import AttributeType, AttributeValue, DBClass;
 from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
@@ -39,7 +40,7 @@ class CurtainEvent(DBClass):
 		self.attribute_types: AttributeType =	[
 													AttributeType("_Curtain", Curtain),
 													AttributeType("_id", int),
-													AttributeType("_desired_percentage", [int, NONETYPE]),
+													AttributeType("_percentage", [int, NONETYPE]),
 													AttributeType("_is_activated", [int, bool, NONETYPE]),
 													AttributeType("_is_current", [int, bool, NONETYPE]),
 													AttributeType("_time", datetime)
@@ -57,12 +58,12 @@ class CurtainEvent(DBClass):
 		from System.Curtain import Curtain as Curtain;  # must be imported here to prevent circular importing
 		validation_attributes: List[AttributeType] =	[
 															AttributeType("Curtain", Curtain),
-															AttributeType("desired_percentage", int),
+															AttributeType("percentage", int),
 															AttributeType("time", datetime)
 														];
 		info_values: List[AttributeValue] =	[
 												AttributeValue("Curtain", info["Curtain"]),
-												AttributeValue("desired_percentage", info["desired_percentage"]),
+												AttributeValue("percentage", info["percentage"]),
 												AttributeValue("time", info["time"])
 											];
 
@@ -74,7 +75,7 @@ class CurtainEvent(DBClass):
 
 		# Add to DB
 		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-		event_params = [info["Curtain"].id(), info["Options.id"], info["desired_percentage"], info["time"]]
+		event_params = [info["Curtain"].id(), info["Options.id"], info["percentage"], info["time"]]
 		info["id"] = INSERT_CurtainsEvents(cnx, cursor, *event_params);
 
 		if(not info["id"]):
@@ -112,14 +113,14 @@ class CurtainEvent(DBClass):
 	def activate(self):
 		curtain = self._Curtain;
 
-		post_json = self.json();
+		post_dict = self.activation_dict();
 		print("Post data:", end="");  #TESTING
-		print(post_json);  #TESTING
+		print(post_dict);  #TESTING
 		try:
-			if(not curtain.is_smart() and curtain.is_safe() and curtain.current_percentage() == self._desired_percentage):
+			if(not curtain.is_smart() and curtain.is_safe() and curtain.percentage() == self._percentage):
 				raise Exception("Curtain will not move to a state it believes itself to already be in [is_safe=TRUE]");
 
-			response = post(url=f"http://{curtain.ip_address()}", json=post_json, timeout=curtain.buffer_time()/10+1);
+			response = post(url=f"http://{curtain.ip_address()}", json=post_dict, timeout=curtain.buffer_time()/10+1);
 			if(response.status_code != 200):
 				raise Exception(f"Status code for event: {self._id} is invalid");
 			if("error" in response.json()):
@@ -130,7 +131,7 @@ class CurtainEvent(DBClass):
 				raise Exception("Failed to set event activated");
 			if(not curtain.is_activated(True)):
 				raise Exception("Failed to set curtain activated");
-			if(not curtain.current_percentage(self._desired_percentage)):
+			if(not curtain.percentage(self._percentage)):
 				raise Exception("Failed to set curtain percentage");
 
 		except Exception as error:
@@ -139,19 +140,15 @@ class CurtainEvent(DBClass):
 		self.delete();
 
 
-	def json(self):
-		curtain = self._Curtain;
-		System = curtain.System();
+	def activation_dict(self):
 		return	{
-					"auto calibrate" : int(curtain.CurtainOption("Auto Calibrate").is_on()),
-					"auto correct" : int(curtain.CurtainOption("Auto Correct").is_on()),
+					"query type": "move",
 
-					"current percentage" : curtain.current_percentage(), "direction" : int(curtain.direction()),
-					"is smart" : int(curtain.is_smart()),
-					"length" : curtain.length(),
-
-					"desired percentage" : self._desired_percentage if self._desired_percentage else 0,
-					"event" : self._id
+					"event":
+					{
+						"id" : self._id,
+						"percentage": int(self._percentage) if self._percentage else 0,
+					}
 				};
 
 
@@ -165,10 +162,10 @@ class CurtainEvent(DBClass):
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
 
 	def dict(self):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_percentage", "_is_activated", "_is_current", "_time"];
+		attrs = ["_id", "_Curtains_id", "_Options_id", "_percentage", "_is_activated", "_is_current", "_time"];
 		return {attr : getattr(self, attr) for attr in attrs};
 
 
 	def print(self, tab=0, next_tab=0):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_desired_percentage", "_is_activated", "_is_current", "_time"];
+		attrs = ["_id", "_Curtains_id", "_Options_id", "_percentage", "_is_activated", "_is_current", "_time"];
 		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));

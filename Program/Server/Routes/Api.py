@@ -24,15 +24,15 @@ import Utility.Logger as Logger;
 
 
 def try_decorator(function):
-	def wrapper(self, *args):
+	def wrapper(self, *args, **kwargs):
 		try:
-			return function(self, *args);
+			return function(self, *args, **kwargs);
 		except KeyError as error:
 			Logger.log_error(error);
-			return "{\"error\" : \"{} missing from request\"}".format(RE_search("'([^']*)'", error.message).group(1));
+			return {"error" : "{} missing from request".format(RE_search("'([^']*)'", error.message).group(1))};
 		except Exception as error:
 			Logger.log_error(error);
-			return "{\"error\" : \"{}\"}".format(str(error));
+			return {"error" : "{}".format(str(error))};
 
 	return wrapper;
 
@@ -44,119 +44,127 @@ def try_decorator(function):
 @try_decorator
 def api_curtains__id__is_activated__is_activated(self, curtain_id: int, is_activated: int):
 	json = request.get_json();
-	print("Server::api_update_deactivateevent: ", end="");  #TESTING
 	print(json);  #TESTING
 
+	if(not (curtain := self._System.Curtain(curtain_id))):
+		raise Exception("No curtain for ID found");
 	# Scrub & validate data from JSON
-	keys = ["current percentage", "event", "length"]
-	current_percentage, event_id, length = [json.get(key) for key in keys];
-	if(not isinstance(current_percentage, int)): raise Exception("\\\"current percentage\\\" value is wrong type");
-	if(not isinstance(curtain_id, int)): raise Exception("\\\"curtain\\\" value is wrong type");
-	if(not isinstance(length, int)): raise Exception("\\\"length\\\" value is wrong type");
+	if(not isinstance((length := json["length"]), int)):
+		raise Exception("\"length\" value is wrong type");
+	if(not isinstance((percentage := json["percentage"]), int)):
+		raise Exception("\"percentage\" value is wrong type");
 
 	# Update curtain
-	curtain = self._System.Curtain(curtain_id);
-	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.is_activated(is_activated)): raise Exception("Unable to update Curtain activation");
-	if(not curtain.current_percentage(current_percentage)): raise Exception("Unable to update percentage");
-	if(not curtain.length(length)): raise Exception("Unable to update length");
+	if(not curtain.is_activated(is_activated)):
+		raise Exception("Unable to update Curtain activation");
+	if(not curtain.length(length)):
+		raise Exception("Unable to update length");
+	if(not curtain.percentage(percentage)):
+		raise Exception("Unable to update percentage");
 
-	return "{\"success\" : \"Updated event\"}";
+	return {"success" : "Updated event"};
 
 
 # ————————————————————————————————————————————————— CURTAINS::EVENTS ————————————————————————————————————————————————— #
 
 # /api/curtains/<int:curtain_id>/events/new
 @try_decorator
-def api_curtains__id__events_new(self):
-	json = JSON_loads("["+request.get_json()+"]")[0];
+def api_curtains__id__events_new(self, curtain_id: int):
+	json = request.get_json();
+	print(json);  #TESTING
 
-	# get from JSON, check types
-	curtain, desired_percentage, time = [json[key] for key in ["curtain", "desired percentage", "time"]];
-	if(not isinstance(curtain, int)): raise Exception("\\\"event\\\" value is wrong type");
-	if(not isinstance(desired_percentage, int)): raise Exception("\\\"desired percentage\\\" value is wrong type");
+	if(not (curtain := self._System.Curtain(curtain_id))):
+		raise Exception("No curtain for ID found");
+	# Scrub & validate data from JSON
+	if(not isinstance((percentage := json["percentage"]), int)):
+		raise Exception("\"percentage\" value is wrong type");
+	if(not isinstance((time := json["time"]), str)):
+		raise Exception("\"time\" value is wrong type");
 
 	# get/check curtain, convert time
-	curtain = self._System.Curtain(curtain);
-	if(not curtain): raise Exception("No curtain for ID found");
-	time = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S");
-	# execute curtain
-	event_id = curtain.open(desired_percentage=desired_percentage, time=time)
-	if(not event_id): raise Exception("Could not create event");
-	return "{\"success\" : \"True\", \"event\" : {}}".format(event_id);
+	if(not (event_id := curtain.open(percentage=percentage, time=datetime.strptime(time, "%Y-%m-%dT%H:%M:%S")))):
+		raise Exception("Could not create event");
+	return {"success" : "True", "event" : "{}".format(event_id)};
 
 
 # /api/curtains/<int:curtain_id>/events/new/now
 @try_decorator
-def api_curtains__id__events_new_now(self):
-	json = JSON_loads("["+request.get_json()+"]")[0];
+def api_curtains__id__events_new_now(self, curtain_id: int):
+	json = request.get_json();
+	print(json);  #TESTING
 
-	curtain, desired_percentage = [json[key] for key in ["curtain", "desired percentage"]];
-	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
-	if(not isinstance(desired_percentage, int)): raise Exception("\\\"desired percentage\\\" value is wrong type");
+	if(not (curtain := self._System.Curtain(curtain_id))):
+		raise Exception("No curtain for ID found");
+	# Scrub & validate data from JSON
+	if(not isinstance((percentage := json["percentage"]), int)):
+		raise Exception("\"desired percentage\" value is wrong type");
 
-	curtain = self._System.Curtain(curtain);
-	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.open_immediately(desired_percentage)): raise Exception("Could not create event");
-	return "{\"success\" : \"True\"}";
+	if(not (event_id := curtain.open_immediately(percentage))):
+		raise Exception("Could not create event");
+	return {"success" : "True", "event" : "{}".format(event_id)};
 
 
 # /api/curtains/<int:curtain_id>/events/new/now/close
 @try_decorator
-def api_curtains__id__events_new_now_close(self):
-	json = JSON_loads("["+request.get_json()+"]")[0];
+def api_curtains__id__events_new_now_close(self, curtain_id: int):
+	json = request.get_json();
 
-	curtain, desired_percentage = [json[key] for key in ["curtain", "desired percentage"]];
-	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
+	if(not (curtain := self._System.Curtain(curtain_id))):
+		raise Exception("No curtain for ID found");
+	# Scrub & validate data from JSON
+	if(not isinstance((percentage := json["percentage"]), int)):
+		raise Exception("\"percentage\" value is wrong type");
 
-	curtain = self._System.Curtain(curtain);
-	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.close_immediately()): raise Exception("Could not create event");
-	return "{\"success\" : \"True\"}";
+	if(not (event_id := curtain.close_immediately())):
+		raise Exception("Could not create event");
+	return {"success" : "True", "event" : "{}".format(event_id)};
 
 
 # /api/curtains/<int:curtain_id>/events/new/now/open
 @try_decorator
-def api_curtains__id__events_new_now_open(self):
-	json = JSON_loads("["+request.get_json()+"]")[0];
+def api_curtains__id__events_new_now_open(self, curtain_id):
+	json = request.get_json();
 
-	curtain, desired_percentage = [json[key] for key in ["curtain", "desired percentage"]];
-	if(not isinstance(curtain, int)): raise Exception("\\\"curtain\\\" value is wrong type");
+	if(not (curtain := self._System.Curtain(curtain_id))):
+		raise Exception("No curtain for ID found");
+	if(not isinstance((percentage := json["percentage"]), int)):
+		raise Exception("\"percentage\" value is wrong type");
 
-	curtain = self._System.Curtain(curtain);
-	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.open_percentage(desired_percentage=100)): raise Exception("Could not create event");
-	return "{\"success\" : \"True\"}";
+	if(not (event_id := curtain.open_immediately())):
+		raise Exception("Could not create event");
+	return {"success" : "True", "event" : "{}".format(event_id)};
 
 
 # ———————————————————————————————————————————— CURTAINS::GETTERS/SETTERS ———————————————————————————————————————————— #
 
 # /api/curtains/<int:curtain_id>/is_activated
 def api_curtains__id__is_activated(self, curtain_id: int):
-	if(curtain_id not in self._System.Curtains()): return {"error"};
+	if(curtain_id not in self._System.Curtains()): return {"error": True};
 
-	if("current_percentage_percent__is_activated" in request.form):
+	if("percentage_percent__is_activated" in request.form):
 		return str(self._System.Curtain(curtain_id));
 
 
 # /api/curtains/<int:curtain_id>/deactivate
 @try_decorator
 def api_curtains__id__deactivate(self, curtain_id: int):
-	json = JSON_loads("["+request.get_json()+"]")[0];
-
-	current_pos, event, length = [json[key] for key in ["current percentage", "event", "length"]];
-	if(not isinstance(current_pos, int)): raise Exception("\\\"current_pos\\\" value is wrong type");
-	if(not isinstance(event, int)): raise Exception("\\\"event\\\" value is wrong type");
-	if(not isinstance(length, int)): raise Exception("\\\"length\\\" value is wrong type");
+	json = request.get_json();
 	print(json);  #TESTING
 
-	curtain = self._System.Curtain(curtain_id);
-	if(not curtain): raise Exception("No curtain for ID found");
-	if(not curtain.is_activated(False)): raise Exception("Unable to update Curtain activation");
-	if(not curtain.current_percentage(current_pos)): raise Exception("Unable to update percentage");
-	if(not curtain.length(length)): raise Exception("Unable to update length");
+	if(not (curtain := self._System.Curtain(curtain_id))):
+		raise Exception("No curtain for ID found");
+	# Scrub & validate data from JSON
+	if(not isinstance((length := json["length"]), int)):
+		raise Exception("\"length\" value is wrong type");
+	if(not isinstance((percentage := json["percentage"]), int)):
+		raise Exception("\"percentage\" value is wrong type");
 
-	return "{\"success\" : \"Updated Curtain\"}";
+	if(not curtain.is_activated(False)):
+		raise Exception("Unable to update Curtain activation");
+	if(not curtain.percentage(percentage)):
+		raise Exception("Unable to update percentage");
+
+	return {"success" : "Updated Curtain"};
 
 
 
@@ -168,7 +176,7 @@ def api_curtains__id__deactivate(self, curtain_id: int):
 def api_update_deactivateevent(self):
 	json = request.get_json();
 
-	curtain_id = json.get("curtain");
-	if(not isinstance(curtain_id, int)): raise Exception("\\\"curtain\\\" value is wrong type");
+	if(not isinstance((curtain_id := json.get("curtain_id")), int)):
+		raise Exception("\"curtain_id\" value is wrong type");
 
 	return self.api_curtains__id__is_activated__is_activated(curtain_id, False);

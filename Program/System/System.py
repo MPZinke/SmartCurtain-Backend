@@ -16,7 +16,9 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta;
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
+from socket import gethostbyname, gethostname;
 from threading import Lock;
+
 
 from Global import *;
 from System.Curtain import Curtain;
@@ -34,6 +36,9 @@ class System(ZWidget):
 		self._Curtains: dict = {};
 		self._Options: dict = {};
 		self._Options_names: dict = {};
+
+		self._IP_Address = gethostbyname(gethostname());
+
 		self.refresh();
 
 
@@ -98,6 +103,10 @@ class System(ZWidget):
 
 	def Options(self) -> dict:
 		return self._Options;
+
+
+	def IP_Address(self) -> str:
+		return self._IP_Address;
 
 
 	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————

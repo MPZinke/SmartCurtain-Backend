@@ -66,7 +66,7 @@ class SunsetClose(ZWidget):
 					continue;  # don't duplicate sunset
 
 				percentage = curtain_option.data() if curtain_option.data() else 0;
-				curtain.open(desired_percentage=percentage, Options_id=self._option_id, time=sunset);
+				curtain.open(percentage=percentage, Options_id=self._option_id, time=sunset);
 
 			except Exception as error:
 				Logger.log_error(error);

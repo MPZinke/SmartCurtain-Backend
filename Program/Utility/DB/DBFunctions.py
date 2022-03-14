@@ -174,9 +174,9 @@ def UPDATE_Curtains_is_activated(cnx, cursor, Curtains_id: int, activation: bool
 	return bool(__UTILITY__update(cnx, cursor, query, activation, Curtains_id));
 
 
-def UPDATE_Curtains_current_position(cnx, cursor, Curtains_id: int, current_position: int) -> bool:
-	query = "UPDATE `Curtains` SET `current_position` = %s WHERE `id` = %s;";
-	return bool(__UTILITY__update(cnx, cursor, query, current_position, Curtains_id));
+def UPDATE_Curtains_percentage(cnx, cursor, Curtains_id: int, percentage: int) -> bool:
+	query = "UPDATE `Curtains` SET `percentage` = %s WHERE `id` = %s;";
+	return bool(__UTILITY__update(cnx, cursor, query, percentage, Curtains_id));
 
 
 def UPDATE_Curtains_direction(cnx, cursor, Curtains_id: int, direction: bool) -> bool:
@@ -205,21 +205,21 @@ def UPDATE_Curtains_name(cnx, cursor, Curtains_id: int, name: str) -> bool:
 	return bool(__UTILITY__update(cnx, cursor, query, name, Curtains_id));
 
 
-# def UPDATE_Curtain_from_event(cnx, cursor, CurtainsEvents_id: int, current_position: int, length: int) -> bool:
+# def UPDATE_Curtain_from_event(cnx, cursor, CurtainsEvents_id: int, percentage: int, length: int) -> bool:
 # 	query = "UPDATE `CurtainsEvents` LEFT JOIN `Curtains` ON `CurtainsEvents`.`Curtains.id` = `Curtains`.`id` " \
-# 			+ "SET `Curtains`.`current_position` = %s, `Curtains`.`is_activated` = FALSE, " \
+# 			+ "SET `Curtains`.`percentage` = %s, `Curtains`.`is_activated` = FALSE, " \
 # 			+ "`Curtains`.`length` = %s WHERE `CurtainsEvents`.`id` = %s;";
-# 	return bool(__UTILITY__update(cnx, cursor, query, current_position, length, CurtainsEvents_id));
+# 	return bool(__UTILITY__update(cnx, cursor, query, percentage, length, CurtainsEvents_id));
 
 
 # —————————————————————————————————————————————— SETTERS::CURTAINSEVENTS ——————————————————————————————————————————————
 
-def INSERT_CurtainsEvents(cnx, cursor, Curtains_id: int, Options_id: int, desired_percentage: int, time: object) -> bool:
+def INSERT_CurtainsEvents(cnx, cursor, Curtains_id: int, Options_id: int, percentage: int, time: object) -> bool:
 	query =	"""
-			INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `desired_percentage`, `time`) VALUES
+			INSERT INTO `CurtainsEvents` (`Curtains.id`, `Options.id`, `percentage`, `time`) VALUES
 			(%s, %s, %s, %s);
 			"""
-	args = (Curtains_id, Options_id, desired_percentage, time.strftime("%Y-%m-%d %H:%M:%S"));
+	args = (Curtains_id, Options_id, percentage, time.strftime("%Y-%m-%d %H:%M:%S"));
 	return __UTILITY__insert(cnx, cursor, query, *args);
 
 
@@ -233,9 +233,9 @@ def UPDATE_all_prior_CurtainsEvents_is_activated(cnx, cursor) -> int:
 	return __UTILITY__update(cnx, cursor, query, datetime.now());
 
 
-def UPDATE_CurtainsEvents_desired_percentage(cnx, cursor, CurtainsEvents_id: int, desired_percentage: bool) -> bool:
-	query = "UPDATE `CurtainsEvents` SET `desired_percentage` = %s WHERE `id` = %s";
-	return bool(__UTILITY__update(cnx, cursor, query, desired_percentage, CurtainsEvents_id));
+def UPDATE_CurtainsEvents_percentage(cnx, cursor, CurtainsEvents_id: int, percentage: bool) -> bool:
+	query = "UPDATE `CurtainsEvents` SET `percentage` = %s WHERE `id` = %s";
+	return bool(__UTILITY__update(cnx, cursor, query, percentage, CurtainsEvents_id));
 
 
 def UPDATE_CurtainsEvents_is_activated(cnx, cursor, CurtainsEvents_id: int, is_activated: bool) -> bool:

@@ -40,11 +40,11 @@ def index_POST(self):
 	try:
 		header = self._header;
 
-		if(posted("open_button")): header.selected_curtain().open_immediately(header.selected_curtain().length());
+		if(posted("open_button")): header.selected_curtain().open_immediately();
 		elif(posted("close_button")): header.selected_curtain().close_immediately();
 		elif(posted("set_button")):
-			percentage = int(request.form["desired_percentage_input"])
-			header.selected_curtain().open_percentage(desired_percentage=percentage);
+			percentage = int(request.form["percentage_input"])
+			header.selected_curtain().open_percentage(percentage=percentage);
 			session["success"] = "Successfully created event";
 
 	except Exception as error:
@@ -77,9 +77,7 @@ def events_POST(self):
 	try:
 		header = self._header;
 
-		# if(not (event_id := try_convert(*get_posted_value("event_id"), int)) or not isinstance(event_id, int)):
-		event_id = try_convert(*get_posted_value("event_id"), int);
-		if(not event_id or not isinstance(event_id, int)):
+		if(not (event_id := try_convert(*get_posted_value("event_id"), int)) or not isinstance(event_id, int)):
 			raise Exception(f"{event_id} is not of correct type int");
 
 		curtain = header.selected_curtain();
@@ -118,7 +116,7 @@ def new_POST(self):
 			date_time = datetime.strptime(f"{date_input} {time_input}", "%Y-%m-%d %H:%M");
 			percentage = int(percentage_input);
 
-			self._header.selected_curtain().open_percentage(desired_percentage=percentage, time=date_time);
+			self._header.selected_curtain().open_percentage(percentage=percentage, time=date_time);
 			session["success"] = f"Successfully created event for {date_input} {time_input} at {percentage}";
 
 		elif(not posted("date_input")): raise Exception("Value date_input not found");

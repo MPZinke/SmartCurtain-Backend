@@ -11,8 +11,8 @@
 	<form method='post' onsubmit='check_movement_features();'>
 		{% if header.selected_curtain().is_smart() %}
 			<div class='input_div' style='width:100%;'>
-				<input id='desired_percentage_input' name='desired_percentage_input' class='input' type='number' 
-				  min='0' max='100' step='1' value='{{ header.selected_curtain().current_percentage() }}'
+				<input id='percentage_input' name='percentage_input' class='input' type='number' 
+				  min='0' max='100' step='1' value='{{ header.selected_curtain().percentage() }}'
 				  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>
 			</div>
 
@@ -22,7 +22,7 @@
 						<button name='close_button' class='button background_color' style='background-color:inherit;'>Closed</button>
 					</td>
 					<td width='60%' align='middle'>
-						<input id='slider_input' value='{{ header.selected_curtain().current_percentage() }}'
+						<input id='slider_input' value='{{ header.selected_curtain().percentage() }}'
 						  type='range' min='0' max='100'/>
 					</td>
 					<td width='20%' align='left'>
@@ -35,11 +35,11 @@
 				Set Curtain
 			</button>
 		{% else %}
-			<input id='desired_percentage_input' name='desired_percentage_input' type='number' style='display:none;'
-			  value='{{ 0 if header.selected_curtain().current_percentage() else 100 }}' hidden/>
+			<input id='percentage_input' name='percentage_input' type='number' style='display:none;'
+			  value='{{ 0 if header.selected_curtain().percentage() else 100 }}' hidden/>
 			<button id='set_button' name='set_button' class='button'
 			  style='display:block; margin:auto; margin-top:25px;'>
-				{% if header.selected_curtain().current_percentage() %}
+				{% if header.selected_curtain().percentage() %}
 					Close
 				{% else %}
 					Open
@@ -62,20 +62,20 @@
 	//  see if user wants to call a possibly redundant (SmartCurtain) call or an overriding (DumbCurtain) call.
 	function check_movement_features()
 	{
-		var current_percentage = __WRAPPER__current_known_percentage;
+		var percentage = __WRAPPER__current_known_percentage;
 
 		{% if header.selected_curtain().is_smart() %}
-			var desired_percentage = document.getElementById("desired_percentage_input").value;
+			var percentage = document.getElementById("percentage_input").value;
 
-			if(desired_percentage != current_percentage) return true;
+			if(percentage != percentage) return true;
 
-			var text =	`Desired percentage ${desired_percentage}% matches current percentage of ${current_percentage}%\n`
+			var text =	`Desired percentage ${percentage}% matches current percentage of ${percentage}%\n`
 						  + `Please confirm event`;
 			return confirm(text);
 		{% else %}
-			if(current_percentage) current_percentage = 0;
-			else current_percentage = 100;
-			document.getElementById("desired_percentage_input").value = current_percentage;
+			if(percentage) percentage = 0;
+			else percentage = 100;
+			document.getElementById("percentage_input").value = percentage;
 			return true;
 		{% endif %}
 	}
@@ -116,7 +116,7 @@
 		// Update the current slider value (each time you drag the slider handle)
 		document.getElementById("slider_input").oninput = function()
 		{
-			document.getElementById("desired_percentage_input").value = this.value;
+			document.getElementById("percentage_input").value = this.value;
 		}
 	{% endif %}
 

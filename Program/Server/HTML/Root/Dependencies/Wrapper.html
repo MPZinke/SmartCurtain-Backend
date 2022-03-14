@@ -69,19 +69,19 @@
 					  style='width: 
 					  {% if header.selected_curtain().is_activated() %} 0%;
 					  {% else %}
-						{{ ((100 - header.selected_curtain().current_percentage()) / 2) | int }}%
+						{{ ((100 - header.selected_curtain().percentage()) / 2) | int }}%
 					  {% endif %}'></td>
 					<td id='__WRAPPER__current_light_td_middle'
 					  style='width: 
 					  {% if header.selected_curtain().is_activated() %} 100%; background-color:#33FF33;
 					  {% else %}
-						{{ header.selected_curtain().current_percentage() }}%; background-color:#FFFFAA;
+						{{ header.selected_curtain().percentage() }}%; background-color:#FFFFAA;
 					  {% endif %}'></td>
 					<td id='__WRAPPER__current_light_td_right'
 					  style='width: 
 					  {% if header.selected_curtain().is_activated() %} 0%;
 					  {% else %}
-						{{ ((100 - header.selected_curtain().current_percentage()) / 2) | int }}%
+						{{ ((100 - header.selected_curtain().percentage()) / 2) | int }}%
 					  {% endif %}'>
 					</td>
 				</tr>
@@ -97,7 +97,7 @@
 </html>
 <script>
 	// Current known percentage
-	var __WRAPPER__current_known_percentage = {{ header.selected_curtain().current_percentage() }};
+	var __WRAPPER__current_known_percentage = {{ header.selected_curtain().percentage() }};
 
 
 	function __WRAPPER__close_nav()
@@ -130,15 +130,15 @@
 			url: "/api/curtains/{{ header.selected_curtain().id() }}/is_activated",
 			type: "POST",
 			dataType: "json",
-			data: {"current_percentage_percent__is_activated" : true},
+			data: {"percentage_percent__is_activated" : true},
 			success: function(response)
 			{
 				if("error" in response) return;
 				
-				__WRAPPER__current_known_percentage = response["current_percentage"];
+				__WRAPPER__current_known_percentage = response["percentage"];
 
 				if(response["is_activated"]) __WRAPPER__set_current_light(100, "#33FF33");
-				else __WRAPPER__set_current_light(response["current_percentage"]);
+				else __WRAPPER__set_current_light(response["percentage"]);
 			},
 			error: function(response)
 			{
