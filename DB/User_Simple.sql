@@ -1,2 +1,16 @@
-CREATE USER 'python_db_user'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON *.* TO 'python_db_user'@'localhost';
+CREATE USER "python_db_user" CREATEDB;
+
+GRANT CONNECT
+ON DATABASE "SmartCurtain" 
+TO "python_db_user";
+
+ALTER USER "python_db_user" CREATEDB;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT CREATEDB
+TO "python_db_user";
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT, INSERT, UPDATE
+ON ALL TABLES
+TO "python_db_user";

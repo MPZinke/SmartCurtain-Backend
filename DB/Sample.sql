@@ -6,69 +6,75 @@
 -- 	BUGS:
 -- 	FUTURE:
 
-USE `SmartCurtain`;
-
 
 -- MPZinke instance: default length 1000
-INSERT INTO `Curtains` (`id`, `length`, `ip_address`, `name`) VALUES (1, 43000, '10.0.0.12', 'Office');
-INSERT INTO `Curtains` (`id`, `length`, `ip_address`, `name`) VALUES (2, 34000, '10.0.0.13', 'Bedroom');
+INSERT INTO "Curtains" ("length", "ip_address", "name") VALUES
+(43000, '10.0.0.12', 'Office'),
+(34000, '10.0.0.13', 'Bedroom');
 
 
-INSERT INTO `Options` (`id`, `name`, `description`) VALUES
-(1, 'Adafruit Feed', 'Google API connection'),
-(2, 'Auto Calibrate', 'Curtain calibrates length if it moves full span of rod'),
-(3, 'Auto Correct', 'Curtain corrects its position if unexpected reaches an end point'),
-(4, 'Event Prediction', 'Use previous events to determine future events'),
-(5, 'Google Calendar Curtain Events', 'Read curtain events from Google Calendar'),
-(6, 'Sunrise Open', 'Automatically create events for opening the curtain at sunrise'),
-(7, 'Sunset Close', 'Automatically create events for closing the curtain at sunset'),
-(8, 'Temperature Setting', 'Set the curtain based on thermostat temperature of room, outside weather & incoming light');
+INSERT INTO "Options" ("name", "description") VALUES
+('Adafruit Feed', 'Google API connection'),
+('Auto Calibrate', 'Curtain calibrates length if it moves full span of rod'),
+('Auto Correct', 'Curtain corrects its position if unexpected reaches an end point'),
+('Event Prediction', 'Use previous events to determine future events'),
+('Google Calendar Curtain Events', 'Read curtain events from Google Calendar'),
+('Sunrise Open', 'Automatically create events for opening the curtain at sunrise'),
+('Sunset Close', 'Automatically create events for closing the curtain at sunset'),
+('Temperature Setting', 'Set the curtain based on thermostat temperature of room, outside weather & incoming light');
 
 
-INSERT INTO `CurtainsOptions` (`id`, `Curtains.id`, `Options.id`, `is_on`, `notes`, `data`) VALUES
-(1, 1, 1, TRUE, NULL, '{"office.curtain-close": 0, "office.curtain-open": 100}'),  -- Adafruit Feed
-(2, 1, 2, TRUE, NULL, ''),  -- Auto Calibrate
-(3, 1, 3, TRUE, NULL, ''),  -- Auto Correct
-(4, 1, 4, TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
-(5, 1, 5, FALSE, NULL, ''),  -- Google Calendar
-(6, 1, 6, TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
-(7, 1, 7, TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
-(8, 1, 8, FALSE, NULL, ''),  -- Temperature Setting
-(9, 2, 1, TRUE, NULL, '{"bedroom.curtain-close": 0, "bedroom.curtain-open": 100}'),  -- Adafruit Feed
-(10, 2, 2, TRUE, NULL, ''),  -- Auto Calibrate
-(11, 2, 3, TRUE, NULL, ''),  -- Auto Correct
-(12, 2, 4, TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
-(13, 2, 5, FALSE, NULL, ''),  -- Google Calendar
-(14, 2, 6, TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
-(15, 2, 7, TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
-(16, 2, 8, FALSE, NULL, '');  -- Temperature Setting
+INSERT INTO "CurtainsOptions" ("Curtains.id", "Options.id", "is_on", "notes", "data")
+SELECT "Curtains"."id", "Options"."id", "Temp"."is_on", "Temp"."notes", "Temp"."data"
+FROM 
+(
+	VALUES
+	('Office', 'Adafruit Feed', TRUE, NULL, '{"office.curtain-close": 0, "office.curtain-open": 100}'),
+	('Office', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
+	('Office', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
+	('Office', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
+	('Office', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
+	('Office', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
+	('Office', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
+	('Office', 'Temperature Setting', FALSE, NULL, ''),  -- Temperature Setting
+	('Bedroom', 'Adafruit Feed', TRUE, NULL, '{"bedroom.curtain-close": 0, "bedroom.curtain-open": 100}'),  -- Adafruit Feed
+	('Bedroom', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
+	('Bedroom', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
+	('Bedroom', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
+	('Bedroom', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
+	('Bedroom', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
+	('Bedroom', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
+	('Bedroom', 'Temperature Setting', FALSE, NULL, '')  -- Temperature Setting
+) AS "Temp"("Curtains.name", "Options.name", "is_on", "notes", "data")
+JOIN "Options" ON "Temp"."Options.name" = "Options"."name"
+JOIN "Curtains" ON "Temp"."Curtains.name" = "Curtains"."name";
 
 
 -- —————————————————————————————————————————————————— CREATE VIEWS —————————————————————————————————————————————————— --
 
-SET @sql = NULL;
-SELECT GROUP_CONCAT(
-    DISTINCT CONCAT(
-        'max(case when `CurtainsOptions`.`Options.id` = \'',
-        `CurtainsOptions`.`Options.id`,
-        '\' then `CurtainsOptions`.`is_on` end) \'',
-        `Options`.`name`,
-        '\' '
-    )
-)
-INTO @sql
-FROM `CurtainsOptions`
-JOIN `Options` ON `CurtainsOptions`.`Options.id` = `Options`.`id`;
+-- SET @sql = NULL;
+-- SELECT GROUP_CONCAT(
+--     DISTINCT CONCAT(
+--         'max(case when "CurtainsOptions"."Options.id" = ''',
+--         "CurtainsOptions"."Options.id",
+--         ''' then "CurtainsOptions"."is_on" end) ''',
+--         "Options"."name",
+--         ''' '
+--     )
+-- )
+-- INTO @sql
+-- FROM "CurtainsOptions"
+-- JOIN "Options" ON "CurtainsOptions"."Options.id" = "Options"."id";
 
-SET @sql = CONCAT(
-    'CREATE VIEW `OptionsForCurtains` AS
-    SELECT `Curtains`.`name`, ', @sql, ' 
-    FROM `CurtainsOptions`
-    JOIN `Curtains` ON `CurtainsOptions`.`Curtains.id` = `Curtains`.`id`
-    JOIN `Options` ON `CurtainsOptions`.`Options.id` = `Options`.`id`
-    GROUP BY `CurtainsOptions`.`Curtains.id`'
-);
+-- SET @sql = CONCAT(
+--     'CREATE VIEW "OptionsForCurtains" AS
+--     SELECT "Curtains"."name", ', @sql, ' 
+--     FROM "CurtainsOptions"
+--     JOIN "Curtains" ON "CurtainsOptions"."Curtains.id" = "Curtains"."id"
+--     JOIN "Options" ON "CurtainsOptions"."Options.id" = "Options"."id"
+--     GROUP BY "CurtainsOptions"."Curtains.id"'
+-- );
 
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- PREPARE stmt FROM @sql;
+-- EXECUTE stmt;
+-- DEALLOCATE PREPARE stmt;
