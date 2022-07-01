@@ -80,7 +80,7 @@ class EventPredictor(ZWidget):
 		option = self._System.Option(name="Event Predictor");
 		for curtain in self._System.Curtains():
 			try:
-				curtain_option = curtain.CurtainOptions(option.id());
+				curtain_option = curtain.CurtainOption(id=option.id());
 				if(not curtain_option.is_on()):
 					continue;
 

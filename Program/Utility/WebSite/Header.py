@@ -24,10 +24,11 @@ class Header:
 		if("_CURTAIN_current" not in session):
 			raise Exception("No curtain set: session curtain id must be set before calling Header instance");
 
+		self._System = system;
 		self._Curtains = system.Curtains();
 		self._error : str = error;
 		self._success : str = success;
-		self._selected_curtain = self._Curtains.get(session["_CURTAIN_current"]);
+		self._selected_curtain = system.Curtain(id=session["_CURTAIN_current"]);
 
 
 	def Curtains(self) -> list:
@@ -43,15 +44,19 @@ class Header:
 
 
 	def selected_curtain(self, Curtains_id: int=None) -> Union[object, None]:
-		if(isinstance(Curtains_id, type(None))): return self._selected_curtain;
-		if(Curtains_id in self._Curtains): self._selected_curtain = self._Curtains[Curtains_id];
+		if(isinstance(Curtains_id, type(None))):
+			return self._selected_curtain;
+		if(Curtains_id in self._Curtains):
+			self._selected_curtain = self._Curtains[Curtains_id];
 
 
 	# —————————————————————————————————————————————————— CONVERSION —————————————————————————————————————————————————— #
 
 	def state_string(self, curtain: object=None) -> str:
-		if(not curtain): curtain = self._selected_curtain;
-		if(curtain.is_activated()): return "Moving";
+		if(not curtain):
+			curtain = self._selected_curtain;
+		if(curtain.is_activated()):
+			return "Moving";
 		return {0: "Closed", 100: "Fully Open"}.get(curtain.percentage(), "Open");
 
 

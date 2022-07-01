@@ -81,7 +81,7 @@ def events_POST(self):
 			raise Exception(f"{event_id} is not of correct type int");
 
 		curtain = header.selected_curtain();
-		event = curtain.CurtainEvent(event_id);
+		event = curtain.CurtainEvent(id=event_id);
 		event.delete();
 
 	except Exception as error:

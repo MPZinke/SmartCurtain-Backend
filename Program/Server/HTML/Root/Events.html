@@ -21,12 +21,12 @@
 		{% for event in header.selected_curtain().CurtainEvents() %}
 				<tr width='100%' align='center'>
 					<td width='50%' align='center'>
-						{{ header.datetime_to_datetext(header.selected_curtain().CurtainEvents()[event].time()) }}
+						{{ header.datetime_to_datetext(event.time()) }}
 						at
-						{{ header.datetime_to_timetext(header.selected_curtain().CurtainEvents()[event].time()) }}
+						{{ header.datetime_to_timetext(event.time()) }}
 					</td>
 					<td width='50%' align='center'>
-						{{ header.selected_curtain().CurtainEvents()[event].percentage() }}
+						{{ event.percentage() }}
 					</td>
 					<td class="__td__delete" hidden>
 						<button onclick="delete_event({{ event }});"

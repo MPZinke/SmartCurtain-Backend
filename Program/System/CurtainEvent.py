@@ -96,7 +96,9 @@ class CurtainEvent(DBClass):
 			self.__activation_thread.kill();
 		# clear event from structure (later tater)
 		finally:
-			del self._Curtain.CurtainEvents()[self._id];
+			for x, event in enumerate(self._Curtain.CurtainEvents()):
+				if(event.id() == self._id):
+					del self._Curtain.CurtainEvents()[x];
 
 
 	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————

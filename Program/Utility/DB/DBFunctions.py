@@ -57,7 +57,12 @@ def connection_wrapper(function: callable) -> callable:
 			close(cursor, cursor);
 			raise error;
 
-	return wrapper
+	return wrapper;
+
+
+def Update(cursor, query: str, *args: Set[Any]) -> Any:
+	cursor.execute(query, args);
+	return bool(cursor.rowcount);
 
 
 # —————————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————————
@@ -80,17 +85,9 @@ def SELECT_Options(cursor: object) -> list:
 # ————————————————————————————————————————————————— GETTERS::CURTAINS —————————————————————————————————————————————————
 
 @connection_wrapper
-def SELECT_Curtains_by_id(cursor: object, Curtains_id: int) -> dict:
+def SELECT_Curtains_by_id(cursor: object, Curtains_id: int) -> Union[dict, None]:
 	curtain_info = cursor.execute("""SELECT * FROM "Curtains" WHERE "id" = %s;""", Curtains_id);
-	return curtain_info[0] if curtain_info else {};
-
-
-def DB_ALL_Curtain_info(cursor: object, Curtains_id: int) -> list:
-	curtain_info = [Curtain(cursor, Curtains_id)];
-	curtain_info.append(SELECT_current_CurtainsEvents(cursor, Curtains_id));
-	curtain_info.append(SELECT_CurtainsOptions(cursor, Curtains_id));
-
-	return curtain_info;
+	return curtain_info[0] if curtain_info else None;
 
 
 @connection_wrapper
@@ -119,15 +116,30 @@ def SELECT_current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
 
 
 @connection_wrapper
-def SELECT_CurtainsEvents(cursor: object) -> dict:
-	cursor.execute("""SELECT * FROM "CurtainsEvents";""");
-	return [dict(row) for row in cursor]
+def SELECT_CurtainsEvent(cursor: object, CurtainsEvents_id: int) -> dict:
+	cursor.execute("""SELECT * FROM "CurtainsEvents" WHERE "id" = %s;""", (CurtainsEvents_id,));
+	return [dict(row) for row in cursor];
 
 
 @connection_wrapper
-def SELECT_CurtainsEvents_for_curtain(cursor: object, Curtains_id: int) -> list:
+def SELECT_CurtainsEvents(cursor: object) -> dict:
+	cursor.execute("""SELECT * FROM "CurtainsEvents";""");
+	return [dict(row) for row in cursor];
+
+
+@connection_wrapper
+def SELECT_CurtainsEvents_for_Curtains_id(cursor: object, Curtains_id: int) -> list:
 	cursor.execute("""SELECT * FROM "CurtainsEvents" WHERE "Curtains.id" = %s;""", (Curtains_id,));
 	return [dict(row) for row in cursor];
+
+
+@connection_wrapper
+def SELECT_CurtainsEvents_for_CurtainsEvents_id_and_Curtains_id(cursor: object, CurtainsEvents_id: int,
+  Curtains_id: int) -> Union[dict, None]:
+	query = """SELECT * FROM "CurtainsEvents" WHERE "Curtains.id" = %s AND "id" = %s;"""
+	cursor.execute(query, (Curtains_id, CurtainsEvents_id));
+	curtain_events = [dict(row) for row in cursor]
+	return curtain_events[0] if(curtain_events) else None;
 
 
 @connection_wrapper
@@ -222,11 +234,6 @@ def INSERT_CurtainsEvents(cursor, Curtains_id: int, Options_id: int, percentage:
 	cursor.execute(query, (Curtains_id, Options_id, percentage, time.strftime("%Y-%m-%d %H:%M:%S")));
 	insert = [dict(row) for row in cursor];
 	return insert[0]["id"] if insert else None;
-
-
-def Update(cursor, query: str, *args: Set[Any]) -> Any:
-	cursor.execute(query, args);
-	return bool(cursor.rowcount);
 
 
 @connection_wrapper

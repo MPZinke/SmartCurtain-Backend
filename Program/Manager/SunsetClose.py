@@ -57,7 +57,7 @@ class SunsetClose(ZWidget):
 
 		for curtain in self._System.Curtains():
 			try:
-				curtain_option = curtain.CurtainOption(self._option_id);
+				curtain_option = curtain.CurtainOption(Options_id=self._option_id);
 				if(not curtain_option.is_on()):
 					continue;
 

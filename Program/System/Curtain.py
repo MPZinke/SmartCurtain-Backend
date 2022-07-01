@@ -15,15 +15,16 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from typing import Union;
+from typing import List, Union;
 
 
 from Global import NONETYPE;
 from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
 from Utility.DBClass import DBClass;
-from Utility.DB import SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
-import Utility.Logger as Logger;
+from Utility.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, \
+  SELECT_CurtainsOptions;
+from Utility import Logger;
 from Utility.DBClass import AttributeType;
 
 
@@ -32,7 +33,7 @@ class Curtain(DBClass):
 		DBClass.__init__(self, "UPDATE_Curtains", **curtain_info);
 
 		# Get associated relations
-		current_events = SELECT_current_CurtainsEvents(self._id)
+		current_events = SELECT_current_CurtainsEvents(self._id);
 		curtains_options = SELECT_CurtainsOptions(self._id);
 
 		self.attribute_types: AttributeType =	[
@@ -79,14 +80,13 @@ class Curtain(DBClass):
 
 	# Gets the CurtainOption based on either name or id.
 	# Takes a string or an int for the name of the CurtainOption.Option or the id of the CurtainOption.Option.id.
-	def CurtainOption(self, CurtainOption: Union[int, str]):
-		if(isinstance(CurtainOption, int)):
-			return self._CurtainOptions_dict.get(CurtainOption);
-		return self._CurtainOptions_dict.get(self._System.Option(name=CurtainOption).id());
+	def CurtainOption(self, **kwargs: dict) -> CurtainOption:
+		from System.System import System;
+		return System._exclusive_match(self._CurtainOptions, **kwargs);
 
 
-	def CurtainOptions(self) -> dict:
-		return self._CurtainOptions_dict;
+	def CurtainOptions(self) -> List[CurtainOption]:
+		return self._CurtainOptions;
 
 
 	def System(self):
@@ -104,8 +104,7 @@ class Curtain(DBClass):
 			return [self._CurtainEvents[event_id] for event_id in self._CurtainEvents];
 
 		events = [];
-		for event_id in self._CurtainEvents:
-			event = self._CurtainEvents[event_id];
+		for event in self._CurtainEvents:
 			if((latest and latest < event.time()) or (earliest and event.time() < earliest)):
 				continue;
 			events.append(event);
@@ -123,26 +122,21 @@ class Curtain(DBClass):
 	# Takes the CurtainEvents id to pull from.
 	# Checks whether the CurtainEvents exists in memory. If it doesn't, checks if it exists in the DB.
 	# Returns the Event if it is found, else None.
-	def CurtainEvent(self, CurtainEvent_id: int=None):
-		if(CurtainEvent_id in self._CurtainEvents):
-			return self._CurtainEvents.get(CurtainEvent_id);  # easy!
+	def CurtainEvent(self, **kwargs: dict) -> Union[CurtainEvent, None]:
+		from System.System import System;
+		if((curtain_event := System._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
+			return curtain_event;
 
-		# not found, check if in DB
-		CurtainEvents_data = SELECT_CurtainsEvents(CurtainEvent_id);
+		# Not found, check if in DB
+		if((curtain_events := SELECT_CurtainsEvents_for_Curtains_id(self._id))):
+			for event in curtain_events:
+				# If found in DB, create an object and add to the list
+				if(all(event.get(key) == value for key, value in kwargs)):
+					curtain_event = CurtainEvent(**{**event, "Curtain": self});
+					self._CurtainEvents.append(curtain_event);
+					return curtain_event;
 
-		# return if found in DB
-		if(CurtainEvents_data):
-			event = CurtainEvent(**{**CurtainEvents_data, "Curtain": self});
-
-		if(not CurtainEvents_data):
-			return None;
-
-		if(event.Curtains_id() != self._id):
-			event.delete();
-			return None;
-
-		self._CurtainEvents[event.id()] = event;
-		return event;
+		return None
 
 
 	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
