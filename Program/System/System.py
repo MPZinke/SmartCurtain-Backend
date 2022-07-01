@@ -18,14 +18,14 @@ from datetime import datetime, timedelta;
 from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
 from socket import gethostbyname, gethostname;
 from threading import Lock;
+from typing import Any, List, Union;
 
 
 from Global import *;
 from System.Curtain import Curtain;
 from System.Option import Option;
 from Utility import tomorrow_00_00;
-from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
-from Utility.DB import SELECT_Curtains, SELECT_Options, UPDATE_all_prior_CurtainsEvents_is_activated;
+from Utility.DB import SELECT_Curtains, SELECT_Options;
 from Utility.ZThread import ZWidget;
 
 
@@ -33,9 +33,8 @@ class System(ZWidget):
 	def __init__(self):
 		ZWidget.__init__(self, "System", self);
 		self._mutex = Lock();
-		self._Curtains: dict = {};
-		self._Options: dict = {};
-		self._Options_names: dict = {};
+		self._Curtains: List[Curtain] = [];
+		self._Options: List[Option] = [];
 
 		self._IP_Address = gethostbyname(gethostname());
 
@@ -46,16 +45,11 @@ class System(ZWidget):
 	def refresh(self) -> None:
 		self._mutex.acquire();  # just to ensure things are executed properly
 		try:
-			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-
-			selected_curtains = SELECT_Curtains(cursor);
+			selected_curtains = SELECT_Curtains();
 			# Cleanup events since destructor doesn't work, especially when called by dict reassignment.
-			[curtain.delete_events() for curtain in self._Curtains.values()];
-			self._Curtains = {curtain["id"]: Curtain(**{**curtain, "System": self}) for curtain in selected_curtains};
-			self._Options = {option["id"]: Option(**option) for option in SELECT_Options(cursor)};
-			self._Options_names = {self._Options[opt].name(): self._Options[opt] for opt in self._Options};
-
-			__CLOSE__(cnx, cursor);
+			[curtain.delete_events() for curtain in self._Curtains];
+			self._Curtains = [Curtain(**{**curtain, "System": self}) for curtain in selected_curtains];
+			self._Options = [Option(**option) for option in SELECT_Options()];
 
 		finally:
 			self._mutex.release();
@@ -72,33 +66,36 @@ class System(ZWidget):
 
 	# ———————————————————————————————————————————————————— GETTERS ————————————————————————————————————————————————————
 
-	def Curtain(self, Curtain_id: int):
-		return self._Curtains.get(Curtain_id);
+	@staticmethod
+	def _exclusive_match(haystack: list, **kwargs: dict) -> Any:
+		try:
+			for item in haystack:
+				if(all(getattr(item, f"_{key}") == value for key, value in kwargs.items())):
+					return item;
+		except Exception as error:
+			pass;
 
-
-	def Curtains(self) -> dict:
-		return self._Curtains;
-
-
-	def Curtains_list(self) -> list:
-		curtains = self._Curtains;
-		return [curtains[curtain_id] for curtain_id in curtains];
-
-
-	def Event_Curtain(self, CurtainEvent_id: int):
-		for curtain in self._Curtains:
-			if(self._Curtains[curtain].CurtainEvent(CurtainEvent_id)):
-				return self._Curtains[curtain];
 		return None;
 
 
-	def Option(self, Options_id: int):
-		return self._Options.get(Options_id);
+	def Curtain(self, **kwargs: dict) -> Union[Curtain, None]:
+		return System._exclusive_match(self._Curtains, **kwargs);
 
 
-	# Get an Option by its name.
-	def Option_by_name(self, Options_name: str):
-		return self._Options_names.get(Options_name);
+	def Curtains(self) -> List[Curtain]:
+		return self._Curtains;
+
+
+	def Event_Curtain(self, **kwargs: dict) -> Union[Curtain, None]:
+		for curtain in self._Curtains:
+			if(curtain.CurtainEvent(**kwargs) is not None):
+				return curtain;
+
+		return None;
+
+
+	def Option(self, **kwargs: dict) -> Union[Option, None]:
+		return System._exclusive_match(self._Options, **kwargs)
 
 
 	def Options(self) -> dict:
@@ -120,6 +117,8 @@ class System(ZWidget):
 
 	def print(self, tab=0, next_tab=0):
 		print('\t'*tab, "_Curtains: ");
-		for curtain in self._Curtains: self._Curtains[curtain].print(tab+next_tab, next_tab);
+		for curtain in self._Curtains:
+			self._Curtains[curtain].print(tab+next_tab, next_tab);
 		print('\t'*tab, "_Options: ");
-		for option in self._Options: self._Options[option].print(tab+next_tab, next_tab);
+		for option in self._Options:
+			self._Options[option].print(tab+next_tab, next_tab);

@@ -35,13 +35,13 @@ class AdafruitFeed(ZWidget):
 	def __init__(self, System):
 		ZWidget.__init__(self, "AdafruitIO", System);
 
-		self._option_id = self._System.Option_by_name("Adafruit Feed").id();
+		self._option_id = self._System.Option(name="Adafruit Feed").id();
 
 		warnings.formatwarning = warning_message;
 
 
 	def _curtain_for_feed_id(self, feed_id):
-		curtains = self._System.Curtains_list();
+		curtains = self._System.Curtains();
 		for curtain in curtains:
 			if(curtain.CurtainOptionKeyValue(key=feed_id)):
 				return curtain;

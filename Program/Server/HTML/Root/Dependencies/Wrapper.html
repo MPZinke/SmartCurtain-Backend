@@ -22,8 +22,8 @@
 						<select id='__WRAPPER__curtain_select' name='__WRAPPER__curtain_select' class='select dark' 
 						  onchange='this.form.submit();'>
 							{% for curtain in header.Curtains() %}
-								<option {% if curtain == session["_CURTAIN_current"] %} selected {% endif %} value='{{ curtain }}'>
-									{{ header.Curtains()[curtain].name() }}
+								<option {% if curtain.id() == session["_CURTAIN_current"] %} selected {% endif %} value='{{ curtain }}'>
+									{{ curtain.name() }}
 								</option>
 							{% endfor %}
 						</select>

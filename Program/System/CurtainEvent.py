@@ -17,13 +17,12 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta;
 from requests import post;
 from time import sleep;
-from typing import Union;
+from typing import List, Union;
 from warnings import warn as Warn;
 
 
 from Global import *;
 from Utility.DBClass import AttributeType, AttributeValue, DBClass;
-from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
 from Utility.DB import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
 import Utility.Logger as Logger;
@@ -74,22 +73,21 @@ class CurtainEvent(DBClass):
 		[info.update({name: info.get(name, defaults[x])}) for x, name in enumerate(names)];
 
 		# Add to DB
-		cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
 		event_params = [info["Curtain"].id(), info["Options.id"], info["percentage"], info["time"]]
-		info["id"] = INSERT_CurtainsEvents(cnx, cursor, *event_params);
+		event_id: Union[int, None] = INSERT_CurtainsEvents(*event_params);
 
-		if(not info["id"]):
-			__CLOSE__(cnx, cursor);
+		if(event_id is None):
 			raise Exception("Unable to add event to DB");
-		__CLOSE__(cnx, cursor);
 
 		# Return new instance of CurtainEvents
 		return CurtainEvent(**info);
 
 
 	def __del__(self):
-		try: self.__activation_thread.kill();
-		except: pass;
+		try:
+			self.__activation_thread.kill();
+		except:
+			pass;
 
 
 	def delete(self):
@@ -143,7 +141,6 @@ class CurtainEvent(DBClass):
 	def activation_dict(self):
 		return	{
 					"query type": "move",
-
 					"event":
 					{
 						"id" : self._id,
@@ -155,7 +152,8 @@ class CurtainEvent(DBClass):
 	def sleep_time(self):
 		now = datetime.now();
 		time_plus_1_second = self._time + timedelta(seconds=1);
-		if(time_plus_1_second < now): Warn("Event {} is scheduled at a time in the past".format(self._id));
+		if(time_plus_1_second < now):
+			Warn("Event {} is scheduled at a time in the past".format(self._id));
 		return (self._time - now).seconds if (now < self._time) else .25;
 
 
@@ -168,4 +166,5 @@ class CurtainEvent(DBClass):
 
 	def print(self, tab=0, next_tab=0):
 		attrs = ["_id", "_Curtains_id", "_Options_id", "_percentage", "_is_activated", "_is_current", "_time"];
-		for attr in attrs: print('\t'*tab, attr, " : ", getattr(self, attr));
+		for attr in attrs:
+			print('\t'*tab, attr, " : ", getattr(self, attr));

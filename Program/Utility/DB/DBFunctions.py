@@ -18,7 +18,7 @@ from datetime import datetime, timedelta;
 import os;
 import psycopg2;
 import psycopg2.extras
-from typing import Any, Set;
+from typing import Any, Set, Union;
 
 
 DB_USER: str = os.getenv("SMARTCURTAIN_DB_USER");
@@ -38,7 +38,10 @@ def connection_wrapper(function: callable) -> callable:
 
 	def wrapper(*args: list, **kwargs: dict) -> Any:
 		"""
-		DETAILS: Creates a connection.
+		DETAILS: Creates a connection. Calls function in a try block. Catches error to close connection and then pass
+		         up to next level.
+		RETURNS: Value(s) if values.
+		THROWS:  Whatever exceptions occur during function call.
 		"""
 		connection_string = f"host=localhost dbname=SmartCurtain user={DB_USER} password={DB_PASSWORD}";
 		connection = psycopg2.connect(connection_string);
@@ -47,12 +50,12 @@ def connection_wrapper(function: callable) -> callable:
 
 		try:
 			return_values: Any = function(cursor, *args, **kwargs);
+			close(cursor, cursor);
+			return return_values;
+
 		except Exception as error:
 			close(cursor, cursor);
 			raise error;
-
-		close(cursor, cursor);
-		return return_values;
 
 	return wrapper
 
@@ -111,19 +114,19 @@ def SELECT_current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
 			WHERE "Curtains.id" = %s AND "time" >= %s 
 			AND "is_current" = TRUE AND "is_activated" = FALSE;
 			""";
-	cursor.execute(query, Curtains_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"));
+	cursor.execute(query, (Curtains_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")));
 	return [dict(row) for row in cursor];
 
 
 @connection_wrapper
-def SELECT_CurtainsEvents(cursor: object, CurtainsEvents_id: int) -> dict:
-	event = cursor.execute("""SELECT * FROM "CurtainsEvents" WHERE "id" = %s""", CurtainsEvents_id);
-	return event[0] if event else {};
+def SELECT_CurtainsEvents(cursor: object) -> dict:
+	cursor.execute("""SELECT * FROM "CurtainsEvents";""");
+	return [dict(row) for row in cursor]
 
 
 @connection_wrapper
 def SELECT_CurtainsEvents_for_curtain(cursor: object, Curtains_id: int) -> list:
-	cursor.execute("""SELECT * FROM "CurtainsEvents" WHERE "Curtains.id" = %s;""", Curtains_id);
+	cursor.execute("""SELECT * FROM "CurtainsEvents" WHERE "Curtains.id" = %s;""", (Curtains_id,));
 	return [dict(row) for row in cursor];
 
 
@@ -138,7 +141,7 @@ def SELECT_CurtainsEvents_in_range_for_Options_id(cursor: object, Curtains_id: i
 			WHERE "Curtains.id" = %s AND "Options.id" = %s 
 			AND %s <= "time" AND "time" <= %s;
 			""";
-	cursor.execute(query, Curtains_id, Options_id, time_min, time_max);
+	cursor.execute(query, (Curtains_id, Options_id, time_min, time_max));
 	return [dict(row) for row in cursor];
 
 
@@ -159,20 +162,8 @@ def SELECT_CurtainsOptions(cursor: object, Curtains_id: int) -> list:
 			JOIN "Options" ON "CurtainsOptions"."Options.id" = "Options"."id"  -- added for easier searching
 			WHERE "Curtains.id" = %s;
 			""";
-	cursor.execute(query, Curtains_id);
+	cursor.execute(query, (Curtains_id,));
 	return [dict(row) for row in cursor];
-
-
-@connection_wrapper
-def SELECT_CurtainsOptions_for_curtain_and_option(cursor: object, Curtains_id: int, Options_name: str) -> dict:
-	query =	"""
-			SELECT * FROM "CurtainsOptions" 
-			LEFT JOIN "Options" ON "Options"."id" = "CurtainsOptions"."Options.id"
-			WHERE "CurtainsOptions"."Curtains.id" = %s 
-			AND "Options"."name" = %s;
-			""";
-	curtain_option = cursor.execute(query, Curtains_id, Options_name);
-	return curtain_option[0] if curtain_option else {};
 
 
 # —————————————————————————————————————————————————————— SETTERS ——————————————————————————————————————————————————————
@@ -198,35 +189,39 @@ def UPDATE_Curtains_direction(cursor, Curtains_id: int, direction: bool) -> bool
 @connection_wrapper
 def UPDATE_Curtains_last_connection(cursor, Curtains_id: int, last_connection: object=None) -> bool:
 	query = """UPDATE "Curtains" SET "last_connection" = %s WHERE "id" = %s;""";
-	if(not last_connection): last_connection = datetime.now();
-	return bool(cursor.execute(query, last_connection, Curtains_id));
+	if(last_connection is None):
+		last_connection = datetime.now();
+
+	return Update(cursor, query, last_connection, Curtains_id);
 
 
 @connection_wrapper
 def UPDATE_Curtains_ip_address(cursor, Curtains_id: int, ip_address: int) ->bool:
-	Update(cursor, """UPDATE "Curtains" SET "ip_address" = %s WHERE "id" = %s;""", ip_address, Curtains_id);
+	return Update(cursor, """UPDATE "Curtains" SET "ip_address" = %s WHERE "id" = %s;""", ip_address, Curtains_id);
 
 
 @connection_wrapper
 def UPDATE_Curtains_length(cursor, Curtains_id: int, length: int) ->bool:
-	Update(cursor, """UPDATE "Curtains" SET "length" = %s WHERE "id" = %s;""", length, Curtains_id);
+	return Update(cursor, """UPDATE "Curtains" SET "length" = %s WHERE "id" = %s;""", length, Curtains_id);
 
 
 @connection_wrapper
 def UPDATE_Curtains_name(cursor, Curtains_id: int, name: str) -> bool:
-	Update(cursor, """UPDATE "Curtains" SET "name" = %s WHERE "id" = %s;""", name, Curtains_id);
+	return Update(cursor, """UPDATE "Curtains" SET "name" = %s WHERE "id" = %s;""", name, Curtains_id);
 
 
-# —————————————————————————————————————————————— SETTERS::CURTAINSEVENTS ——————————————————————————————————————————————
+# ————————————————————————————————————————————— SETTERS::CURTAINSEVENTS  ————————————————————————————————————————————— #
 
-def INSERT_CurtainsEvents(cursor, Curtains_id: int, Options_id: int, percentage: int, time: object) -> bool:
+@connection_wrapper
+def INSERT_CurtainsEvents(cursor, Curtains_id: int, Options_id: int, percentage: int, time: object) -> Union[int, None]:
 	query =	"""
 			INSERT INTO "CurtainsEvents" ("Curtains.id", "Options.id", "percentage", "time") VALUES
 			(%s, %s, %s, %s)
 			RETURNING "id";
 			"""
 	cursor.execute(query, (Curtains_id, Options_id, percentage, time.strftime("%Y-%m-%d %H:%M:%S")));
-	return [dict(row) for row in cursor];
+	insert = [dict(row) for row in cursor];
+	return insert[0]["id"] if insert else None;
 
 
 def Update(cursor, query: str, *args: Set[Any]) -> Any:
@@ -236,59 +231,61 @@ def Update(cursor, query: str, *args: Set[Any]) -> Any:
 
 @connection_wrapper
 def UPDATE_all_CurtainsEvents_is_activated(cursor) -> bool:
-	Update(cursor, """UPDATE "CurtainsEvents" SET "is_activated" = TRUE;""");
+	return Update(cursor, """UPDATE "CurtainsEvents" SET "is_activated" = TRUE;""");
 
 
 @connection_wrapper
 def UPDATE_all_prior_CurtainsEvents_is_activated(cursor) -> int:
-	Update(cursor, """UPDATE "CurtainsEvents" SET "is_activated" = TRUE WHERE "time" < %s;""", datetime.now());
+	return Update(cursor, """UPDATE "CurtainsEvents" SET "is_activated" = TRUE WHERE "time" < %s;""", datetime.now());
 
 
 @connection_wrapper
 def UPDATE_CurtainsEvents_percentage(cursor, CurtainsEvents_id: int, percentage: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsEvents" SET "percentage" = %s WHERE "id" = %s""", percentage, CurtainsEvents_id);
+	return Update(cursor, """UPDATE "CurtainsEvents" SET "percentage" = %s WHERE "id" = %s""", percentage,
+	  CurtainsEvents_id);
 
 
 @connection_wrapper
 def UPDATE_CurtainsEvents_is_activated(cursor, CurtainsEvents_id: int, is_activated: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsEvents" SET "is_activated" = %s WHERE "id" = %s""", is_activated,
+	return Update(cursor, """UPDATE "CurtainsEvents" SET "is_activated" = %s WHERE "id" = %s""", is_activated,
 	  CurtainsEvents_id);
 
 
 @connection_wrapper
 def UPDATE_CurtainsEvents_is_current(cursor, CurtainsEvents_id: int, is_current: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsEvents" SET "is_current" = %s WHERE "id" = %s""", is_current, CurtainsEvents_id);
+	return Update(cursor, """UPDATE "CurtainsEvents" SET "is_current" = %s WHERE "id" = %s""", is_current,
+	  CurtainsEvents_id);
 
 
 @connection_wrapper
 def UPDATE_CurtainsEvents_time(cursor, CurtainsEvents_id: int, time: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsEvents" SET "time" = %s WHERE "id" = %s""", time, CurtainsEvents_id);
+	return Update(cursor, """UPDATE "CurtainsEvents" SET "time" = %s WHERE "id" = %s""", time, CurtainsEvents_id);
 
 
 # ————————————————————————————————————————————— SETTERS::CURTAINSOPTIONS ————————————————————————————————————————————— #
 
 @connection_wrapper
 def UPDATE_CurtainsOptions_is_on(cursor, CurtainsOptions_id: int, is_on: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsOptions" SET "is_on" = %s WHERE "id" = %s;""", is_on, CurtainsOptions_id);
+	return Update(cursor, """UPDATE "CurtainsOptions" SET "is_on" = %s WHERE "id" = %s;""", is_on, CurtainsOptions_id);
 
 
 @connection_wrapper
 def UPDATE_CurtainsOptions_notes(cursor, CurtainsOptions_id: int, notes: str) -> bool:
-	Update(cursor, """UPDATE "CurtainsOptions" SET "notes" = %s WHERE "id" = %s;""", notes, CurtainsOptions_id);
+	return Update(cursor, """UPDATE "CurtainsOptions" SET "notes" = %s WHERE "id" = %s;""", notes, CurtainsOptions_id);
 
 
 
 @connection_wrapper
 def UPDATE_CurtainsOptionsKeyValue_is_current(cursor, CurtainsOptions_id: int, is_current: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsOptions" SET "is_current" = %s WHERE "id" = %s;""", is_current,
+	return Update(cursor, """UPDATE "CurtainsOptions" SET "is_current" = %s WHERE "id" = %s;""", is_current,
 	  CurtainsOptions_id);
 
 
 @connection_wrapper
 def UPDATE_CurtainsOptionsKeyValue_key(cursor, CurtainsOptions_id: int, key: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsOptions" SET "key" = %s WHERE "id" = %s;""", key, CurtainsOptions_id);
+	return Update(cursor, """UPDATE "CurtainsOptions" SET "key" = %s WHERE "id" = %s;""", key, CurtainsOptions_id);
 
 
 @connection_wrapper
 def UPDATE_CurtainsOptionsKeyValue_value(cursor, CurtainsOptions_id: int, value: bool) -> bool:
-	Update(cursor, """UPDATE "CurtainsOptions" SET "value" = %s WHERE "id" = %s;""", value, CurtainsOptions_id);
+	return Update(cursor, """UPDATE "CurtainsOptions" SET "value" = %s WHERE "id" = %s;""", value, CurtainsOptions_id);

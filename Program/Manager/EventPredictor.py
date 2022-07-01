@@ -77,13 +77,12 @@ class EventPredictor(ZWidget):
 
 
 	def _loop_process(self):
-		option = self._System.Option_by_name("Event Predictor");
-		for curtain_id in self._System.Curtain():
+		option = self._System.Option(name="Event Predictor");
+		for curtain in self._System.Curtains():
 			try:
-				curtain = self._System.Curtain(curtain_id);
 				curtain_option = curtain.CurtainOptions(option.id());
-				if(not curtain_option.is_on()): continue;
+				if(not curtain_option.is_on()):
+					continue;
 
-				
 			except Exception as error:
 				Logger.log_error(error);

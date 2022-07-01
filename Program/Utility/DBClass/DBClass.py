@@ -20,7 +20,6 @@ from typing import Any, List, Type, Union;
 
 from Utility.DBClass.AttributeType import AttributeType;
 from Utility.DBClass.AttributeValue import AttributeValue;
-from Utility.DB import DB_USER, DB_PASSWORD, DATABASE, __CLOSE__, __CONNECT__;
 import Utility.DB.DBFunctions as DBFunctions;
 
 
@@ -38,22 +37,20 @@ class DBClass:
 	# Take the name of the attribute that is affected & that setting value (if being set).
 	# Sets a new value if a new value is passed.
 	# Will return the original value if no new value is passed. Returns whether new value successfully set.
-	def _get_or_set_attribute(self, db_prefix: str, attribute_name: str):
-		def function(new_value=None):
-			if(isinstance(new_value, type(None))):
+	def _get_or_set_attribute(self, db_prefix: str, attribute_name: str) -> callable:
+		def function(new_value: Any=None) -> bool:
+			if(new_value is None):
 				return getattr(self, attribute_name);
 
 			if(new_value == getattr(self, attribute_name)):
 				return True;  # values match, take the easy way out
 
-			# gotta update DB to match structure
+			# Gotta update DB to match structure
 			DB_function = getattr(DBFunctions, db_prefix+attribute_name);
-			cnx, cursor = __CONNECT__(DB_USER, DB_PASSWORD, DATABASE);
-			success_flag = DB_function(cnx, cursor, self._id, new_value);
+			if((database_is_updated_flag := DB_function(self._id, new_value))):
+				setattr(self, attribute_name, new_value);
 
-			if(success_flag): setattr(self, attribute_name, new_value);
-
-			return success_flag + bool(__CLOSE__(cnx, cursor));
+			return database_is_updated_flag
 
 		return function;
 
@@ -112,7 +109,7 @@ class DBClass:
 			for attribute_value in attribute_values:
 				if(attribute_value.name() == attribute_type.name()):
 					corresponding_attribute_values.append(attribute_value);
-			if(not len(corresponding_attribute_values)):
+			if(len(corresponding_attribute_values) == 0):
 				raise TypeError(f"attribute_types are missing attribute: {attribute_value.name()}");
 
 			attribute_value: AttributeValue = corresponding_attribute_values[0];

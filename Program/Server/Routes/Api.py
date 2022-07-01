@@ -18,13 +18,14 @@ from flask import redirect, render_template, request, session;
 from datetime import datetime;
 from json import loads as JSON_loads;
 from re import search as RE_search;
+from typing import Any;
 
 
 import Utility.Logger as Logger;
 
 
-def try_decorator(function):
-	def wrapper(self, *args, **kwargs):
+def try_decorator(function: callable) -> callable:
+	def wrapper(self, *args, **kwargs) -> Any:
 		try:
 			return function(self, *args, **kwargs);
 		except KeyError as error:
@@ -46,7 +47,7 @@ def api_curtains__id__is_activated__is_activated(self, curtain_id: int, is_activ
 	json = request.get_json();
 	print(json);  #TESTING
 
-	if(not (curtain := self._System.Curtain(curtain_id))):
+	if(not (curtain := self._System.Curtain(id=curtain_id))):
 		raise Exception("No curtain for ID found");
 	# Scrub & validate data from JSON
 	if(not isinstance((length := json["length"]), int)):
@@ -73,7 +74,7 @@ def api_curtains__id__events_new(self, curtain_id: int):
 	json = request.get_json();
 	print(json);  #TESTING
 
-	if(not (curtain := self._System.Curtain(curtain_id))):
+	if(not (curtain := self._System.Curtain(id=curtain_id))):
 		raise Exception("No curtain for ID found");
 	# Scrub & validate data from JSON
 	if(not isinstance((percentage := json["percentage"]), int)):
@@ -93,7 +94,7 @@ def api_curtains__id__events_new_now(self, curtain_id: int):
 	json = request.get_json();
 	print(json);  #TESTING
 
-	if(not (curtain := self._System.Curtain(curtain_id))):
+	if(not (curtain := self._System.Curtain(id=curtain_id))):
 		raise Exception("No curtain for ID found");
 	# Scrub & validate data from JSON
 	if(not isinstance((percentage := json["percentage"]), int)):
@@ -109,7 +110,7 @@ def api_curtains__id__events_new_now(self, curtain_id: int):
 def api_curtains__id__events_new_now_close(self, curtain_id: int):
 	json = request.get_json();
 
-	if(not (curtain := self._System.Curtain(curtain_id))):
+	if(not (curtain := self._System.Curtain(id=curtain_id))):
 		raise Exception("No curtain for ID found");
 	# Scrub & validate data from JSON
 	if(not isinstance((percentage := json["percentage"]), int)):
@@ -125,7 +126,7 @@ def api_curtains__id__events_new_now_close(self, curtain_id: int):
 def api_curtains__id__events_new_now_open(self, curtain_id):
 	json = request.get_json();
 
-	if(not (curtain := self._System.Curtain(curtain_id))):
+	if(not (curtain := self._System.Curtain(id=curtain_id))):
 		raise Exception("No curtain for ID found");
 	if(not isinstance((percentage := json["percentage"]), int)):
 		raise Exception("\"percentage\" value is wrong type");
@@ -139,10 +140,11 @@ def api_curtains__id__events_new_now_open(self, curtain_id):
 
 # /api/curtains/<int:curtain_id>/is_activated
 def api_curtains__id__is_activated(self, curtain_id: int):
-	if(curtain_id not in self._System.Curtains()): return {"error": True};
+	if(self._System.Curtain(id=curtain_id) is None):
+		return {"error": True};
 
 	if("percentage_percent__is_activated" in request.form):
-		return str(self._System.Curtain(curtain_id));
+		return str(self._System.Curtain(id=curtain_id));
 
 
 # /api/curtains/<int:curtain_id>/deactivate
@@ -151,7 +153,7 @@ def api_curtains__id__deactivate(self, curtain_id: int):
 	json = request.get_json();
 	print(json);  #TESTING
 
-	if(not (curtain := self._System.Curtain(curtain_id))):
+	if(not (curtain := self._System.Curtain(id=curtain_id))):
 		raise Exception("No curtain for ID found");
 	# Scrub & validate data from JSON
 	if(not isinstance((length := json["length"]), int)):
