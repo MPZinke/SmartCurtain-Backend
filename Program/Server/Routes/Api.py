@@ -83,7 +83,7 @@ def api_curtains__id__events_new(self, curtain_id: int):
 		raise Exception("\"time\" value is wrong type");
 
 	# get/check curtain, convert time
-	if(not (event_id := curtain.open(percentage=percentage, time=datetime.strptime(time, "%Y-%m-%dT%H:%M:%S")))):
+	if(not (event_id := curtain.open(percentage, time=datetime.strptime(time, "%Y-%m-%dT%H:%M:%S")))):
 		raise Exception("Could not create event");
 	return {"success" : "True", "event" : "{}".format(event_id)};
 
@@ -100,7 +100,7 @@ def api_curtains__id__events_new_now(self, curtain_id: int):
 	if(not isinstance((percentage := json["percentage"]), int)):
 		raise Exception("\"desired percentage\" value is wrong type");
 
-	if(not (event_id := curtain.open_immediately(percentage))):
+	if(not (event_id := curtain.open(percentage))):
 		raise Exception("Could not create event");
 	return {"success" : "True", "event" : "{}".format(event_id)};
 
@@ -116,7 +116,7 @@ def api_curtains__id__events_new_now_close(self, curtain_id: int):
 	if(not isinstance((percentage := json["percentage"]), int)):
 		raise Exception("\"percentage\" value is wrong type");
 
-	if(not (event_id := curtain.close_immediately())):
+	if(not (event_id := curtain.close())):
 		raise Exception("Could not create event");
 	return {"success" : "True", "event" : "{}".format(event_id)};
 
@@ -131,7 +131,7 @@ def api_curtains__id__events_new_now_open(self, curtain_id):
 	if(not isinstance((percentage := json["percentage"]), int)):
 		raise Exception("\"percentage\" value is wrong type");
 
-	if(not (event_id := curtain.open_immediately())):
+	if(not (event_id := curtain.open())):
 		raise Exception("Could not create event");
 	return {"success" : "True", "event" : "{}".format(event_id)};
 

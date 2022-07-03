@@ -14,17 +14,33 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Any;
+from typing import Any, Union;
 
 
-from Utility.DBClass.Attribute import Attribute;
+class Attribute:
+	def __init__(self, name: Union[str, object]):
+		self._name: str = name;
 
 
-class AttributeValue(Attribute):
-	def __init__(self, name, value):
-		Attribute.__init__(self, name);
-		self._value: Any = value;
+	def __eq__(self, AttrType_or_Value) -> bool:
+		from Utility.DB.AttributeType import AttributeType;
+		from Utility.DB.AttributeValue import AttributeValue;
+
+		# Check that AttrType_or_Value is of the correct object type.
+		if(not isinstance(AttrType_or_Value, AttributeType) and not isinstance(AttrType_or_Value, AttributeValue)):
+			raise Exception(f"'{type(AttrType_or_Value)}' is not of type AttributeType or AttributeValue");
+
+		# If names are not the same, then objects are not the same.
+		if(self._name != AttrType_or_Value.name()):
+			return False;
+
+		# Compare AttributeTypes
+		return any(attr1_type == attr2_type for attr1_type in self.types() for attr2_type in AttrType_or_Value.types());
 
 
-	def value(self) -> Any:
-		return self._value;
+	def __ne__(self, AttrType_or_Value) -> bool:
+		return not (self == AttrType_or_Value);
+
+
+	def name(self) -> str:
+		return self._name;

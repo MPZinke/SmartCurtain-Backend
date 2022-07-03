@@ -20,8 +20,8 @@ from typing import Union;
 
 
 from Global import NONETYPE;
-from Utility.DBClass import AttributeType;
-from Utility.DBClass import DBClass;
+from Utility.DB import AttributeType;
+from Utility.DB import DBClass;
 
 
 class CurtainOption(DBClass):
@@ -29,6 +29,7 @@ class CurtainOption(DBClass):
 		DBClass.__init__(self, "UPDATE_CurtainsOption", **curtain_option);
 		self.attribute_types: AttributeType =	[
 													AttributeType("_id", int),
+													AttributeType("_name", str),
 													AttributeType("_Curtains_id", int),
 													AttributeType("_Options_id", int),
 													AttributeType("_is_on", [bool, int]),

@@ -9,7 +9,7 @@
 	</h1>
 
 	<form method='post' onsubmit='check_movement_features();'>
-		{% if header.selected_curtain().is_smart() %}
+		{% if header.selected_curtain().moves_discretely() %}
 			<div class='input_div' style='width:100%;'>
 				<input id='percentage_input' name='percentage_input' class='input' type='number' 
 				  min='0' max='100' step='1' value='{{ header.selected_curtain().percentage() }}'
@@ -64,7 +64,7 @@
 	{
 		var percentage = __WRAPPER__current_known_percentage;
 
-		{% if header.selected_curtain().is_smart() %}
+		{% if header.selected_curtain().moves_discretely() %}
 			var percentage = document.getElementById("percentage_input").value;
 
 			if(percentage != percentage) return true;
@@ -98,21 +98,21 @@
 			{
 				document.getElementById("curtain_state_header").innerHTML = "Curtain is Open";
 			}
-			{% if not header.selected_curtain().is_smart() %}
+			{% if not header.selected_curtain().moves_discretely() %}
 				document.getElementById("set_button").innerHTML = "Close";
 			{% endif %}
 		}
 		else
 		{
 			document.getElementById("curtain_state_header").innerHTML = "Curtain is Closed";
-			{% if not header.selected_curtain().is_smart() %}
+			{% if not header.selected_curtain().moves_discretely() %}
 				document.getElementById("set_button").innerHTML = "Open";
 			{% endif %}
 		}
 	}
 
 
-	{% if header.selected_curtain().is_smart() %}
+	{% if header.selected_curtain().moves_discretely() %}
 		// Update the current slider value (each time you drag the slider handle)
 		document.getElementById("slider_input").oninput = function()
 		{

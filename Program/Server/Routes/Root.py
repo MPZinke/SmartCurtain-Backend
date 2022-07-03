@@ -40,11 +40,13 @@ def index_POST(self):
 	try:
 		header = self._header;
 
-		if(posted("open_button")): header.selected_curtain().open_immediately();
-		elif(posted("close_button")): header.selected_curtain().close_immediately();
+		if(posted("open_button")):
+			header.selected_curtain().open();
+		elif(posted("close_button")):
+			header.selected_curtain().close();
 		elif(posted("set_button")):
 			percentage = int(request.form["percentage_input"])
-			header.selected_curtain().open_percentage(percentage=percentage);
+			header.selected_curtain().open(percentage);
 			session["success"] = "Successfully created event";
 
 	except Exception as error:
@@ -116,12 +118,15 @@ def new_POST(self):
 			date_time = datetime.strptime(f"{date_input} {time_input}", "%Y-%m-%d %H:%M");
 			percentage = int(percentage_input);
 
-			self._header.selected_curtain().open_percentage(percentage=percentage, time=date_time);
+			self._header.selected_curtain().open(percentage, time=date_time);
 			session["success"] = f"Successfully created event for {date_input} {time_input} at {percentage}";
 
-		elif(not posted("date_input")): raise Exception("Value date_input not found");
-		elif(not posted("time_input")): raise Exception("Value time_input not found");
-		elif(not posted("percentage_input")): raise Exception("Value percentage_input not found");
+		elif(not posted("date_input")):
+			raise Exception("Value date_input not found");
+		elif(not posted("time_input")):
+			raise Exception("Value time_input not found");
+		elif(not posted("percentage_input")):
+			raise Exception("Value percentage_input not found");
 
 	except Exception as error:
 		Logger.log_error(error);

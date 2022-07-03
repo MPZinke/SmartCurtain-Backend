@@ -20,8 +20,8 @@ from typing import Any, List, Type, Union;
 import inspect
 
 
-from Utility.DBClass.AttributeType import AttributeType;
-from Utility.DBClass.AttributeValue import AttributeValue;
+from Utility.DB.AttributeType import AttributeType;
+from Utility.DB.AttributeValue import AttributeValue;
 import Utility.DB.DBFunctions as DBFunctions;
 
 
@@ -93,15 +93,6 @@ class DBClass:
 
 	def __str__(self) -> str:
 		return dumps(dict(self), default=str);
-
-	# def __iter__(self) -> dict:
-	# 	return {attr : getattr(self, attr) for attr in self.__dict__};
-
-
-	# def __str__(self):
-		# attribute_dict = {key: value for key, value in iter(self).items() if(key[0] == "_")};
-		# str_dict = {key: str(value) if(isinstance(value, object)) else value for key, value in attribute_dict.items()};
-		# return self.try_call(json.dumps, str_dict, default="");
 
 
 	def __call__(self, attribute_name: str, conversion_type: Type=AttributeType):

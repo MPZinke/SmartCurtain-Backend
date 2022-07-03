@@ -17,13 +17,14 @@ __author__ = "MPZinke"
 from typing import Any, Union;
 
 
-from Utility.DBClass.Attribute import Attribute;
+from Utility.DB.Attribute import Attribute;
 
 
 class AttributeType(Attribute):
 	def __init__(self, name: Union[str, object], types: Union[Any, list]):
 		Attribute.__init__(self, name);
-		self._types: Union[Any, list] = types if(isinstance(types, list)) else [types];
+		types = types if(isinstance(types, list)) else [types];
+		self._types: Union[Any, list] = [type(t) if(t is None) else t for t in types];
 
 
 	def types(self) -> str:

@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2021.10.14                                                                                                      #
+#   on 2022.03.07                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,4 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from Utility.DB.AttributeType import AttributeType;
+from Utility.DB.AttributeValue import AttributeValue;
+from Utility.DB.DBClass import DBClass;
 from Utility.DB.DBFunctions import *;

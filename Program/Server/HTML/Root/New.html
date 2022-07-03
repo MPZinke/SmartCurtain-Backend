@@ -8,7 +8,7 @@
 		<input id='date_input' name='date_input' class='input mobile_input' type='date' value='{{ current_date }}'/>
 		<input id='time_input' name='time_input' class='input mobile_input' type='time' value='{{ time_plus_hour }}'/>
 		
-		{% if header.selected_curtain().is_smart() %}
+		{% if header.selected_curtain().moves_discretely() %}
 			<input id='percentage_input' name='percentage_input'  class='input mobile_input' type='number' min='0' max='100' step='1'
 			  value='{{ 100 - header.selected_curtain().percentage() }}'
 			  onchange='change_slider(this.value);' onkeyup='change_slider(this.value);'/>

@@ -16,49 +16,50 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta;
 from json import dumps;
+import os;
+import requests;
 from typing import List, Union;
 
 
 from Global import NONETYPE;
 from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
-from Utility.DBClass import DBClass;
+from Utility.DB import DBClass;
 from Utility.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, \
   SELECT_CurtainsOptions;
 from Utility import Logger;
-from Utility.DBClass import AttributeType;
+from Utility.DB import AttributeType;
 
 
 class Curtain(DBClass):
 	def __init__(self, **curtain_info):
 		DBClass.__init__(self, "UPDATE_Curtains", **curtain_info);
 
-		# Get associated relations
-		current_events = SELECT_current_CurtainsEvents(self._id);
-		curtains_options = SELECT_CurtainsOptions(self._id);
-
 		self.attribute_types: AttributeType =	[
 													AttributeType("_id", int),
 													AttributeType("_buffer_time", [int, bool, NONETYPE]),
 													AttributeType("_percentage", [int, NONETYPE]),
 													AttributeType("_direction", [int, bool, NONETYPE]),
-													AttributeType("_ip_address", [str, NONETYPE]),
 													AttributeType("_is_activated", [int, bool, NONETYPE]),
 													AttributeType("_is_current", [int, bool, NONETYPE]),
-													AttributeType("_is_safe", [int, bool, NONETYPE]),
-													AttributeType("_is_smart", [int, bool, NONETYPE]),
+													AttributeType("_moves_discretely", [int, bool]),
 													AttributeType("_port", [int, bool, NONETYPE]),
 													AttributeType("_length", [int, bool, NONETYPE]),
-													AttributeType("_name", [str])
+													AttributeType("_name", str)
 												];
 		self.validate();
 
+		# Get associated relations
+		self._ip_address: str = self.lookup_curtain();
+		current_events = SELECT_current_CurtainsEvents(self._id);
+		curtains_options = SELECT_CurtainsOptions(self._id);
 		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
 		self._CurtainOptions = [CurtainOption(**option) for option in curtains_options];
 
 
+
 	def __iter__(self) -> dict:
-		return DBClass.__iter__(self, "_CurtainEvents", "_CurtainOptions");
+		return DBClass.__iter__(self, "_CurtainEvents", "_CurtainOptions", "_ip_address");
 
 
 	def __repr__(self) -> str:
@@ -108,11 +109,37 @@ class Curtain(DBClass):
 
 	# ———————————————————————————————————————————————— GETTERS: SPECIAL ————————————————————————————————————————————————
 
-	# Get all curtain events for a time range.
-	# Takes the latest datetime time that an event can be, optionally the earliest datetime time an event can be.
-	# Cycles through dictionary of events. If an event is within the range, event is added to list.
-	# Returns list of curtain events within that time range.
-	def CurtainEvents_for_range(self, latest: object=None, earliest: object=None) -> list:
+	def CurtainEvent(self, **kwargs: dict) -> Union[CurtainEvent, None]:
+		"""
+		SUMMARY: Get CurtainsEvent if exists.
+		PARAMS:  Takes the attribute name to match the event with.
+		DETAILS: Checks whether the CurtainEvents exists in memory. If it doesn't, checks if it exists in the DB.
+		RETURNS: Returns the Event if it is found, else None.
+		"""
+		from System.System import System;
+		if((curtain_event := System._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
+			return curtain_event;
+
+		# Not found, check if in DB
+		if((curtain_events := SELECT_CurtainsEvents_for_Curtains_id(self._id))):
+			for event in curtain_events:
+				# If found in DB, create an object and add to the list
+				if(all(event.get(key) == value for key, value in kwargs)):
+					curtain_event = CurtainEvent(**{**event, "Curtain": self});
+					self._CurtainEvents.append(curtain_event);
+					return curtain_event;
+
+		return None;
+
+
+	def CurtainEvents_for_range(self, *, latest: object=None, earliest: object=None) -> list:
+		"""
+		SUMMARY: Get all curtain events for a time range.
+		PARAMS:  Takes the latest datetime time that an event can be, optionally the earliest datetime time an event can
+		         be.
+		DETAILS: Cycles through dictionary of events. If an event is within the range, event is added to list.
+		RETURNS: A list of curtain events within that time range.
+		"""
 		if(not earliest and not latest):
 			return [self._CurtainEvents[event_id] for event_id in self._CurtainEvents];
 
@@ -131,65 +158,56 @@ class Curtain(DBClass):
 		CurtainEvents_data = SELECT_CurtainsEvents();
 
 
-	# Get CurtainsEvent if exists.
-	# Takes the CurtainEvents id to pull from.
-	# Checks whether the CurtainEvents exists in memory. If it doesn't, checks if it exists in the DB.
-	# Returns the Event if it is found, else None.
-	def CurtainEvent(self, **kwargs: dict) -> Union[CurtainEvent, None]:
-		from System.System import System;
-		if((curtain_event := System._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
-			return curtain_event;
+	# ——————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————— #
 
-		# Not found, check if in DB
-		if((curtain_events := SELECT_CurtainsEvents_for_Curtains_id(self._id))):
-			for event in curtain_events:
-				# If found in DB, create an object and add to the list
-				if(all(event.get(key) == value for key, value in kwargs)):
-					curtain_event = CurtainEvent(**{**event, "Curtain": self});
-					self._CurtainEvents.append(curtain_event);
-					return curtain_event;
+	def lookup_curtain(self: object) -> Union[str, None]:
+		"""
+		SUMMARY: Looks up the curtain from the NetworkIPLookup endpoint.
+		PARAMS:  Takes the name of the curtain to lookup from NetworkIPLookup.
+		DETAILS: Queries the NetworkIPLookup endpoint with the label for the curtain.
+		RETURNS: The IP address string for the curtain.
+		"""
+		NetworkIPLookup_host = os.getenv("NETWORKIPLOOKUP_HOST");
+		NetworkIPLookup_bearer_token = os.getenv("NETWORKIPLOOKUP_BEARERTOKEN");
+		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
 
-		return None
+		url = f"http://{NetworkIPLookup_host}/api/v1.0/network/label/{Curtain_network_name}/ip/label/{self.name}";
+		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkIPLookup_bearer_token}"});
+
+		if(response.status_code == 200):
+			try:
+				return response.json().get("address", None);
+			except:
+				pass
+
+		return None;
 
 
-	# ——————————————————————————————————————————————————————— DB ———————————————————————————————————————————————————————
+	# ———————————————————————————————————————————————— EVENT CREATION ———————————————————————————————————————————————— #
 
-	def _new_event(self, *, percentage: int=0, Options_id: int=None, time: object=None) -> int:
-		if(isinstance(time, type(None))):
+	def _new_event(self, percentage: int=0, *, Options_id: int=None, time: object=None) -> int:
+		if(time is None):
 			time = datetime.now();
 
 		kwargs = {"Curtain": self, "Options.id": Options_id, "percentage": percentage, "time": time};
-		new_CurtainEvent = CurtainEvent.New(**kwargs);
-		self._CurtainEvents.append(new_CurtainEvent);
+		if((curtain_event_dict := CurtainEvent.add_event_to_DB(**kwargs)) is None):
+			raise Exception("Unable to add event to DB");
 
-		return new_CurtainEvent.id();
+		curtain_event: CurtainEvent = CurtainEvent(**{**curtain_event_dict, "Curtain": self});
+		self._CurtainEvents.append(curtain_event);
+
+		return curtain_event.id();
 
 
-	def close(self, *, Options_id: int=None, time: object=None):
-		if(isinstance(time, type(None))):
+	def close(self, *, Options_id: int=None, time: datetime=None):
+		if(time is None):
 			time = datetime.now();
 
-		return self._new_event(percentage=0, Options_id=Options_id, time=time);
+		return self._new_event(0, Options_id=Options_id, time=time);
 
 
-	def close_immediately(self, Options_id : int=None) -> int:
-		return self._new_event(Options_id=Options_id);
-
-
-	def open(self, *, percentage: int=0, Options_id: int=None, time: object=None) -> int:
-		if(isinstance(time, type(None))):
+	def open(self, percentage: int=100, *, Options_id: int=None, time: object=None) -> int:
+		if(time is None):
 			time = datetime.now();
 
-		return self._new_event(percentage=percentage, Options_id=Options_id, time=time);
-
-
-	def open_immediately(self, percentage: int=100, Options_id: int=None) -> int:
-		CurtainEvent_id = self._new_event(percentage=percentage, Options_id=Options_id);
-		return CurtainEvent_id if CurtainEvent_id else False;
-
-
-	def open_percentage(self, *, percentage: int=100, Options_id: int=None, time: object=None) -> int:
-		if(isinstance(time, type(None))):
-			time = datetime.now();
-
-		return self._new_event(Options_id=Options_id, percentage=percentage, time=time);
+		return self._new_event(percentage, Options_id=Options_id, time=time);

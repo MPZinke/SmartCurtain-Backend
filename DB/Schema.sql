@@ -16,17 +16,14 @@ CREATE TABLE IF NOT EXISTS "Curtains"
 	"buffer_time" SMALLINT NOT NULL DEFAULT 0,  -- Curtain travel deci-seconds (prevent event overlap)
 	CHECK("buffer_time" >= 0),
 	"direction" BOOLEAN NOT NULL DEFAULT FALSE,
-	"ip_address" VARCHAR(15) NOT NULL,
 	"port" SMALLINT NOT NULL DEFAULT 80,
 	CHECK("port" >= 0),
 	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
 	"is_current" BOOLEAN NOT NULL DEFAULT TRUE,
-	-- "is_safe": prevents actions from going to a percentage it thinks is harmful (EG opening farther while 'fully open')
-	"is_safe" BOOLEAN NOT NULL DEFAULT TRUE,
-	"is_smart" BOOLEAN NOT NULL DEFAULT TRUE,
 	"last_connection" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"length" INT NOT NULL,
 	CHECK("length" >= 0),
+	"moves_discretely" BOOLEAN NOT NULL DEFAULT FALSE,
 	"name" VARCHAR(32) NOT NULL UNIQUE,
 	"percentage" SMALLINT NOT NULL DEFAULT 0,
 	CHECK("percentage" >= 0)

@@ -68,7 +68,7 @@ class SunriseOpen(ZWidget):
 					continue;  # don't duplicate sunrise
 
 				percentage = curtain_option.data() if curtain_option.data() else 100;
-				curtain.open(percentage=percentage, Options_id=self._option_id, time=sunrise);
+				curtain.open(percentage, Options_id=self._option_id, time=sunrise);
 
 			except Exception as error:
 				Logger.log_error(error);

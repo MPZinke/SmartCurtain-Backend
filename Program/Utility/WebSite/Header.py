@@ -44,7 +44,7 @@ class Header:
 
 
 	def selected_curtain(self, Curtains_id: int=None) -> Union[object, None]:
-		if(isinstance(Curtains_id, type(None))):
+		if(Curtains_id is None):
 			return self._selected_curtain;
 		if(Curtains_id in self._Curtains):
 			self._selected_curtain = self._Curtains[Curtains_id];

@@ -22,7 +22,7 @@ from warnings import warn as Warn;
 
 
 from Global import *;
-from Utility.DBClass import AttributeType, AttributeValue, DBClass;
+from Utility.DB import AttributeType, AttributeValue, DBClass;
 from Utility.DB import INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
 import Utility.Logger as Logger;
@@ -52,7 +52,7 @@ class CurtainEvent(DBClass):
 
 	# Creates a new entry in the DB and returns the newly created CurtainEvent object
 	@staticmethod
-	def New(**info) -> object:
+	def add_event_to_DB(**info: dict) -> dict:
 		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
 		# Check attributes are present
 		attribute_types: List[AttributeType] =	[
@@ -73,11 +73,8 @@ class CurtainEvent(DBClass):
 		[info.update({name: info.get(name, default)}) for name, default in names_and_defaults.items()];
 
 		# Add to DB
-		event_params = [info["Curtain"].id(), info["Options.id"], info["percentage"], info["time"]]
-		if((event := INSERT_CurtainsEvents(*event_params)) is None):
-			raise Exception("Unable to add event to DB");
-
-		return CurtainEvent(**{**event, "Curtain": info["Curtain"]});
+		event_params = [info["Curtain"].id(), info["Options.id"], info["percentage"], info["time"]];
+		return INSERT_CurtainsEvents(*event_params);
 
 
 	def __del__(self):
@@ -124,6 +121,10 @@ class CurtainEvent(DBClass):
 		return self._id;
 
 
+	def ip_address(self) -> str:
+		return self.ip_address;
+
+
 	# ———————————————————————————————————————————————————— ACTIVATE ————————————————————————————————————————————————————
 
 	def activate(self):
@@ -133,9 +134,6 @@ class CurtainEvent(DBClass):
 		print("Post data:", end="");  #TESTING
 		print(post_dict);  #TESTING
 		try:
-			if(not curtain.is_smart() and curtain.is_safe() and curtain.percentage() == self._percentage):
-				raise Exception("Curtain will not move to a state it believes itself to already be in [is_safe=TRUE]");
-
 			response = post(url=f"http://{curtain.ip_address()}", json=post_dict, timeout=curtain.buffer_time()/10+1);
 			if(response.status_code != 200):
 				raise Exception(f"Status code for event: {self._id} is invalid");

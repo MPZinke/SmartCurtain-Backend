@@ -56,16 +56,18 @@ class AdafruitFeed(ZWidget):
 		try:
 			# Get the curtain for feed ID
 			curtain = self._curtain_for_feed_id(feed_id);
-			if(not curtain): raise Exception(f"Feed ID: {feed_id} not found");
+			if(not curtain):
+				raise Exception(f"Feed ID: {feed_id} not found");
 
 			# Convert Option to percentage
-			curtain_option = curtain.CurtainOption(self._option_id);
+			curtain_option = curtain.CurtainOption(Option_id=self._option_id);
 			percentage = try_convert(percentage_payload, int) or try_convert(curtain_option.data().get(feed_id,0), int);
 			print(f"Curtain: {curtain.name()}, feed: {feed_id}, percentage: {percentage}");
-			if(isinstance(percentage, NONETYPE)): raise Exception("Could not get a valid percentage");
+			if(percentage is None):
+				raise Exception("Could not get a valid percentage");
 
 			# For selected curtain add event for percentage
-			curtain.open_percentage(percentage=percentage, Options_id=self._option_id);
+			curtain.open(percentage, Options_id=self._option_id);
 
 		except Exception as error:
 			Logger.log_error(error);
@@ -75,9 +77,11 @@ class AdafruitFeed(ZWidget):
 		for curtain in self._System.Curtains_list():
 			curtain_option = curtain.CurtainOption(self._option_id);
 			# if curtain has active CurtainOption for AdafruitIO && CurtainOption has 2 CurtainOptionKeyValue:
-			if(not curtain_option or not curtain_option.is_on()): continue;
+			if(not curtain_option or not curtain_option.is_on()):
+				continue;
 			#HARDCODED: then minimum number of feeds per curtain
-			if(len(curtain_option.data()) < 2): continue;
+			if(len(curtain_option.data()) < 2):
+				continue;
 
 			[client.subscribe(option) for option in curtains_option.data()];
 

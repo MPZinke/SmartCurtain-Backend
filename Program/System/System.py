@@ -26,7 +26,7 @@ from System.Curtain import Curtain;
 from System.Option import Option;
 from Utility import tomorrow_00_00;
 from Utility.DB import SELECT_Curtains, SELECT_Options;
-from Utility.DBClass import DBClass;
+from Utility.DB import DBClass;
 from Utility.ZThread import ZWidget;
 
 
@@ -53,8 +53,7 @@ class System(ZWidget):
 			self._Curtains = [Curtain(**{**curtain, "System": self}) for curtain in selected_curtains];
 			self._Options = [Option(**option) for option in SELECT_Options()];
 			dicts = [dict(curtain) for curtain in self._Curtains];
-			print(dicts)
-			print(dumps(dicts, indent=4, default=str))
+			print(dicts);
 
 		finally:
 			self._mutex.release();
