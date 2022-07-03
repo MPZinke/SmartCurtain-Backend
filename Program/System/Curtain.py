@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
+from json import dumps;
 from typing import List, Union;
 
 
@@ -54,6 +55,18 @@ class Curtain(DBClass):
 
 		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
 		self._CurtainOptions = [CurtainOption(**option) for option in curtains_options];
+
+
+	def __iter__(self) -> dict:
+		return DBClass.__iter__(self, "_CurtainEvents", "_CurtainOptions");
+
+
+	def __repr__(self) -> str:
+		return str(self);
+
+
+	def __str__(self) -> str:
+		return dumps(dict(self), default=str);
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -147,7 +160,7 @@ class Curtain(DBClass):
 
 		kwargs = {"Curtain": self, "Options.id": Options_id, "percentage": percentage, "time": time};
 		new_CurtainEvent = CurtainEvent.New(**kwargs);
-		self._CurtainEvents[new_CurtainEvent.id()] = new_CurtainEvent;
+		self._CurtainEvents.append(new_CurtainEvent);
 
 		return new_CurtainEvent.id();
 

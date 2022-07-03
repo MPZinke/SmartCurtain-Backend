@@ -15,7 +15,9 @@ __author__ = "MPZinke"
 
 
 import json;
+from json import dumps;
 from typing import Any, List, Type, Union;
+import inspect
 
 
 from Utility.DBClass.AttributeType import AttributeType;
@@ -31,6 +33,8 @@ class DBClass:
 			method_name = attribute.replace(".", "_");
 			setattr(self, attribute_name, table_values[attribute] if table_values[attribute] else 0);
 			setattr(self, method_name, self._get_or_set_attribute(db_prefix, attribute_name));
+
+		self.attribute_types: List[AttributeType] = [];
 
 
 	# Helper function for managing what happens to DB data & attributes.
@@ -65,14 +69,39 @@ class DBClass:
 
 	# —————————————————————————————————————————————————— CONVERSION —————————————————————————————————————————————————— #
 
-	def dict(self) -> dict:
-		return {attr : getattr(self, attr) for attr in self.__dict__};
+
+	def __iter__(self, *additional_args: list) -> dict:
+		keys: list = [attribute.name() for attribute in self.attribute_types] + [arg for arg in additional_args];
+
+		object_dict = {key: getattr(self, key) for key in keys};  # Get attrs
+		object_dict = {};
+		for key in keys:
+			value = getattr(self, key);
+			if(isinstance(value, DBClass)):
+				value = dict(value);
+			elif(isinstance(value, list)):
+				value = [dict(val) if(isinstance(val, DBClass)) else val for val in value];
+
+			object_dict[key[1:] if(key[0] == "_") else key] = value;
+
+		yield from object_dict.items();
 
 
-	def __str__(self):
-		attribute_dict = {key: value for key, value in self.dict().items() if(key[0] == "_")};
-		str_dict = {key: str(value) if(isinstance(value, object)) else value for key, value in attribute_dict.items()};
-		return self.try_call(json.dumps, str_dict, default="");
+	def __repr__(self) -> str:
+		return str(self);
+
+
+	def __str__(self) -> str:
+		return dumps(dict(self), default=str);
+
+	# def __iter__(self) -> dict:
+	# 	return {attr : getattr(self, attr) for attr in self.__dict__};
+
+
+	# def __str__(self):
+		# attribute_dict = {key: value for key, value in iter(self).items() if(key[0] == "_")};
+		# str_dict = {key: str(value) if(isinstance(value, object)) else value for key, value in attribute_dict.items()};
+		# return self.try_call(json.dumps, str_dict, default="");
 
 
 	def __call__(self, attribute_name: str, conversion_type: Type=AttributeType):

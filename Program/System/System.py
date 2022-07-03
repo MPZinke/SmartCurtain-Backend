@@ -15,7 +15,7 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from json import dumps as json_dumps;  # use as to be specific, but do not import too much from json
+from json import dumps;
 from socket import gethostbyname, gethostname;
 from threading import Lock;
 from typing import Any, List, Union;
@@ -26,6 +26,7 @@ from System.Curtain import Curtain;
 from System.Option import Option;
 from Utility import tomorrow_00_00;
 from Utility.DB import SELECT_Curtains, SELECT_Options;
+from Utility.DBClass import DBClass;
 from Utility.ZThread import ZWidget;
 
 
@@ -43,6 +44,7 @@ class System(ZWidget):
 
 	# SUMMARY: Used for if DB values have changed and System information needs to be refreshed.
 	def refresh(self) -> None:
+		import inspect;
 		self._mutex.acquire();  # just to ensure things are executed properly
 		try:
 			selected_curtains = SELECT_Curtains();
@@ -50,6 +52,9 @@ class System(ZWidget):
 			[curtain.delete_events() for curtain in self._Curtains];
 			self._Curtains = [Curtain(**{**curtain, "System": self}) for curtain in selected_curtains];
 			self._Options = [Option(**option) for option in SELECT_Options()];
+			dicts = [dict(curtain) for curtain in self._Curtains];
+			print(dicts)
+			print(dumps(dicts, indent=4, default=str))
 
 		finally:
 			self._mutex.release();
@@ -84,14 +89,6 @@ class System(ZWidget):
 
 	def Curtains(self) -> List[Curtain]:
 		return self._Curtains;
-
-
-	def Event_Curtain(self, **kwargs: dict) -> Union[Curtain, None]:
-		for curtain in self._Curtains:
-			if(curtain.CurtainEvent(**kwargs) is not None):
-				return curtain;
-
-		return None;
 
 
 	def Option(self, **kwargs: dict) -> Union[Option, None]:

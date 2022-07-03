@@ -15,15 +15,15 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
+from json import dumps;
 from requests import post;
-from time import sleep;
-from typing import List, Union;
+from typing import List;
 from warnings import warn as Warn;
 
 
 from Global import *;
 from Utility.DBClass import AttributeType, AttributeValue, DBClass;
-from Utility.DB import SELECT_CurtainsEvents, INSERT_CurtainsEvents;
+from Utility.DB import INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
 import Utility.Logger as Logger;
 
@@ -32,18 +32,18 @@ class CurtainEvent(DBClass):
 
 	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
 
-	def __init__(self, **event_info):
+	def __init__(self, **event_info: dict):
 		DBClass.__init__(self, "UPDATE_CurtainsEvents", **event_info);
 
-		from System.Curtain import Curtain as Curtain;  # must be imported here to prevent circular importing
-		self.attribute_types: AttributeType =	[
-													AttributeType("_Curtain", Curtain),
-													AttributeType("_id", int),
-													AttributeType("_percentage", [int, NONETYPE]),
-													AttributeType("_is_activated", [int, bool, NONETYPE]),
-													AttributeType("_is_current", [int, bool, NONETYPE]),
-													AttributeType("_time", datetime)
-												];
+		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
+		self.attribute_types: List[AttributeType] =	[
+														AttributeType("_Curtain", Curtain),
+														AttributeType("_id", int),
+														AttributeType("_percentage", [int, NONETYPE]),
+														AttributeType("_is_activated", [int, bool, NONETYPE]),
+														AttributeType("_is_current", [int, bool, NONETYPE]),
+														AttributeType("_time", datetime)
+													];
 		self.validate();
 
 		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
@@ -53,41 +53,57 @@ class CurtainEvent(DBClass):
 	# Creates a new entry in the DB and returns the newly created CurtainEvent object
 	@staticmethod
 	def New(**info) -> object:
+		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
 		# Check attributes are present
-		from System.Curtain import Curtain as Curtain;  # must be imported here to prevent circular importing
-		validation_attributes: List[AttributeType] =	[
-															AttributeType("Curtain", Curtain),
-															AttributeType("percentage", int),
-															AttributeType("time", datetime)
-														];
+		attribute_types: List[AttributeType] =	[
+													AttributeType("Curtain", Curtain),
+													AttributeType("percentage", int),
+													AttributeType("time", datetime)
+												];
 		info_values: List[AttributeValue] =	[
 												AttributeValue("Curtain", info["Curtain"]),
 												AttributeValue("percentage", info["percentage"]),
 												AttributeValue("time", info["time"])
 											];
 
-		CurtainEvent.validate_values(validation_attributes, info_values);
+		CurtainEvent.validate_values(attribute_types, info_values);
 
 		# Set possible missing attributes
-		names, defaults = ["Options.id", "is_activated", "is_current"], [None, False, True];
-		[info.update({name: info.get(name, defaults[x])}) for x, name in enumerate(names)];
+		names_and_defaults = {"Options.id": None, "is_activated": False, "is_current": True};
+		[info.update({name: info.get(name, default)}) for name, default in names_and_defaults.items()];
 
 		# Add to DB
 		event_params = [info["Curtain"].id(), info["Options.id"], info["percentage"], info["time"]]
-		event_id: Union[int, None] = INSERT_CurtainsEvents(*event_params);
-
-		if(event_id is None):
+		if((event := INSERT_CurtainsEvents(*event_params)) is None):
 			raise Exception("Unable to add event to DB");
 
-		# Return new instance of CurtainEvents
-		return CurtainEvent(**info);
+		return CurtainEvent(**{**event, "Curtain": info["Curtain"]});
 
 
 	def __del__(self):
 		try:
 			self.__activation_thread.kill();
 		except:
-			pass;
+			return;
+
+
+	def __iter__(self) -> dict:
+		from System.Curtain import Curtain;
+
+		for x, attribute_type in enumerate(self.attribute_types):
+			if(Curtain in attribute_type.types()):
+				del self.attribute_types[x];
+				break;
+
+		return DBClass.__iter__(self);
+
+
+	def __repr__(self) -> str:
+		return str(self);
+
+
+	def __str__(self) -> str:
+		return dumps(dict(self), default=str);
 
 
 	def delete(self):

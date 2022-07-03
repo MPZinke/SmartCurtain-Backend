@@ -82,27 +82,7 @@ def SELECT_Options(cursor: object) -> list:
 	return [dict(row) for row in cursor];
 
 
-# ————————————————————————————————————————————————— GETTERS::CURTAINS —————————————————————————————————————————————————
-
-@connection_wrapper
-def SELECT_Curtains_by_id(cursor: object, Curtains_id: int) -> Union[dict, None]:
-	curtain_info = cursor.execute("""SELECT * FROM "Curtains" WHERE "id" = %s;""", Curtains_id);
-	return curtain_info[0] if curtain_info else None;
-
-
-@connection_wrapper
-def SELECT_Curtains_ids(cursor: object) -> list:
-	return [curtain["id"] for curtain in cursor.execute("""SELECT "id" FROM "Curtains" ORDER BY "id" ASC;""")];
-
-
 # —————————————————————————————————————————————— GETTERS::CURTAINSEVENTS ——————————————————————————————————————————————
-
-# def CurtainsEvents(cursor: object, Curtains_id: int) -> list:
-# 	query = "SELECT "CurtainsEvents".*, "Options".* FROM "CurtainsEvents" " \
-# 			+ "LEFT JOIN "Options" ON "Options"."id" = "CurtainsEvents"."id" WHERE "Curtains.id" = %s;";
-# 	cursor.execute(query, Curtains_id);
-# 	return [dict(row) for row in cursor];
-
 
 @connection_wrapper
 def SELECT_current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
@@ -112,12 +92,6 @@ def SELECT_current_CurtainsEvents(cursor: object, Curtains_id: int) -> list:
 			AND "is_current" = TRUE AND "is_activated" = FALSE;
 			""";
 	cursor.execute(query, (Curtains_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")));
-	return [dict(row) for row in cursor];
-
-
-@connection_wrapper
-def SELECT_CurtainsEvent(cursor: object, CurtainsEvents_id: int) -> dict:
-	cursor.execute("""SELECT * FROM "CurtainsEvents" WHERE "id" = %s;""", (CurtainsEvents_id,));
 	return [dict(row) for row in cursor];
 
 
@@ -229,11 +203,11 @@ def INSERT_CurtainsEvents(cursor, Curtains_id: int, Options_id: int, percentage:
 	query =	"""
 			INSERT INTO "CurtainsEvents" ("Curtains.id", "Options.id", "percentage", "time") VALUES
 			(%s, %s, %s, %s)
-			RETURNING "id";
+			RETURNING *;
 			"""
 	cursor.execute(query, (Curtains_id, Options_id, percentage, time.strftime("%Y-%m-%d %H:%M:%S")));
 	insert = [dict(row) for row in cursor];
-	return insert[0]["id"] if insert else None;
+	return insert[0] if insert else None;
 
 
 @connection_wrapper
