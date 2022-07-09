@@ -121,10 +121,6 @@ class CurtainEvent(DBClass):
 		return self._id;
 
 
-	def ip_address(self) -> str:
-		return self.ip_address;
-
-
 	# ———————————————————————————————————————————————————— ACTIVATE ————————————————————————————————————————————————————
 
 	def activate(self):
@@ -135,8 +131,8 @@ class CurtainEvent(DBClass):
 		print(post_dict);  #TESTING
 		try:
 			response = post(url=f"http://{curtain.ip_address()}", json=post_dict, timeout=curtain.buffer_time()/10+1);
-			if(response.status_code != 200):
-				raise Exception(f"Status code for event: {self._id} is invalid");
+			if(int(response.status_code / 100) != 2):
+				raise Exception(f"Received {response.status_code} status code for event {self._id}");
 			if("error" in response.json()):
 				raise Exception(f"Received error message: {response.json()['error']}");
 			print(response.json());  #TESTING

@@ -51,6 +51,7 @@ class Curtain(DBClass):
 
 		# Get associated relations
 		self._ip_address: str = self.lookup_curtain();
+		assert(self._ip_address is not None), f"IP Address for '{self._name}' cannot be none"
 		current_events = SELECT_current_CurtainsEvents(self._id);
 		curtains_options = SELECT_CurtainsOptions(self._id);
 		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
@@ -84,6 +85,10 @@ class Curtain(DBClass):
 	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
 	def id(self) -> int:
 		return self._id;
+
+
+	def ip_address(self) -> str:
+		return self._ip_address;
 
 
 	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
@@ -168,12 +173,13 @@ class Curtain(DBClass):
 		RETURNS: The IP address string for the curtain.
 		"""
 		NetworkIPLookup_host = os.getenv("NETWORKIPLOOKUP_HOST");
-		NetworkIPLookup_bearer_token = os.getenv("NETWORKIPLOOKUP_BEARERTOKEN");
+		NetworkIPLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
 		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
 
-		url = f"http://{NetworkIPLookup_host}/api/v1.0/network/label/{Curtain_network_name}/ip/label/{self.name}";
+		url = f"http://{NetworkIPLookup_host}/api/v1.0/network/label/{Curtain_network_name}/device/label/{self._name}";
+		print(url)
 		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkIPLookup_bearer_token}"});
-
+		print(response)
 		if(response.status_code == 200):
 			try:
 				return response.json().get("address", None);

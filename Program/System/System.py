@@ -52,8 +52,6 @@ class System(ZWidget):
 			[curtain.delete_events() for curtain in self._Curtains];
 			self._Curtains = [Curtain(**{**curtain, "System": self}) for curtain in selected_curtains];
 			self._Options = [Option(**option) for option in SELECT_Options()];
-			dicts = [dict(curtain) for curtain in self._Curtains];
-			print(dicts);
 
 		finally:
 			self._mutex.release();

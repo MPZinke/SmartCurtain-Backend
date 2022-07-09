@@ -9,8 +9,8 @@
 
 -- MPZinke instance: default length 1000
 INSERT INTO "Curtains" ("length", "ip_address", "name") VALUES
-(43000, '10.0.0.12', 'Office'),
-(34000, '10.0.0.13', 'Bedroom');
+(43000, '10.0.0.12', 'Livingroom-Curtain'),
+(34000, '10.0.0.13', 'Bedroom-Curtain');
 
 
 INSERT INTO "Options" ("name", "description") VALUES
