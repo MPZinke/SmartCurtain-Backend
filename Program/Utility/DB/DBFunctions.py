@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta;
 import os;
 import psycopg2;
-import psycopg2.extras
+import psycopg2.extras;
 from typing import Any, Set, Union;
 
 
