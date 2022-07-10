@@ -56,7 +56,7 @@ def api_curtains__id__is_activated__is_activated(self, curtain_id: int, is_activ
 		raise Exception("\"percentage\" value is wrong type");
 
 	# Update curtain
-	if(not curtain.is_activated(is_activated)):
+	if(not curtain.is_activated(bool(is_activated))):
 		raise Exception("Unable to update Curtain activation");
 	if(not curtain.length(length)):
 		raise Exception("Unable to update length");
