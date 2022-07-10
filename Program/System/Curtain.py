@@ -177,9 +177,7 @@ class Curtain(DBClass):
 		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
 
 		url = f"http://{NetworkIPLookup_host}/api/v1.0/network/label/{Curtain_network_name}/device/label/{self._name}";
-		print(url)
 		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkIPLookup_bearer_token}"});
-		print(response)
 		if(response.status_code == 200):
 			try:
 				return response.json().get("address", None);
