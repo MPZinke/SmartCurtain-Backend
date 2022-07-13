@@ -167,16 +167,3 @@ class CurtainEvent(DBClass):
 		if(time_plus_1_second < now):
 			Warn("Event {} is scheduled at a time in the past".format(self._id));
 		return (self._time - now).seconds if (now < self._time) else .25;
-
-
-	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
-
-	def dict(self):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_percentage", "_is_activated", "_is_current", "_time"];
-		return {attr : getattr(self, attr) for attr in attrs};
-
-
-	def print(self, tab=0, next_tab=0):
-		attrs = ["_id", "_Curtains_id", "_Options_id", "_percentage", "_is_activated", "_is_current", "_time"];
-		for attr in attrs:
-			print('\t'*tab, attr, " : ", getattr(self, attr));
