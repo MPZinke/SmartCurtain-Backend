@@ -8,9 +8,9 @@
 
 
 -- MPZinke instance: default length 1000
-INSERT INTO "Curtains" ("length", "ip_address", "name") VALUES
-(43000, '10.0.0.12', 'Livingroom-Curtain'),
-(34000, '10.0.0.13', 'Bedroom-Curtain');
+INSERT INTO "Curtains" ("length", "name") VALUES
+(43000, 'Livingroom-Curtain'),
+(34000, 'Bedroom-Curtain');
 
 
 INSERT INTO "Options" ("name", "description") VALUES
@@ -29,22 +29,22 @@ SELECT "Curtains"."id", "Options"."id", "Temp"."is_on", "Temp"."notes", "Temp"."
 FROM 
 (
 	VALUES
-	('Office', 'Adafruit Feed', TRUE, NULL, '{"office.curtain-close": 0, "office.curtain-open": 100}'),
-	('Office', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
-	('Office', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
-	('Office', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
-	('Office', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
-	('Office', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
-	('Office', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
-	('Office', 'Temperature Setting', FALSE, NULL, ''),  -- Temperature Setting
-	('Bedroom', 'Adafruit Feed', TRUE, NULL, '{"bedroom.curtain-close": 0, "bedroom.curtain-open": 100}'),  -- Adafruit Feed
-	('Bedroom', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
-	('Bedroom', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
-	('Bedroom', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
-	('Bedroom', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
-	('Bedroom', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
-	('Bedroom', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
-	('Bedroom', 'Temperature Setting', FALSE, NULL, '')  -- Temperature Setting
+	('Livingroom-Curtain', 'Adafruit Feed', TRUE, NULL, '{"office.curtain-close": 0, "office.curtain-open": 100}'),
+	('Livingroom-Curtain', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
+	('Livingroom-Curtain', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
+	('Livingroom-Curtain', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
+	('Livingroom-Curtain', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
+	('Livingroom-Curtain', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
+	('Livingroom-Curtain', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
+	('Livingroom-Curtain', 'Temperature Setting', FALSE, NULL, ''),  -- Temperature Setting
+	('Bedroom-Curtain', 'Adafruit Feed', TRUE, NULL, '{"bedroom.curtain-close": 0, "bedroom.curtain-open": 100}'),  -- Adafruit Feed
+	('Bedroom-Curtain', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
+	('Bedroom-Curtain', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
+	('Bedroom-Curtain', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
+	('Bedroom-Curtain', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
+	('Bedroom-Curtain', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
+	('Bedroom-Curtain', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
+	('Bedroom-Curtain', 'Temperature Setting', FALSE, NULL, '')  -- Temperature Setting
 ) AS "Temp"("Curtains.name", "Options.name", "is_on", "notes", "data")
 JOIN "Options" ON "Temp"."Options.name" = "Options"."name"
 JOIN "Curtains" ON "Temp"."Curtains.name" = "Curtains"."name";
