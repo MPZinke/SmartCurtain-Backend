@@ -27,13 +27,13 @@ Main routes python request handlers.
 `GET /api/v1.0/curtains`—Lists options available related to Curtains.
 `GET /api/v1.0/curtains/all`—Lists all curtains.
 `POST /api/v1.0/curtains/new`—Creates a new curtain with the JSON body.
-`GET /api/v1.0/curtain/{name: str|ID: int}`—Show information for a curtain.
-`PATCH /api/v1.0/curtain/{name: str|ID: int}`—Updates curtain's value(s) based on JSON body.
-`GET /api/v1.0/curtain/{name: str|ID: int}/events`—Lists all events for a curtain.
-`GET /api/v1.0/curtain/{name: str|ID: int}/event/{time: str|ID: int}`—Show information for an event for a curtain.
-`PATCH /api/v1.0/curtain/{name: str|ID: int}/event/{time: str|ID: int}`—Updates curtain's event's value(s) based on JSON body.
+`GET /api/v1.0/curtain/<string:curtain_name|int:curtain_id>`—Show information for a curtain.
+`PATCH /api/v1.0/curtain/<string:curtain_name|int:curtain_id>`—Updates curtain's value(s) based on JSON body.
+`GET /api/v1.0/curtain/<string:curtain_name|int:curtain_id>/events`—Lists all events for a curtain.
+`GET /api/v1.0/curtain/<string:curtain_name|int:curtain_id>/event/<string:time|int:event_id>`—Show information for an event for a curtain.
+`PATCH /api/v1.0/curtain/<string:curtain_name|int:curtain_id>/event/<string:time|int:event_id>`—Updates curtain's events' value(s) based on JSON body.
 `GET /api/v1.0/events`—Lists options available related to Events.
 `GET /api/v1.0/events/all`—Lists all events.
-`GET /api/v1.0/event/{ID: int}`—Show information for an event.
+`GET /api/v1.0/event/<int:event_id>`—Show information for an event.
 `POST /api/v1.0/event/new`—Creates a new event with the JSON body.
 `GET /api/v1.0/options`—Lists all events.

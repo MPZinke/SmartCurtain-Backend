@@ -52,6 +52,7 @@ class Curtain(DBClass):
 		# Get associated relations
 		self._ip_address: str = self.lookup_curtain();
 		assert(self._ip_address is not None), f"IP Address for '{self._name}' cannot be none"
+
 		current_events = SELECT_current_CurtainsEvents(self._id);
 		curtains_options = SELECT_CurtainsOptions(self._id);
 		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
@@ -181,8 +182,8 @@ class Curtain(DBClass):
 		if(response.status_code == 200):
 			try:
 				return response.json().get("address", None);
-			except:
-				pass
+			except Exception as error:
+				print(error)
 
 		return None;
 
