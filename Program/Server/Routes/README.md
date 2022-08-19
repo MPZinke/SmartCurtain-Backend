@@ -9,3 +9,31 @@ Main routes python request handlers.
 - `./Activate.py` Requests for moving curtain to certain positions.
 - `./Root.py` Requests from URL root, including primary pages.
 - `./State.py` Requests for information about curtain.
+
+
+## Endpoints
+
+### Root
+`GET /`—Main page create new current event.
+`GET /edit`–Page to edit upcoming events.
+`GET /events`—Page to display the current events.
+`GET /new`—Page to create new event.
+`GET /favicon`—Garbage :)
+
+
+### API
+`GET /api`—Lists the available API versions.
+`GET /api/v1.0`—Lists the available system parts.
+`GET /api/v1.0/curtains`—Lists options available related to Curtains.
+`GET /api/v1.0/curtains/all`—Lists all curtains.
+`POST /api/v1.0/curtains/new`—Creates a new curtain with the JSON body.
+`GET /api/v1.0/curtain/{name: str|ID: int}`—Show information for a curtain.
+`PATCH /api/v1.0/curtain/{name: str|ID: int}`—Updates curtain's value(s) based on JSON body.
+`GET /api/v1.0/curtain/{name: str|ID: int}/events`—Lists all events for a curtain.
+`GET /api/v1.0/curtain/{name: str|ID: int}/event/{time: str|ID: int}`—Show information for an event for a curtain.
+`PATCH /api/v1.0/curtain/{name: str|ID: int}/event/{time: str|ID: int}`—Updates curtain's event's value(s) based on JSON body.
+`GET /api/v1.0/events`—Lists options available related to Events.
+`GET /api/v1.0/events/all`—Lists all events.
+`GET /api/v1.0/event/{ID: int}`—Show information for an event.
+`POST /api/v1.0/event/new`—Creates a new event with the JSON body.
+`GET /api/v1.0/options`—Lists all events.
