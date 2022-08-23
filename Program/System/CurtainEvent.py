@@ -22,8 +22,8 @@ from warnings import warn as Warn;
 
 
 from Global import *;
-from Utility.DB import AttributeType, AttributeValue, DBClass;
-from Utility.DB import INSERT_CurtainsEvents;
+from System.DB import AttributeType, DBClass;
+from System.DB import INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
 import Utility.Logger as Logger;
 
@@ -36,14 +36,14 @@ class CurtainEvent(DBClass):
 		DBClass.__init__(self, "UPDATE_CurtainsEvents", **event_info);
 
 		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
-		self.attribute_types: List[AttributeType] =	[
-														AttributeType("_Curtain", Curtain),
-														AttributeType("_id", int),
-														AttributeType("_percentage", [int, NONETYPE]),
-														AttributeType("_is_activated", [int, bool, NONETYPE]),
-														AttributeType("_is_current", [int, bool, NONETYPE]),
-														AttributeType("_time", datetime)
-													];
+		self.attribute_types =	[
+									AttributeType(self, "_Curtain", Curtain),
+									AttributeType(self, "_id", int),
+									AttributeType(self, "_percentage", (int, NONETYPE)),
+									AttributeType(self, "_is_activated", (int, bool, NONETYPE)),
+									AttributeType(self, "_is_current", (int, bool, NONETYPE)),
+									AttributeType(self, "_time", datetime)
+								];
 		self.validate();
 
 		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
@@ -55,18 +55,15 @@ class CurtainEvent(DBClass):
 	def add_event_to_DB(**info: dict) -> dict:
 		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
 		# Check attributes are present
+		# https://stackoverflow.com/a/19476841
+		temp = type("Temp", (), {"Curtain": info["Curtain"], "percentage": info["percentage"], "time": info["time"]})();
 		attribute_types: List[AttributeType] =	[
-													AttributeType("Curtain", Curtain),
-													AttributeType("percentage", int),
-													AttributeType("time", datetime)
+													AttributeType(temp, "Curtain", Curtain),
+													AttributeType(temp, "percentage", int),
+													AttributeType(temp, "time", datetime)
 												];
-		info_values: List[AttributeValue] =	[
-												AttributeValue("Curtain", info["Curtain"]),
-												AttributeValue("percentage", info["percentage"]),
-												AttributeValue("time", info["time"])
-											];
 
-		CurtainEvent.validate_values(attribute_types, info_values);
+		self.validate(attribute_types);
 
 		# Set possible missing attributes
 		names_and_defaults = {"Options.id": None, "is_activated": False, "is_current": True};
@@ -88,7 +85,7 @@ class CurtainEvent(DBClass):
 		from System.Curtain import Curtain;
 
 		for x, attribute_type in enumerate(self.attribute_types):
-			if(Curtain in attribute_type.types()):
+			if(Curtain in attribute_type):
 				del self.attribute_types[x];
 				break;
 
