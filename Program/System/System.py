@@ -25,8 +25,9 @@ from Global import *;
 from System.Curtain import Curtain;
 from System.Option import Option;
 from Utility import tomorrow_00_00;
-from Utility.DB import SELECT_Curtains, SELECT_Options;
-from Utility.DB import DBClass;
+from Utility import Logger;
+from System.DB import SELECT_Curtains, SELECT_Options;
+from System.DB import DBClass;
 from Utility.ZThread import ZWidget;
 
 
@@ -44,17 +45,16 @@ class System(ZWidget):
 
 	# SUMMARY: Used for if DB values have changed and System information needs to be refreshed.
 	def refresh(self) -> None:
-		import inspect;
-		self._mutex.acquire();  # just to ensure things are executed properly
 		try:
+			self._mutex.acquire();  # just to ensure things are executed properly
 			selected_curtains = SELECT_Curtains();
 			# Cleanup events since destructor doesn't work, especially when called by dict reassignment.
 			[curtain.delete_events() for curtain in self._Curtains];
 			self._Curtains = [Curtain(**{**curtain, "System": self}) for curtain in selected_curtains];
 			self._Options = [Option(**option) for option in SELECT_Options()];
 
-		finally:
-			self._mutex.release();
+		except Exception as error:
+			Logger.log_error(error);
 
 
 	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/

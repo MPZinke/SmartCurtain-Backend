@@ -20,43 +20,58 @@ from typing import Any, List, Type, Union;
 import inspect
 
 
-from Utility.DB.AttributeType import AttributeType;
-from Utility.DB.AttributeValue import AttributeValue;
-import Utility.DB.DBFunctions as DBFunctions;
+from System.DB.AttributeType import AttributeType;
+import System.DB.DBFunctions as DBFunctions;
 
 
 
 class DBClass:
 	def __init__(self, db_prefix, **table_values: dict):
 		for attribute in table_values:
-			attribute_name = "_" + attribute.replace(".", "_");
 			method_name = attribute.replace(".", "_");
-			setattr(self, attribute_name, table_values[attribute] if table_values[attribute] else 0);
-			setattr(self, method_name, self._get_or_set_attribute(db_prefix, attribute_name));
+			attribute_name = "_" + method_name;
+			setattr(self, attribute_name, table_values[attribute] if(table_values[attribute]) else 0);
+			setattr(self, method_name, self.__getter_setter_method(db_prefix, attribute_name, method_name));
 
 		self.attribute_types: List[AttributeType] = [];
 
 
-	# Helper function for managing what happens to DB data & attributes.
-	# Take the name of the attribute that is affected & that setting value (if being set).
-	# Sets a new value if a new value is passed.
-	# Will return the original value if no new value is passed. Returns whether new value successfully set.
-	def _get_or_set_attribute(self, db_prefix: str, attribute_name: str) -> callable:
-		def function(new_value: Any=None) -> bool:
-			if(new_value is None):
+	def __getter_setter_method(self, db_prefix: str, attribute_name: str, method_name: str) -> callable:
+		"""
+		SUMMARY: Creates a method for Getting/Setting a DB attribute.
+		PARAMS:  Takes the prefix for the DB operation, the variable name of the attribute to get/set, the name of the
+		         Getter/Setter method.
+		DETAILS: Creates a function that gets & sets (along with the DB value) an attribute.
+		RETURNS: A function that gets & sets (along with the DB value) an attribute.
+		"""
+		db_function_name: str = db_prefix + attribute_name
+		def getter_setter_method(*value: List[Any]) -> bool:
+			# ———— GETTER ———— #
+			if(len(value) == 0):
 				return getattr(self, attribute_name);
 
-			if(new_value == getattr(self, attribute_name)):
+			# ———— SETTER ———— #
+			if(value[0] == getattr(self, attribute_name)):
 				return True;  # values match, take the easy way out
 
 			# Gotta update DB to match structure
-			DB_function = getattr(DBFunctions, db_prefix+attribute_name);
-			if((database_is_updated_flag := DB_function(self._id, new_value))):
-				setattr(self, attribute_name, new_value);
+			DB_function = getattr(DBFunctions, db_function_name);
+			if((database_is_updated_flag := DB_function(self._id, value[0]))):
+				setattr(self, attribute_name, value[0]);
 
 			return database_is_updated_flag
 
-		return function;
+		getter_setter_method.__doc__ = f"""
+		SUMMARY: Getter/Setter method for the {attribute_name} attribute.
+		PARAMS:  Takes the value to set if value is being set, otherwise, nothing.
+		DETAILS: Determines whether method is being used as a getter or as a setter. If getter, the method returns
+		         the attribute's value. If setter, then the value in the DB is attempted to be set, and if properly
+		         set in DB, the value is set in the object.
+		RETURNS: The value if the method is used as a Getter. Whether the value was successfully updated in the DB
+		         if the method is used as a Setter.
+		"""
+		getter_setter_method.__name__ = method_name;
+		return getter_setter_method;
 
 	# ——————————————————————————————————————————————————— UTILITY  ——————————————————————————————————————————————————— #
 
@@ -69,20 +84,23 @@ class DBClass:
 
 	# —————————————————————————————————————————————————— CONVERSION —————————————————————————————————————————————————— #
 
+	def __int__(self) -> int:
+		return self._id;
 
-	def __iter__(self, *additional_args: list) -> dict:
-		keys: list = [attribute.name() for attribute in self.attribute_types] + [arg for arg in additional_args];
 
-		object_dict = {key: getattr(self, key) for key in keys};  # Get attrs
+	def __iter__(self, *additional_args: tuple) -> dict:
+		attribute_names: list = [attribute.name() for attribute in self.attribute_types] + list(additional_args);
+
 		object_dict = {};
-		for key in keys:
-			value = getattr(self, key);
+		for object_attribute_name in attribute_names:
+			value = getattr(self, object_attribute_name);
 			if(isinstance(value, DBClass)):
 				value = dict(value);
 			elif(isinstance(value, list)):
 				value = [dict(val) if(isinstance(val, DBClass)) else val for val in value];
 
-			object_dict[key[1:] if(key[0] == "_") else key] = value;
+			attribute_key = object_attribute_name[1:] if(object_attribute_name[0] == "_") else object_attribute_name;
+			object_dict[attribute_key] = value;
 
 		yield from object_dict.items();
 
@@ -96,14 +114,7 @@ class DBClass:
 
 
 	def __call__(self, attribute_name: str, conversion_type: Type=AttributeType):
-		if(not hasattr(self, attribute_name)):
-			raise TypeError(f"DB Object is missing attribute: {attribute_name}");
-
-		if(conversion_type == AttributeType):
-			return AttributeType(attribute_name, type(getattr(self, attribute_name)));
-
-		elif(conversion_type == AttributeValue):
-			return AttributeValue(attribute_name, getattr(self, attribute_name));
+		raise Exception("Hello exception");
 
 
 	# Check key value types of dictonary for attributes to be passed to dictionary.
@@ -112,30 +123,5 @@ class DBClass:
 			attribute_types = self.attribute_types;
 
 		for attribute_type in attribute_types:
-			attribute_value: AttributeValue = self(attribute_type.name(), AttributeValue);
-			if(attribute_type != attribute_value):
-				key: str = attribute_type.name();
-				value: Any = attribute_value.value();
-				value_type_name: str = type(attribute_value.value()).__name__;
-				required_type_name: str = attribute_type.allowed_types();
-				raise TypeError(f"'{key}' value {value}, type: {value_type_name} is not of type {required_type_name}");
-
-
-	@staticmethod
-	def validate_values(attribute_types: List[AttributeType], attribute_values: List[AttributeValue]):
-		for attribute_type in attribute_types:
-			# Get attribute_value for the attribute_type
-			corresponding_attribute_values: List[AttributeValue] = [];
-			for attribute_value in attribute_values:
-				if(attribute_value.name() == attribute_type.name()):
-					corresponding_attribute_values.append(attribute_value);
-			if(len(corresponding_attribute_values) == 0):
-				raise TypeError(f"attribute_types are missing attribute: {attribute_value.name()}");
-
-			attribute_value: AttributeValue = corresponding_attribute_values[0];
-			if(attribute_type != attribute_value):
-				key: str = attribute_type.name();
-				value: Any = attribute_value.value();
-				value_type_name: str = type(attribute_value.value()).__name__;
-				required_type_name: str = attribute_type.allowed_types();
-				raise TypeError(f"'{key}' value {value}, type: {value_type_name} is not of type {required_type_name}");
+			if(attribute_type.is_not_valid()):
+				raise TypeError(str(attribute_type));

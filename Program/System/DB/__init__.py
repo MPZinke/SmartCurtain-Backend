@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2021.10.14                                                                                                      #
+#   on 2022.03.07                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,5 +14,6 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Utility.WebSite.Header import Header;
-from Utility.WebSite.Route import Route;
+from System.DB.AttributeType import AttributeType;
+from System.DB.DBClass import DBClass;
+from System.DB.DBFunctions import *;

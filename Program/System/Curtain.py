@@ -24,11 +24,11 @@ from typing import List, Union;
 from Global import NONETYPE;
 from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
-from Utility.DB import DBClass;
-from Utility.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, \
+from System.DB import DBClass;
+from System.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, \
   SELECT_CurtainsOptions;
 from Utility import Logger;
-from Utility.DB import AttributeType;
+from System.DB import AttributeType;
 
 
 class Curtain(DBClass):
@@ -36,16 +36,16 @@ class Curtain(DBClass):
 		DBClass.__init__(self, "UPDATE_Curtains", **curtain_info);
 
 		self.attribute_types: AttributeType =	[
-													AttributeType("_id", int),
-													AttributeType("_buffer_time", [int, bool, NONETYPE]),
-													AttributeType("_percentage", [int, NONETYPE]),
-													AttributeType("_direction", [int, bool, NONETYPE]),
-													AttributeType("_is_activated", [int, bool, NONETYPE]),
-													AttributeType("_is_current", [int, bool, NONETYPE]),
-													AttributeType("_moves_discretely", [int, bool]),
-													AttributeType("_port", [int, bool, NONETYPE]),
-													AttributeType("_length", [int, bool, NONETYPE]),
-													AttributeType("_name", str)
+													AttributeType(self, "_id", int),
+													AttributeType(self, "_buffer_time", (int, bool, NONETYPE)),
+													AttributeType(self, "_percentage", (int, NONETYPE)),
+													AttributeType(self, "_direction", (int, bool, NONETYPE)),
+													AttributeType(self, "_is_activated", (int, bool, NONETYPE)),
+													AttributeType(self, "_is_current", (int, bool, NONETYPE)),
+													AttributeType(self, "_moves_discretely", (int, bool)),
+													AttributeType(self, "_port", (int, bool, NONETYPE)),
+													AttributeType(self, "_length", (int, bool, NONETYPE)),
+													AttributeType(self, "_name", str)
 												];
 		self.validate();
 
