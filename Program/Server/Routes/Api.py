@@ -40,65 +40,73 @@ def try_decorator(function: callable) -> callable:
 
 # `GET /api`
 # Lists the available API versions.
-def GET__api():
-	return {"/api/v1.0": "The current version of this API"}
+def GET__api(self):
+	return {"GET /api/v1.0": "The current version of this API."}
 
 
 # `GET /api/v1.0`
 # Lists the available system parts.
-def GET__api__v1_0():
-	pass
+def GET__api__v1_0(self):
+	return {
+		"GET /api/v1.0/curtains": "Lists options available related to Curtains.",
+		"GET /api/v1.0/events": "Lists options available related to Events.",
+		"GET /api/v1.0/options": "Lists options available related to Options."
+	}
 
 
 # `GET /api/v1_0/curtains`
 # Lists options available related to Curtains.
-def GET__api__v1_0__curtains():
-	pass
+def GET__api__v1_0__curtains(self):
+	return {
+		"GET /api/v1.0/curtains/all": "Lists all curtains.",
+		"POST /api/v1.0/curtains/new": "Creates a new curtain with the JSON body.",
+		"GET /api/v1.0/curtain/<string:curtain_name|int:curtain_id>": "Show information for a curtain."
+	}
 
 
 # `GET /api/v1_0/curtains/all`
 # Lists all curtains.
-def GET__api__v1_0__curtains__all():
+def GET__api__v1_0__curtains__all(self):
 	pass
 
 
 # `POST /api/v1_0/curtains/new`
 # Creates a new curtain with the JSON body.
-def POST__api__v1_0__curtains__new():
+def POST__api__v1_0__curtains__new(self):
 	pass
 
 
 # `GET /api/v1_0/curtain/<string:curtain_name>`
 # Show information for a curtain.
-def GET__api__v1_0__curtain__curtain_name(curtain_name: str):
+def GET__api__v1_0__curtain__curtain_name(self, curtain_name: str):
 	pass
 
 
 # `GET /api/v1_0/curtain/<int:curtain_id>`
 # Show information for a curtain.
-def GET__api__v1_0__curtain__curtain_id(curtain_id: int):
+def GET__api__v1_0__curtain__curtain_id(self, curtain_id: int):
 	pass
 
 
 # `PATCH /api/v1_0/curtain/<string:curtain_name>`
 # Updates curtain's value(s) based on JSON body.
-def PATCH_api_v1_0_curtain__curtain_name(curtain_name: str):
+def PATCH_api_v1_0_curtain__curtain_name(self, curtain_name: str):
 	pass
 
 
 # `PATCH /api/v1_0/curtain/<int:curtain_id>`
 # Updates curtain's value(s) based on JSON body.
-def PATCH_api_v1_0_curtain__curtain_id(curtain_id: int):
+def PATCH_api_v1_0_curtain__curtain_id(self, curtain_id: int):
 	pass
 
 
 # `GET /api/v1_0/curtain/<string:curtain_name|int:curtain_id>/events`
 # Lists all events for a curtain.
-def GET__api__v1_0__curtain__curtain_name__events(curtain_name: str):
+def GET__api__v1_0__curtain__curtain_name__events(self, curtain_name: str):
 	pass
 
 
-def GET__api__v1_0__curtain__curtain_id___events(curtain_id: int):
+def GET__api__v1_0__curtain__curtain_id___events(self, curtain_id: int):
 	pass
 
 
@@ -107,25 +115,25 @@ def GET__api__v1_0__curtain__curtain_id___events(curtain_id: int):
 
 # `GET /api/v1_0/curtain/<string:curtain_name>/event/<string:event_time>`
 # Show information for an event for a curtain.
-def GET__api__v1_0__curtain__curtain_name__event__event_time(curtain_name: str, event_time: str):
+def GET__api__v1_0__curtain__curtain_name__event__event_time(self, curtain_name: str, event_time: str):
 	pass
 
 
 # `GET /api/v1_0/curtain/<int:curtain_id>/event/<string:event_time>`
 # Show information for an event for a curtain.
-def GET__api__v1_0__curtain__curtain_id__event__event_time(curtain_id: int, event_time: str):
+def GET__api__v1_0__curtain__curtain_id__event__event_time(self, curtain_id: int, event_time: str):
 	pass
 
 
 # `GET /api/v1_0/curtain/<string:curtain_name>/event/<int:event_id>`
 # Show information for an event for a curtain.
-def GET__api__v1_0__curtain__curtain_name__event__event_id(curtain_name: str, event_id: int):
+def GET__api__v1_0__curtain__curtain_name__event__event_id(self, curtain_name: str, event_id: int):
 	pass
 
 
 # `GET /api/v1_0/curtain/<int:curtain_id>/event/<int:event_id>`
 # Show information for an event for a curtain.
-def GET__api__v1_0__curtain__curtain_id__event__event_id(curtain_id: int, event_id: int):
+def GET__api__v1_0__curtain__curtain_id__event__event_id(self, curtain_id: int, event_id: int):
 	pass
 
 
@@ -134,56 +142,72 @@ def GET__api__v1_0__curtain__curtain_id__event__event_id(curtain_id: int, event_
 
 # `PATCH /api/v1_0/curtain/<string:curtain_name>/event/<string:event_time>`
 # Updates curtain's events' value(s) based on JSON body.
-def PATCH__api__v1_0__curtain__curtain_name__event__event_time(curtain_name: str, event_time: str):
+def PATCH__api__v1_0__curtain__curtain_name__event__event_time(self, curtain_name: str, event_time: str):
 	pass
 
 
 # `PATCH /api/v1_0/curtain/<int:curtain_id>/event/<string:event_time>`
 # Updates curtain's events' value(s) based on JSON body.
-def PATCH__api__v1_0__curtain__curtain_id__event__event_time(curtain_id: int, event_time: str):
+def PATCH__api__v1_0__curtain__curtain_id__event__event_time(self, curtain_id: int, event_time: str):
 	pass
 
 
 # `PATCH /api/v1_0/curtain/<string:curtain_name>/event/<int:event_id>`
 # Updates curtain's events' value(s) based on JSON body.
-def PATCH__api__v1_0__curtain__curtain_name__event__event_id(curtain_name: str, event_id: int):
+def PATCH__api__v1_0__curtain__curtain_name__event__event_id(self, curtain_name: str, event_id: int):
 	pass
 
 
 # `PATCH /api/v1_0/curtain/<int:curtain_id>/event/<int:event_id>`
 # Updates curtain's events' value(s) based on JSON body.
-def PATCH__api__v1_0__curtain__curtain_id__event__event_id(curtain_id: int, event_id: int):
+def PATCH__api__v1_0__curtain__curtain_id__event__event_id(self, curtain_id: int, event_id: int):
 	pass
 
 
 # —————————————————————————————————————————————————————— EVENTS —————————————————————————————————————————————————————— #
 
 # `GET /api/v1_0/events`—Lists options available related to Events.
-def GET__api__v1_0__events():
-	pass
+def GET__api__v1_0__events(self):
+	return {
+		"GET /api/v1.0/events/all": "Lists all events.",
+		"GET /api/v1.0/event/<int:event_id>": "Show information for an event.",
+		"POST /api/v1.0/event/new": "Creates a new event with the JSON body."
+	}
 
 
 # `GET /api/v1_0/events/all`—Lists all events.
-def GET__api__v1_0__events__all():
+def GET__api__v1_0__events__all(self):
 	pass
 
 
 # `GET /api/v1_0/event/<int:event_id>`—Show information for an event.
-def GET__api__v1_0__event__event_id(event_id: int):
+def GET__api__v1_0__event__event_id(self, event_id: int):
 	pass
 
 
 # `POST /api/v1_0/event/new`—Creates a new event with the JSON body.
-def POST__api__v1_0__event__new():
+def POST__api__v1_0__event__new(self):
 	pass
 
 
 # ————————————————————————————————————————————————————— OPTIONS  ————————————————————————————————————————————————————— #
 
 # `GET /api/v1_0/options`—Lists all events.
-def GET__api__v1_0__options():
+def GET__api__v1_0__options(self):
+	return {
+		"GET /api/v1.0/options/all": "Lists all options.",
+		"GET /api/v1.0/option/<int:option_id>": "Show information for a curtain."
+	}
+
+
+# `GET /api/v1.0/options/all`—Lists all options.
+def GET_api__v1_0__option__all(self):
 	pass
 
+
+# `GET /api/v1.0/option/<int:option_id>`—Show information for a curtain.
+def GET_api__v1_0__option__option_id(self, option_id: int):
+	pass
 
 
 

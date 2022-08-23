@@ -30,7 +30,7 @@ Main routes python request handlers.
 
 `GET /api`—Lists the available API versions.
 
-`GET /api/v1.0`—Lists the available system parts.
+`GET /api/v1.0`—The current version of this API.
 
 `GET /api/v1.0/curtains`—Lists options available related to Curtains.
 
@@ -56,4 +56,8 @@ Main routes python request handlers.
 
 `POST /api/v1.0/event/new`—Creates a new event with the JSON body.
 
-`GET /api/v1.0/options`—Lists all events.
+`GET /api/v1.0/options`—Lists all options available related to Options.
+
+`GET /api/v1.0/options/all`—Lists all options.
+
+`GET /api/v1.0/option/<int:option_id>`—Show information for a curtain.
