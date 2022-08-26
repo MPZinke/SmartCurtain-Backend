@@ -63,7 +63,7 @@ class CurtainEvent(DBClass):
 													AttributeType(temp, "time", datetime)
 												];
 
-		self.validate(attribute_types);
+		DBClass.validate(None, attribute_types);
 
 		# Set possible missing attributes
 		names_and_defaults = {"Options.id": None, "is_activated": False, "is_current": True};

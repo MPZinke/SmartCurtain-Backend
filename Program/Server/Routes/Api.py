@@ -90,23 +90,29 @@ def GET__api__v1_0__curtain__curtain_id(self, curtain_id: int):
 
 # `PATCH /api/v1_0/curtain/<string:curtain_name>`
 # Updates curtain's value(s) based on JSON body.
-def PATCH_api_v1_0_curtain__curtain_name(self, curtain_name: str):
+def PATCH__api__v1_0__curtain__curtain_name(self, **kwargs: dict):
+	print(kwargs)
 	pass
 
 
 # `PATCH /api/v1_0/curtain/<int:curtain_id>`
 # Updates curtain's value(s) based on JSON body.
-def PATCH_api_v1_0_curtain__curtain_id(self, curtain_id: int):
+def PATCH__api__v1_0__curtain__curtain_id(self, curtain_id: int):
 	pass
 
 
 # `GET /api/v1_0/curtain/<string:curtain_name|int:curtain_id>/events`
 # Lists all events for a curtain.
+
+# `GET /api/v1_0/curtain/<string:curtain_name>/events`
+# Lists all events for a curtain.
 def GET__api__v1_0__curtain__curtain_name__events(self, curtain_name: str):
 	pass
 
 
-def GET__api__v1_0__curtain__curtain_id___events(self, curtain_id: int):
+# `GET /api/v1_0/curtain/<int:curtain_id>/events`
+# Lists all events for a curtain.
+def GET__api__v1_0__curtain__curtain_id__events(self, curtain_id: int):
 	pass
 
 
@@ -201,12 +207,12 @@ def GET__api__v1_0__options(self):
 
 
 # `GET /api/v1.0/options/all`—Lists all options.
-def GET_api__v1_0__option__all(self):
+def GET__api__v1_0__option__all(self):
 	pass
 
 
 # `GET /api/v1.0/option/<int:option_id>`—Show information for a curtain.
-def GET_api__v1_0__option__option_id(self, option_id: int):
+def GET__api__v1_0__option__option_id(self, option_id: int):
 	pass
 
 

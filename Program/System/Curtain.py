@@ -181,7 +181,7 @@ class Curtain(DBClass):
 		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkIPLookup_bearer_token}"});
 		if(response.status_code == 200):
 			try:
-				return response.json().get("address", None);
+				return response.json()["address"];
 			except Exception as error:
 				print(error)
 
