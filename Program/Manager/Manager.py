@@ -15,9 +15,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Manager.AdafruitFeed import AdafruitFeed;
-from Manager.SunriseOpen import SunriseOpen;
-from Manager.SunsetClose import SunsetClose;
+from Manager import AdafruitFeed, SunriseOpen, SunsetClose;
 from Utility.ZThread import ZWidget;
 
 
