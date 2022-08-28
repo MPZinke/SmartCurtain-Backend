@@ -20,7 +20,7 @@ from typing import List;
 
 
 from Server import Api;
-from System.System import System;
+from System import System;
 
 
 class Route:

@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 
 from Manager.Manager import Manager;
 from Server.Server import Server;
-from System.System import System;
+from System import System;
 from Updater.Updater import Updater;
 
 

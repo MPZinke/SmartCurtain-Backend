@@ -14,7 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from System.Curtain import Curtain;
-from System.CurtainEvent import CurtainEvent;
-from System.CurtainOption import CurtainOption;
-from System.Option import Option;
+from System.Curtain import Curtain as Curtain;
+from System.CurtainEvent import CurtainEvent as CurtainEvent;
+from System.CurtainOption import CurtainOption as CurtainOption;
+from System.Option import Option as Option;
+
+from System.System import System;
