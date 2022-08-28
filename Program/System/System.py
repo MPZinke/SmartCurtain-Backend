@@ -22,8 +22,7 @@ from typing import Any, List, Union;
 
 
 from Global import *;
-from System.Curtain import Curtain;
-from System.Option import Option;
+from System import Curtain, Option;
 from Utility import tomorrow_00_00;
 from Utility import Logger;
 from System.DB import SELECT_Curtains, SELECT_Options;
@@ -68,20 +67,8 @@ class System(ZWidget):
 
 	# ———————————————————————————————————————————————————— GETTERS ————————————————————————————————————————————————————
 
-	@staticmethod
-	def _exclusive_match(haystack: list, **kwargs: dict) -> Any:
-		try:
-			for item in haystack:
-				if(all(getattr(item, f"_{key}") == value for key, value in kwargs.items())):
-					return item;
-		except Exception as error:
-			pass;
-
-		return None;
-
-
 	def Curtain(self, **kwargs: dict) -> Union[Curtain, None]:
-		return System._exclusive_match(self._Curtains, **kwargs);
+		return DBClass._exclusive_match(self._Curtains, **kwargs);
 
 
 	def Curtains(self) -> List[Curtain]:
@@ -89,7 +76,7 @@ class System(ZWidget):
 
 
 	def Option(self, **kwargs: dict) -> Union[Option, None]:
-		return System._exclusive_match(self._Options, **kwargs)
+		return DBClass._exclusive_match(self._Options, **kwargs)
 
 
 	def Options(self) -> dict:

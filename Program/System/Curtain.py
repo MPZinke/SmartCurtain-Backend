@@ -94,15 +94,14 @@ class Curtain(DBClass):
 
 	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
 
-	def CurtainEvents(self) -> dict:
+	def CurtainEvents(self) -> List[CurtainEvent]:
 		return self._CurtainEvents;
 
 
 	# Gets the CurtainOption based on either name or id.
 	# Takes a string or an int for the name of the CurtainOption.Option or the id of the CurtainOption.Option.id.
 	def CurtainOption(self, **kwargs: dict) -> CurtainOption:
-		from System.System import System;
-		return System._exclusive_match(self._CurtainOptions, **kwargs);
+		return DBClass._exclusive_match(self._CurtainOptions, **kwargs);
 
 
 	def CurtainOptions(self) -> List[CurtainOption]:
@@ -122,8 +121,7 @@ class Curtain(DBClass):
 		DETAILS: Checks whether the CurtainEvents exists in memory. If it doesn't, checks if it exists in the DB.
 		RETURNS: Returns the Event if it is found, else None.
 		"""
-		from System.System import System;
-		if((curtain_event := System._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
+		if((curtain_event := DBClass._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
 			return curtain_event;
 
 		# Not found, check if in DB

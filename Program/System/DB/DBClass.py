@@ -117,6 +117,18 @@ class DBClass:
 		raise Exception("Hello exception");
 
 
+	@staticmethod
+	def _exclusive_match(haystack: list, **kwargs: dict) -> Any:
+		try:
+			for item in haystack:
+				if(all(getattr(item, f"_{key}") == value for key, value in kwargs.items())):
+					return item;
+		except Exception as error:
+			pass;
+
+		return None;
+
+
 	# Check key value types of dictonary for attributes to be passed to dictionary.
 	def validate(self, attribute_types: Union[List[AttributeType], None]=None) -> None:
 		if(attribute_types is None):

@@ -43,7 +43,7 @@ class CurtainOption(DBClass):
 				self._data = json.loads(self._data if(isinstance(self._data, str)) else str(self._data));
 		except Exception as error:
 			print(type(self._data));
-			Logger.log_error(error)
+			Logger.log_error(error);
 
 
 	def __iter__(self) -> dict:

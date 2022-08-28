@@ -33,7 +33,7 @@ class SunsetClose(ZWidget):
 	def __init__(self, System):
 		ZWidget.__init__(self, "SunsetClose", System);
 
-		self._option_id = self._System.Option(name="Sunrise Open").id();
+		self._option_id = self._System.Option(name="Sunset Close").id();
 
 		warnings.formatwarning = warning_message;
 

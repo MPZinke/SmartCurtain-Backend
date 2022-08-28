@@ -14,12 +14,13 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import request
+from flask import Flask, request
 import re;
 from typing import List;
 
 
-import Server.Routes.Api as Api;
+from Server import Api;
+from System.System import System;
 
 
 class Route:
@@ -27,14 +28,18 @@ class Route:
 		self._endpoint: str = endpoint;
 		self._methods: List[str] = ["GET"] if(not methods) else methods;
 		self._callbacks = {method: self.callback_function(method) for method in self._methods};
-		# self._callback_methods: CallbackMethod = callback_methods;
+
+
+	def __str__(self):
+		callback_str = ",".join([f"{method}: {callback.__name__}" for method, callback in self._callbacks.items()]);
+		return f"{self._endpoint} {callback_str}";
 
 
 	# Instead of @app.route decorator, adds a route to the server.
 	# https://stackoverflow.com/a/40466535
-	def add_to_server(self, server: object) -> None:
-		def endpoint_function(*args: list, **kwargs: dict):  # server instead of self
-			return self._callbacks[request.method](server, *args, **kwargs);
+	def add_to_server(self, server: Flask, system: System) -> None:
+		def endpoint_function(*args: list, **kwargs: dict):  # system instead of self
+			return self._callbacks[request.method](system, *args, **kwargs);
 
 		server.add_url_rule(self._endpoint, self._endpoint, endpoint_function, methods=self._methods);
 
@@ -47,8 +52,3 @@ class Route:
 		endpoint = endpoint.replace("/", "__");
 
 		return getattr(Api, f"{method}{endpoint}");
-
-
-	def __str__(self):
-		callback_str = ",".join([f"{method}: {callback.__name__}" for method, callback in self._callbacks.items()]);
-		return f"{self._endpoint} {callback_str}";
