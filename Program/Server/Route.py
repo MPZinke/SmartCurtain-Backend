@@ -14,12 +14,13 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import Flask, request
+from flask import Flask, request;
+import os;
 import re;
 from typing import List;
 
 
-from Server import Api;
+from Server import Root;
 from System import System;
 
 
@@ -45,10 +46,35 @@ class Route:
 
 
 	def callback_function(self, method: str) -> str:
+		def module(current_module, path: list):
+			# Ignore "upcoming variables"
+			while(len(path) and re.match(r"<(string|int):[_a-zA-Z][_a-zA-Z0-9]*", path[0])):
+				path.pop();
+
+			# Recurse down modules
+			if(len(path) > 2):
+				module_name = f"{path[0][0].upper()}{path[0][1:].lower()}";
+				if(not hasattr(current_module, module_name)):
+					return None;
+
+				return module(getattr(current_module, module_name), path[1:]);
+
+			return current_module;
+
+		callback_module = module(Root, os.path.split(self._endpoint));
+		callback_arguments = re.findall(r"<(string|int):[_a-zA-Z][_a-zA-Z0-9]*>", path[0])):
+		for function in callback_module:
+			function_params = 
+			if()
+
+		_, module, version = split(self._endpoint)[:3];
+		print(split(self._endpoint))
+		print("module: ", module, "version: ", version)
+
 		endpoint: str = self._endpoint;
 		endpoint = re.sub(r"<(string|int):", "", endpoint);
 		endpoint = re.sub(r">", "", endpoint);
 		endpoint = endpoint.replace(".", "_");
 		endpoint = endpoint.replace("/", "__");
 
-		return getattr(Api, f"{method}{endpoint}");
+		return getattr(getattr(module.lower(), version.lower()), f"{method}{endpoint}");
