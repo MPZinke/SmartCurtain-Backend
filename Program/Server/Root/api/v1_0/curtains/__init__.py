@@ -14,15 +14,19 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import Server.Root.api.v1_0.curtains;
-import Server.Root.api.v1_0.events;
-import Server.Root.api.v1_0.options;
+import json;
+
+
 from System import System;
 
 
 def GET__index(system: System):
 	return {
-		"GET /api/v1.0/curtains": "Lists options available related to Curtains.",
-		"GET /api/v1.0/events": "Lists options available related to Events.",
-		"GET /api/v1.0/options": "Lists options available related to Options."
+		"GET /api/v1.0/curtains/all": "Lists all curtains.",
+		"POST /api/v1.0/curtains/new": "Creates a new curtain with the JSON body.",
+		"GET /api/v1.0/curtains/<string:curtain_name|int:curtain_id>": "Show information for a curtain."
 	};
+
+
+def GET__all(system: System):
+	return json.dumps([dict(curtain) for curtain in system.Curtains()], default=str);

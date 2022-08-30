@@ -37,6 +37,8 @@ class Server(ZWidget):
 		  [
 			Route("/api/index"),
 			Route("/api/v1.0/index"),
+			Route("/api/v1.0/curtains/index"),
+			Route("/api/v1.0/curtains/all"),
 			# Route("/api/v1.0/curtains"),
 			# Route("/api/v1.0/curtains/all"),
 			# Route("/api/v1.0/curtains/new", "POST"),
