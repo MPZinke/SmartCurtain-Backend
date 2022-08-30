@@ -12,3 +12,11 @@ __author__ = "MPZinke"
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
 ########################################################################################################################
+
+
+import Server.Root.api;
+from System import System;
+
+
+def GET__index(system: System):
+	return {"GET /api/v1.0": "The current version of this API."}
