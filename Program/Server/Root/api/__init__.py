@@ -18,5 +18,5 @@ import Server.Root.api.v1_0;
 from System import System;
 
 
-def GET__index(system: System):
+def GET(system: System):
 	return {"GET /api/v1.0": "The current version of this API."}

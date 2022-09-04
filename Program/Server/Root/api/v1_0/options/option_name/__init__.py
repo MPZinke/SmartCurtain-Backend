@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2022.08.29                                                                                                      #
+#   on 2022.09.03                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,15 +14,11 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import Server.Root.api.v1_0.curtains.all;
-import Server.Root.api.v1_0.curtains.curtain_id;
-import Server.Root.api.v1_0.curtains.curtain_name;
+import json;
+
+
 from System import System;
 
 
-def GET(system: System):
-	return {
-		"GET /api/v1.0/curtains/all": "Lists all curtains.",
-		"POST /api/v1.0/curtains/new": "Creates a new curtain with the JSON body.",
-		"GET /api/v1.0/curtains/<string:curtain_name|int:curtain_id>": "Show information for a curtain."
-	};
+def GET(system: System, option_name: str):
+	return dict(system.Option(name=option_name));

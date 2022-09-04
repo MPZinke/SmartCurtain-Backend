@@ -18,5 +18,5 @@ import Server.Root.api;
 from System import System;
 
 
-def GET__index(system: System):
-	return {"GET /api/v1.0": "The current version of this API."}
+def GET(system: System):
+	return {"GET /api": "The API for Smart Curtain."}

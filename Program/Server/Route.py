@@ -30,7 +30,11 @@ Module = types.ModuleType;  # typedef types.ModuleType
 
 
 class Route:
-	PARAM_RE = r"<(int|string):([_a-zA-Z][_a-zA-Z0-9]*)>"
+	"""
+	ASSUMES: Route variables are named un.
+	"""
+	PARAM_REGEX = r"<(int|string):([_a-zA-Z][_a-zA-Z0-9]*)>"
+	PARAM_NAME_REGEX = r"<(?:int|string):([_a-zA-Z][_a-zA-Z0-9]*)>";
 
 	def __init__(self, endpoint: str, *methods: List[str]):
 		self._endpoint: str = endpoint;
@@ -49,8 +53,7 @@ class Route:
 		def endpoint_function(*args: list, **kwargs: dict):  # system instead of self
 			return self._callbacks[request.method](system, *args, **kwargs);
 
-		endpoint = self.__prettified_endpoint();
-		server.add_url_rule(endpoint, endpoint, endpoint_function, methods=self._methods);
+		server.add_url_rule(self._endpoint, self._endpoint, endpoint_function, methods=self._methods);
 
 
 	def callback_function(self, method: str) -> str:
@@ -65,7 +68,7 @@ class Route:
 		"""
 		SUMMARY: Gets the module down the path of the endpoint.
 		"""
-		if(len(path) < 2):
+		if(len(path) == 0):
 			return current_module;
 
 		if(not hasattr(current_module, path[0].lower().replace('.', '_'))):
@@ -78,8 +81,8 @@ class Route:
 		"""
 		SUMMARY: Gets the desired callback for the endpoint based on name, params, and module.
 		"""
-		callback_name = f"{method}__{self.__module_path_parts()[-1]}";
-		endpoint_params = {param[1]: param[0] for param in re.findall(self.PARAM_RE, self._endpoint)};
+		callback_name = f"{method}";
+		endpoint_params = {param[1]: param[0] for param in re.findall(self.PARAM_REGEX, self._endpoint)};
 		callback_params = {"system": System, **endpoint_params};
 
 		module_function_tuples = [method for method in inspect.getmembers(module) if(inspect.isfunction(method[1]))];
@@ -88,8 +91,8 @@ class Route:
 			if(function_name != callback_name or len(callback_params) != len(function_params)):
 				continue;
 
-			mapping = {"int": int, "string": str, System: System};
-			if(all(mapping[type] == function_params[name] for name, type in callback_params.items())):
+			mapping = {"int": int, "string": str};
+			if(all(mapping.get(type, type) == function_params[name] for name, type in callback_params.items())):
 				return function;
 
 		callback_param_str: str = ", ".join(callback_params.keys());
@@ -98,17 +101,17 @@ class Route:
 
 
 	def __module_path_parts(self) -> List[str]:
-		parts: List[str] = [part for part in self.path_parts() if(part and not re.match(self.PARAM_RE, part))];
-		return [part.lower().replace('.', '_') for part in parts];
-
-
-	def __prettified_endpoint(self) -> str:
-		"""
-		SUMMARY: Removes "index" from path
-		"""
-		print(os.path.join("/", *[part for part in self.path_parts() if(part != "index")]));
-		return os.path.join("/", *[part for part in self.path_parts() if(part != "index")]);
+		return [part.lower().replace('.', '_') for part in self.path_parts()];
 
 
 	def path_parts(self) -> List[str]:
-		return [part for part in os.path.normpath(self._endpoint).split(os.sep)];
+		def is_param(part: str) -> bool:
+			return re.fullmatch(self.PARAM_REGEX, part);
+
+		if(self._endpoint == "/"):
+			return [];
+
+		parts = [part for part in os.path.normpath(self._endpoint).split(os.sep)];
+		# [param name if(part is param) else part for part in parts]
+		parts = [re.findall(self.PARAM_NAME_REGEX, part)[0] if(is_param(part)) else part for part in parts];
+		return parts[int(self._endpoint[0] == '/'):];  # ignore empty '' if path starts with '/'

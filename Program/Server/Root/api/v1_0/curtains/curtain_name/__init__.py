@@ -14,15 +14,23 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import Server.Root.api.v1_0.curtains.all;
-import Server.Root.api.v1_0.curtains.curtain_id;
-import Server.Root.api.v1_0.curtains.curtain_name;
+import json;
+from flask import request;
+
+
+import Server.Root.api.v1_0.curtains.curtain_name.events;
 from System import System;
 
 
-def GET(system: System):
-	return {
-		"GET /api/v1.0/curtains/all": "Lists all curtains.",
-		"POST /api/v1.0/curtains/new": "Creates a new curtain with the JSON body.",
-		"GET /api/v1.0/curtains/<string:curtain_name|int:curtain_id>": "Show information for a curtain."
-	};
+# `GET /api/v1_0/curtains/<str:curtain_name>`
+# Show information for a curtain.
+def GET(system: System, curtain_name: str):
+	return str(system.Curtain(name=curtain_name));
+
+
+# `PATCH /api/v1_0/curtains/<str:curtain_name>`
+# Update information for curtain.
+def PATCH(system: System, curtain_name: str):
+	print(request.json());
+
+	return str(system.Curtain(name=curtain_name));

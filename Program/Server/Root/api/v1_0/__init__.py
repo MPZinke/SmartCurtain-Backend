@@ -20,7 +20,7 @@ import Server.Root.api.v1_0.options;
 from System import System;
 
 
-def GET__index(system: System):
+def GET(system: System):
 	return {
 		"GET /api/v1.0/curtains": "Lists options available related to Curtains.",
 		"GET /api/v1.0/events": "Lists options available related to Events.",
