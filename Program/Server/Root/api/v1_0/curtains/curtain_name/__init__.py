@@ -26,18 +26,3 @@ from System import System;
 # Show information for a curtain.
 def GET(system: System, curtain_name: str):
 	return str(system.Curtain(name=curtain_name));
-
-
-# `PATCH /api/v1_0/curtains/<string:curtain_name>`
-# Update information for curtain.
-def PATCH(system: System, curtain_name: str):
-	print(request.json);
-
-	return str(system.Curtain(name=curtain_name));
-
-
-# `DELETE /api/v1_0/curtains/<string:curtain_name>`
-# Update information for curtain.
-def DELETE(system: System, curtain_name: str):
-	#TODO
-	return str(system.Curtain(name=curtain_name));

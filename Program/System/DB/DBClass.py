@@ -22,6 +22,7 @@ import inspect
 
 from System.DB import ObjectAttributeType;
 import System.DB.DBFunctions as DBFunctions;
+from Utility import Logger;
 
 
 
@@ -132,6 +133,6 @@ class DBClass:
 				if(all(getattr(item, f"_{key}") == value for key, value in kwargs.items())):
 					return item;
 		except Exception as error:
-			pass;
+			Logger.log_error(error);
 
 		return None;

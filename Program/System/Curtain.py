@@ -215,7 +215,7 @@ class Curtain:
 		DETAILS: Queries the NetworkLookup endpoint with the label for the curtain.
 		RETURNS: The IP address string for the curtain.
 		"""
-		response = requests.get(f"http://{self._ip_address}", json={"query type": "status"});
+		response = requests.post(f"http://{self._ip_address}", json={"query type": "status"});
 		response_body: dict = response.json();
 
 		self._id = response_body["id"];

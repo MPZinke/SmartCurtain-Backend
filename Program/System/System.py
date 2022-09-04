@@ -121,7 +121,7 @@ class System(ZWidget):
 			if(response.status_code == 200):
 				self._Curtains = [Curtain(self, curtain["address"], curtain["label"]) for curtain in response.json()];
 
-			self._refresh_failures = response.status_code == 200;
+			self._refresh_failures = response.status_code != 200;
 
 		except Exception as error:
 			self._refresh_failures = True;
