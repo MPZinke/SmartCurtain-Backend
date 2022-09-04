@@ -22,4 +22,4 @@ from System import System;
 
 
 def GET(system: System):
-	return json.dumps([dict(event) for curtain in system.Curtains() for event in curtain.CurtainEvents()]);
+	return json.dumps([dict(event) for curtain in system.Curtains() for event in curtain.CurtainEvents()], default=str);

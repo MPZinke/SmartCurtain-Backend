@@ -34,3 +34,10 @@ def PATCH(system: System, curtain_id: int):
 	print(request.json());
 
 	return str(system.Curtain(id=curtain_id));
+
+
+# `DELETE /api/v1_0/curtains/<int:curtain_id>`
+# Update information for curtain.
+def DELETE(system: System, curtain_id: int):
+	#TODO
+	return str(system.Curtain(id=curtain_id));

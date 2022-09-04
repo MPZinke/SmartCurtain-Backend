@@ -23,4 +23,4 @@ def GET(system: System, curtain_id: int):
 	if((curtain := system.Curtain(id=curtain_id)) is None):
 		raise Exception("Not found");  #TODO
 
-	return json.dumps([dict(event) for event in curtain.CurtainEvents()]);
+	return json.dumps([dict(event) for event in curtain.CurtainEvents()], default=str);

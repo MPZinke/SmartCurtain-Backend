@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2022.09.03                                                                                                      #
+#   on 2022.09.04                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from System import System;
 
 
-# `POST /api/v1.0/curtain/<int:curtain_id>/events/new`
-# Creates a new curtain's event with the JSON body.
-def POST(system: System, curtain_id: int):
+# `POST /api/v1_0/event/new`
+# Creates a new event with the JSON body.
+def POST(system: System):
 	return "TODO"

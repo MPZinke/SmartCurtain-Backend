@@ -54,6 +54,7 @@ class Route:
 			return self._callbacks[request.method](system, *args, **kwargs);
 
 		server.add_url_rule(self._endpoint, self._endpoint, endpoint_function, methods=self._methods);
+		server.add_url_rule(self._endpoint+"/", self._endpoint+"/", endpoint_function, methods=self._methods);
 
 
 	def callback_function(self, method: str) -> str:

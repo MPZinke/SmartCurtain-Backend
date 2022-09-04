@@ -16,7 +16,7 @@ __author__ = "MPZinke"
 
 import Server.Root.api.v1_0.events.all;
 import Server.Root.api.v1_0.events.event_id;
-# import Server.Root.api.v1_0.events.new;
+import Server.Root.api.v1_0.events.new;
 from System import System;
 
 
