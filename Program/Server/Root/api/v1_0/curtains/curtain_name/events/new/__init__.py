@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from System import System;
 
 
-# `POST /api/v1.0/curtain/<string:curtain_name>/events/new`
+# `POST /api/v1.0/curtains/<string:curtain_name>/events/new`
 # Creates a new curtain's event with the JSON body.
 def POST(system: System, curtain_name: str):
 	return "TODO"

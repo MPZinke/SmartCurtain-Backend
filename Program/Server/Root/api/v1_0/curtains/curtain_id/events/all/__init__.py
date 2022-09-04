@@ -14,10 +14,13 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+import json;
+
+
 from System import System;
 
 
-# `GET /api/v1.0/curtain/<int:curtain_id>/events/all`
+# `GET /api/v1.0/curtains/<int:curtain_id>/events/all`
 # Lists all events for a curtain.
 def GET(system: System, curtain_id: int):
 	if((curtain := system.Curtain(id=curtain_id)) is None):

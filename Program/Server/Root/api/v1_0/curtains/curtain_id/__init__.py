@@ -31,7 +31,7 @@ def GET(system: System, curtain_id: int):
 # `PATCH /api/v1_0/curtains/<int:curtain_id>`
 # Update information for curtain.
 def PATCH(system: System, curtain_id: int):
-	print(request.json());
+	print(request.json);
 
 	return str(system.Curtain(id=curtain_id));
 

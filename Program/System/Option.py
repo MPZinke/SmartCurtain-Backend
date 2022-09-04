@@ -18,14 +18,18 @@ from System.DB import AttributeType, DBClass;
 
 
 class Option(DBClass):
+	ATTRIBUTE_TYPES =	[
+							AttributeType("_id", int),
+							AttributeType("_name", str),
+							AttributeType("_description", str),
+							AttributeType("_is_current", int)
+						];
+
+
 	def __init__(self, **option_info):
 		DBClass.__init__(self, "UPDATE_Option", **option_info);
-		self.attribute_types =	[
-									AttributeType(self, "_id", int),
-									AttributeType(self, "_name", str),
-									AttributeType(self, "_description", int),
-									AttributeType(self, "_is_current", int)
-								];
+
+		self.validate();
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————

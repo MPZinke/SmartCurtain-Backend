@@ -22,7 +22,6 @@ from typing import List, Union;
 
 
 from Global import NONETYPE;
-from System.CurtainEvent import CurtainEvent;
 from System.CurtainOption import CurtainOption;
 from System.DB import DBClass;
 from System.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, \
@@ -32,22 +31,23 @@ from System.DB import AttributeType;
 
 
 class Curtain(DBClass):
+	ATTRIBUTE_TYPES =	[
+							AttributeType("_id", int),
+							AttributeType("_buffer_time", (int, bool, NONETYPE)),
+							AttributeType("_percentage", (int, NONETYPE)),
+							AttributeType("_direction", (int, bool, NONETYPE)),
+							AttributeType("_is_activated", (int, bool, NONETYPE)),
+							AttributeType("_is_current", (int, bool, NONETYPE)),
+							AttributeType("_moves_discretely", (int, bool)),
+							AttributeType("_port", (int, bool, NONETYPE)),
+							AttributeType("_length", (int, bool, NONETYPE)),
+							AttributeType("_name", str)
+						];
+
 	def __init__(self, **curtain_info):
 		DBClass.__init__(self, "UPDATE_Curtains", **curtain_info);
 
-		self.attribute_types: AttributeType =	[
-													AttributeType(self, "_id", int),
-													AttributeType(self, "_buffer_time", (int, bool, NONETYPE)),
-													AttributeType(self, "_percentage", (int, NONETYPE)),
-													AttributeType(self, "_direction", (int, bool, NONETYPE)),
-													AttributeType(self, "_is_activated", (int, bool, NONETYPE)),
-													AttributeType(self, "_is_current", (int, bool, NONETYPE)),
-													AttributeType(self, "_moves_discretely", (int, bool)),
-													AttributeType(self, "_port", (int, bool, NONETYPE)),
-													AttributeType(self, "_length", (int, bool, NONETYPE)),
-													AttributeType(self, "_name", str)
-												];
-		self.validate();
+		from System.CurtainEvent import CurtainEvent;
 
 		# Get associated relations
 		self._ip_address: str = self.lookup_curtain();
@@ -58,6 +58,7 @@ class Curtain(DBClass):
 		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
 		self._CurtainOptions = [CurtainOption(**option) for option in curtains_options];
 
+		self.validate();
 
 
 	def __iter__(self) -> dict:
@@ -94,7 +95,7 @@ class Curtain(DBClass):
 
 	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
 
-	def CurtainEvents(self) -> List[CurtainEvent]:
+	def CurtainEvents(self) -> List["CurtainEvent"]:
 		return self._CurtainEvents;
 
 
@@ -114,13 +115,15 @@ class Curtain(DBClass):
 
 	# ———————————————————————————————————————————————— GETTERS: SPECIAL ————————————————————————————————————————————————
 
-	def CurtainEvent(self, **kwargs: dict) -> Union[CurtainEvent, None]:
+	def CurtainEvent(self, **kwargs: dict) -> Union["CurtainEvent", None]:
 		"""
 		SUMMARY: Get CurtainsEvent if exists.
 		PARAMS:  Takes the attribute name to match the event with.
 		DETAILS: Checks whether the CurtainEvents exists in memory. If it doesn't, checks if it exists in the DB.
 		RETURNS: Returns the Event if it is found, else None.
 		"""
+		from System.CurtainEvent import CurtainEvent;
+
 		if((curtain_event := DBClass._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
 			return curtain_event;
 
@@ -166,17 +169,17 @@ class Curtain(DBClass):
 
 	def lookup_curtain(self: object) -> Union[str, None]:
 		"""
-		SUMMARY: Looks up the curtain from the NetworkIPLookup endpoint.
-		PARAMS:  Takes the name of the curtain to lookup from NetworkIPLookup.
-		DETAILS: Queries the NetworkIPLookup endpoint with the label for the curtain.
+		SUMMARY: Looks up the curtain from the NetworkLookup endpoint.
+		PARAMS:  Takes the name of the curtain to lookup from NetworkLookup.
+		DETAILS: Queries the NetworkLookup endpoint with the label for the curtain.
 		RETURNS: The IP address string for the curtain.
 		"""
-		NetworkIPLookup_host = os.getenv("NETWORKIPLOOKUP_HOST");
-		NetworkIPLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
+		NetworkLookup_host = os.getenv("NETWORKLOOKUP_HOST");
+		NetworkLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
 		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
 
-		url = f"http://{NetworkIPLookup_host}/api/v1.0/network/label/{Curtain_network_name}/device/label/{self._name}";
-		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkIPLookup_bearer_token}"});
+		url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/device/label/{self._name}";
+		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
 		if(response.status_code == 200):
 			try:
 				return response.json()["address"];
@@ -189,6 +192,8 @@ class Curtain(DBClass):
 	# ———————————————————————————————————————————————— EVENT CREATION ———————————————————————————————————————————————— #
 
 	def _new_event(self, percentage: int=0, *, Options_id: int=None, time: object=None) -> int:
+		from System.CurtainEvent import CurtainEvent;
+
 		if(time is None):
 			time = datetime.now();
 

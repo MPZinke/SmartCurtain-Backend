@@ -15,7 +15,7 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from json import dumps;
+import json;
 from socket import gethostbyname, gethostname;
 from threading import Lock;
 from typing import Any, List, Union;
@@ -65,7 +65,7 @@ class System(ZWidget):
 		self.refresh();
 
 
-	# ———————————————————————————————————————————————————— GETTERS ————————————————————————————————————————————————————
+	# ——————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————— #
 
 	def Curtain(self, **kwargs: dict) -> Union[Curtain, None]:
 		return DBClass._exclusive_match(self._Curtains, **kwargs);
@@ -87,19 +87,35 @@ class System(ZWidget):
 		return self._IP_Address;
 
 
-	# ———————————————————————————————————————————————————— UTILITY ————————————————————————————————————————————————————
+	# ——————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————— #
 
-	def dict(self):
-		class_dict = {};
-		class_dict["_Curtains"] = {curtain: self._Curtains[curtain].dict() for curtain in self._Curtains};
-		class_dict["_Options"] = {option: self._Options[option].dict() for option in self._Options};
-		return class_dict;
+	def __iter__(self) -> dict:
+		yield from {
+			"Curtains": [dict(curtain) for curtain in self._Curtains],
+			"Options": [dict(option) for option in self._Options]
+		}.items();
 
 
-	def print(self, tab=0, next_tab=0):
-		print('\t'*tab, "_Curtains: ");
-		for curtain in self._Curtains:
-			self._Curtains[curtain].print(tab+next_tab, next_tab);
-		print('\t'*tab, "_Options: ");
-		for option in self._Options:
-			self._Options[option].print(tab+next_tab, next_tab);
+	def __str__(self) -> str:
+		return json.dumps(dict(self), default=str);
+
+
+	def set_Curtains(self) -> None:
+		"""
+		SUMMARY: Gets the curtains on the network according to the NetworkLookup.
+		"""
+		NetworkLookup_host = os.getenv("NETWORKLOOKUP_HOST");
+		NetworkLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
+		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
+
+		url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/devices/group/label/Curtain";
+		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
+
+		if(response.status_code == 200):
+			try:
+				for curtain_IP in [curtain["address"] for curtain in response.json()]:
+					pass
+
+			except Exception as error:
+				print(error)
+

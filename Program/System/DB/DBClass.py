@@ -20,7 +20,7 @@ from typing import Any, List, Type, Union;
 import inspect
 
 
-from System.DB.AttributeType import AttributeType;
+from System.DB import ObjectAttributeType;
 import System.DB.DBFunctions as DBFunctions;
 
 
@@ -33,7 +33,7 @@ class DBClass:
 			setattr(self, attribute_name, table_values[attribute] if(table_values[attribute]) else 0);
 			setattr(self, method_name, self.__getter_setter_method(db_prefix, attribute_name, method_name));
 
-		self.attribute_types: List[AttributeType] = [];
+		self.attribute_types = [ObjectAttributeType(self, attr_type) for attr_type in self.ATTRIBUTE_TYPES];
 
 
 	def __getter_setter_method(self, db_prefix: str, attribute_name: str, method_name: str) -> callable:
@@ -113,9 +113,17 @@ class DBClass:
 		return dumps(dict(self), default=str);
 
 
-	def __call__(self, attribute_name: str, conversion_type: Type=AttributeType):
-		raise Exception("Hello exception");
+	# Check key value types of dictonary for attributes to be passed to dictionary.
+	def validate(self, attribute_types: Union[List[ObjectAttributeType], None]=None) -> None:
+		if(attribute_types is None):
+			attribute_types = self.attribute_types;
 
+		for attribute_type in attribute_types:
+			if(attribute_type.is_not_valid()):
+				raise TypeError(str(attribute_type));
+
+
+	# ———————————————————————————————————————————————————— STATIC ———————————————————————————————————————————————————— #
 
 	@staticmethod
 	def _exclusive_match(haystack: list, **kwargs: dict) -> Any:
@@ -127,13 +135,3 @@ class DBClass:
 			pass;
 
 		return None;
-
-
-	# Check key value types of dictonary for attributes to be passed to dictionary.
-	def validate(self, attribute_types: Union[List[AttributeType], None]=None) -> None:
-		if(attribute_types is None):
-			attribute_types = self.attribute_types;
-
-		for attribute_type in attribute_types:
-			if(attribute_type.is_not_valid()):
-				raise TypeError(str(attribute_type));

@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2022.03.07                                                                                                      #
+#   on 2022.09.04                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,6 +14,16 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from System.DB.AttributeType import AttributeType, ObjectAttributeType;
-from System.DB.DBClass import DBClass;
-from System.DB.DBFunctions import *;
+from flask import request;
+import json;
+
+
+from System import System;
+
+
+# `POST /api/v1.0/curtains/new`
+# Creates a new curtain's event with the JSON body.
+def POST(system: System):
+	body: dict = request.json;
+
+	return "TODO";

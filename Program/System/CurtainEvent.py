@@ -22,28 +22,27 @@ from warnings import warn as Warn;
 
 
 from Global import *;
-from System.DB import AttributeType, DBClass;
+from System.Curtain import Curtain;
+from System.DB import AttributeType, DBClass, ObjectAttributeType;
 from System.DB import INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
 import Utility.Logger as Logger;
 
 
 class CurtainEvent(DBClass):
+	ATTRIBUTE_TYPES =	[
+							AttributeType("_Curtain", Curtain),
+							AttributeType("_id", int),
+							AttributeType("_percentage", (int, NONETYPE)),
+							AttributeType("_is_activated", (int, bool, NONETYPE)),
+							AttributeType("_is_current", (int, bool, NONETYPE)),
+							AttributeType("_time", datetime)
+						];
 
 	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
 
 	def __init__(self, **event_info: dict):
 		DBClass.__init__(self, "UPDATE_CurtainsEvents", **event_info);
-
-		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
-		self.attribute_types =	[
-									AttributeType(self, "_Curtain", Curtain),
-									AttributeType(self, "_id", int),
-									AttributeType(self, "_percentage", (int, NONETYPE)),
-									AttributeType(self, "_is_activated", (int, bool, NONETYPE)),
-									AttributeType(self, "_is_current", (int, bool, NONETYPE)),
-									AttributeType(self, "_time", datetime)
-								];
 		self.validate();
 
 		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
@@ -54,14 +53,15 @@ class CurtainEvent(DBClass):
 	@staticmethod
 	def add_event_to_DB(**info: dict) -> dict:
 		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
+
 		# Check attributes are present
 		# https://stackoverflow.com/a/19476841
 		temp = type("Temp", (), {"Curtain": info["Curtain"], "percentage": info["percentage"], "time": info["time"]})();
-		attribute_types: List[AttributeType] =	[
-													AttributeType(temp, "Curtain", Curtain),
-													AttributeType(temp, "percentage", int),
-													AttributeType(temp, "time", datetime)
-												];
+		attribute_types: List[ObjectAttributeType] =[
+														ObjectAttributeType(temp, AttributeType("Curtain", Curtain)),
+														ObjectAttributeType(temp, AttributeType("percentage", int)),
+														ObjectAttributeType(temp, AttributeType("time", datetime))
+													];
 
 		DBClass.validate(None, attribute_types);
 

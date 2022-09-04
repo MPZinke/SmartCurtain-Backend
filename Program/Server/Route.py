@@ -30,9 +30,6 @@ Module = types.ModuleType;  # typedef types.ModuleType
 
 
 class Route:
-	"""
-	ASSUMES: Route variables are named un.
-	"""
 	PARAM_REGEX = r"<(int|string):([_a-zA-Z][_a-zA-Z0-9]*)>"
 	PARAM_NAME_REGEX = r"<(?:int|string):([_a-zA-Z][_a-zA-Z0-9]*)>";
 
@@ -59,10 +56,10 @@ class Route:
 
 	def callback_function(self, method: str) -> str:
 		"""
-		SUMMARY: 
+		SUMMARY: Determines the callback function for the request method.
 		"""
 		callback_module = self.__module(Root, self.__module_path_parts());
-		return self.__module_function(method, callback_module);
+		return self.__modules_method_function(method, callback_module);
 
 
 	def __module(self, current_module: Module, path: list):
@@ -78,18 +75,17 @@ class Route:
 		return self.__module(getattr(current_module, path[0].lower()), path[1:]);
 
 
-	def __module_function(self, method: str, module: Module) -> bool:
+	def __modules_method_function(self, method: str, module: Module) -> bool:
 		"""
 		SUMMARY: Gets the desired callback for the endpoint based on name, params, and module.
 		"""
-		callback_name = f"{method}";
 		endpoint_params = {param[1]: param[0] for param in re.findall(self.PARAM_REGEX, self._endpoint)};
 		callback_params = {"system": System, **endpoint_params};
 
 		module_function_tuples = [method for method in inspect.getmembers(module) if(inspect.isfunction(method[1]))];
 		for function_name, function in module_function_tuples:
 			function_params: dict = function.__annotations__;
-			if(function_name != callback_name or len(callback_params) != len(function_params)):
+			if(function_name != method or len(callback_params) != len(function_params)):
 				continue;
 
 			mapping = {"int": int, "string": str};
@@ -97,7 +93,7 @@ class Route:
 				return function;
 
 		callback_param_str: str = ", ".join(callback_params.keys());
-		raise Exception(f"No matching function named '{callback_name}' with params: '{callback_param_str}'" +
+		raise Exception(f"No matching function for method '{method}' with params: '{callback_param_str}'" +
 		  f" for module '{module.__name__}'");
 
 
@@ -106,6 +102,9 @@ class Route:
 
 
 	def path_parts(self) -> List[str]:
+		"""
+		SUMMARY: Gets the rescinding parts to a path starting at the root directory. 
+		"""
 		def is_param(part: str) -> bool:
 			return re.fullmatch(self.PARAM_REGEX, part);
 

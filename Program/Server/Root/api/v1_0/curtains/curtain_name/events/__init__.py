@@ -23,7 +23,7 @@ from System import System;
 # Lists options available related to curtains' events.
 def GET(system: System, curtain_name: str):
 	return {
-		"GET /api/v1.0/curtain/<string:curtain_name>/events/all": "Lists all events for a curtain.",
-		"POST /api/v1.0/curtain/<string:curtain_name>/events/new": "Creates a new curtain's event with the JSON body.",
-		"GET /api/v1_0/curtain/<string:curtain_name>/event/<string:event_time>": "Show information for an event for a curtain."
+		"GET /api/v1.0/curtains/<string:curtain_name>/events/all": "Lists all events for a curtain.",
+		"POST /api/v1.0/curtains/<string:curtain_name>/events/new": "Creates a new curtain's event with the JSON body.",
+		"GET /api/v1_0/curtains/<string:curtain_name>/event/<string:event_time>": "Show information for an event for a curtain."
 	};
