@@ -30,39 +30,41 @@ from Utility import Logger;
 from System.DB import AttributeType;
 
 
-class Curtain(DBClass):
-	ATTRIBUTE_TYPES =	[
-							AttributeType("_id", int),
-							AttributeType("_buffer_time", (int, bool, NONETYPE)),
-							AttributeType("_percentage", (int, NONETYPE)),
-							AttributeType("_direction", (int, bool, NONETYPE)),
-							AttributeType("_is_activated", (int, bool, NONETYPE)),
-							AttributeType("_is_current", (int, bool, NONETYPE)),
-							AttributeType("_moves_discretely", (int, bool)),
-							AttributeType("_port", (int, bool, NONETYPE)),
-							AttributeType("_length", (int, bool, NONETYPE)),
-							AttributeType("_name", str)
-						];
+class Curtain:
+	def __init__(self, System: object, IP: str, name: str):
+		self._System = System;
+		self._ip_address: str = IP;
+		self._name: str = name;
 
-	def __init__(self, **curtain_info):
-		DBClass.__init__(self, "UPDATE_Curtains", **curtain_info);
+		self._id: int = None;
+		self._is_activated: bool = False;
+		self._is_reachable: bool = True;
+		self._length: int = None;
+		self._moves_discretely: bool = None;
+		self._percentage: int = None;
+
+		self.__lookup_curtain_info();
 
 		from System.CurtainEvent import CurtainEvent;
-
-		# Get associated relations
-		self._ip_address: str = self.lookup_curtain();
-		assert(self._ip_address is not None), f"IP Address for '{self._name}' cannot be none"
-
 		current_events = SELECT_current_CurtainsEvents(self._id);
 		curtains_options = SELECT_CurtainsOptions(self._id);
 		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
 		self._CurtainOptions = [CurtainOption(**option) for option in curtains_options];
 
-		self.validate();
-
 
 	def __iter__(self) -> dict:
-		return DBClass.__iter__(self, "_CurtainEvents", "_CurtainOptions", "_ip_address");
+		yield from {
+			"id": self._id,
+			"name": self._name,
+			"ip_address": self._ip_address,
+			"is_activated": self._is_activated,
+			"is_reachable": self._is_reachable,
+			"length": self._length,
+			"moves_discretely": self._moves_discretely,
+			"percentage": self._percentage,
+			"CurtainEvents": [dict(event) for event in self._CurtainEvents],
+			"CurtainOptions": [dict(option) for option in self._CurtainOptions],
+		}.items();
 
 
 	def __repr__(self) -> str:
@@ -91,6 +93,41 @@ class Curtain(DBClass):
 
 	def ip_address(self) -> str:
 		return self._ip_address;
+
+
+	def is_activated(self, *value: list) -> Union[bool, None]:
+		if(len(value) == 0):
+			return self._is_activated;
+
+		self._is_activated = value[0];
+
+
+	def is_reachable(self, *value: list) -> Union[bool, None]:
+		if(len(value) == 0):
+			return self._is_reachable;
+
+		self._is_reachable = value[0];
+
+
+	def length(self, *value: list) -> Union[int, None]:
+		if(len(value) == 0):
+			return self._length;
+
+		self._length = value[0];
+
+
+	def moves_discretely(self, *value: list) -> Union[bool, None]:
+		if(len(value) == 0):
+			return self._moves_discretely;
+
+		self._moves_discretely = value[0];
+
+
+	def percentage(self, *value: list) -> Union[int, None]:
+		if(len(value) == 0):
+			return self._percentage;
+
+		self._percentage = value[0];
 
 
 	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
@@ -158,6 +195,10 @@ class Curtain(DBClass):
 		return events;
 
 
+	def buffer_time(self) -> int:
+		return int(self._length / 6_400) + 2;
+
+
 	def prior_CurtainEvents_for_current_day_of_week(self, earliest: object=None) -> list:
 		earliest = earliest or datetime.today() - timedelta(days=28);
 
@@ -167,26 +208,21 @@ class Curtain(DBClass):
 
 	# ——————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————— #
 
-	def lookup_curtain(self: object) -> Union[str, None]:
+	def __lookup_curtain_info(self: object) -> Union[str, None]:
 		"""
 		SUMMARY: Looks up the curtain from the NetworkLookup endpoint.
 		PARAMS:  Takes the name of the curtain to lookup from NetworkLookup.
 		DETAILS: Queries the NetworkLookup endpoint with the label for the curtain.
 		RETURNS: The IP address string for the curtain.
 		"""
-		NetworkLookup_host = os.getenv("NETWORKLOOKUP_HOST");
-		NetworkLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
-		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
+		response = requests.get(f"http://{self._ip_address}", json={"query type": "status"});
+		response_body: dict = response.json();
 
-		url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/device/label/{self._name}";
-		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
-		if(response.status_code == 200):
-			try:
-				return response.json()["address"];
-			except Exception as error:
-				print(error)
-
-		return None;
+		self._id = response_body["id"];
+		self._percentage = response_body["percentage"];
+		self._direction = response_body["direction"];
+		self._moves_discretely = response_body["discrete movement"];
+		self._length = response_body["length"];
 
 
 	# ———————————————————————————————————————————————— EVENT CREATION ———————————————————————————————————————————————— #

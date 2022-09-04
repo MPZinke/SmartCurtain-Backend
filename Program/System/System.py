@@ -16,6 +16,8 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta;
 import json;
+import os;
+import requests;
 from socket import gethostbyname, gethostname;
 from threading import Lock;
 from typing import Any, List, Union;
@@ -39,6 +41,7 @@ class System(ZWidget):
 
 		self._IP_Address = gethostbyname(gethostname());
 
+		self._refresh_failures = False;  # Whether failures occurred while refreshing the curtains.
 		self.refresh();
 
 
@@ -46,11 +49,10 @@ class System(ZWidget):
 	def refresh(self) -> None:
 		try:
 			self._mutex.acquire();  # just to ensure things are executed properly
-			selected_curtains = SELECT_Curtains();
+
 			# Cleanup events since destructor doesn't work, especially when called by dict reassignment.
-			[curtain.delete_events() for curtain in self._Curtains];
-			self._Curtains = [Curtain(**{**curtain, "System": self}) for curtain in selected_curtains];
 			self._Options = [Option(**option) for option in SELECT_Options()];
+			self.set_Curtains();
 
 		except Exception as error:
 			Logger.log_error(error);
@@ -58,6 +60,9 @@ class System(ZWidget):
 
 	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
 	def sleep_time(self) -> int:
+		if(self._refresh_failures):
+			return 30;
+
 		return (tomorrow_00_00() - datetime.now()).seconds + 30;  # give time to let event creators to do their thing
 
 
@@ -104,18 +109,20 @@ class System(ZWidget):
 		"""
 		SUMMARY: Gets the curtains on the network according to the NetworkLookup.
 		"""
+		[curtain.delete_events() for curtain in self._Curtains];  # Clean up the curtains we are going to replace
+
 		NetworkLookup_host = os.getenv("NETWORKLOOKUP_HOST");
 		NetworkLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
 		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
 
-		url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/devices/group/label/Curtain";
-		response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
+		try:
+			url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/devices/group/label/Curtain";
+			response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
+			if(response.status_code == 200):
+				self._Curtains = [Curtain(self, curtain["address"], curtain["label"]) for curtain in response.json()];
 
-		if(response.status_code == 200):
-			try:
-				for curtain_IP in [curtain["address"] for curtain in response.json()]:
-					pass
+			self._refresh_failures = response.status_code == 200;
 
-			except Exception as error:
-				print(error)
-
+		except Exception as error:
+			self._refresh_failures = True;
+			Logger.log_error(error);

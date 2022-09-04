@@ -136,10 +136,9 @@ class CurtainEvent(DBClass):
 
 			if(not self.is_activated(True) or not self._is_activated):
 				raise Exception("Failed to set event activated");
-			if(not curtain.is_activated(True)):
-				raise Exception("Failed to set curtain activated");
-			if(not curtain.percentage(self._percentage)):
-				raise Exception("Failed to set curtain percentage");
+
+			curtain.is_activated(True);
+			curtain.percentage(self._percentage);
 
 		except Exception as error:
 			Logger.log_error(error);

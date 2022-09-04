@@ -7,29 +7,6 @@
 -- 	FUTURE:
 
 
--- Primary table for curtain listing.
--- Details individual curtain setups.
-DROP TABLE IF EXISTS "Curtains" CASCADE;
-CREATE TABLE IF NOT EXISTS "Curtains"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"buffer_time" SMALLINT NOT NULL DEFAULT 0,  -- Curtain travel deci-seconds (prevent event overlap)
-	CHECK("buffer_time" >= 0),
-	"direction" BOOLEAN NOT NULL DEFAULT FALSE,
-	"port" SMALLINT NOT NULL DEFAULT 80,
-	CHECK("port" >= 0),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_current" BOOLEAN NOT NULL DEFAULT TRUE,
-	"last_connection" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	"length" INT NOT NULL,
-	CHECK("length" >= 0),
-	"moves_discretely" BOOLEAN NOT NULL DEFAULT FALSE,
-	"name" VARCHAR(32) NOT NULL UNIQUE,
-	"percentage" SMALLINT NOT NULL DEFAULT 0,
-	CHECK("percentage" >= 0)
-);
-
-
 DROP TABLE IF EXISTS "Options" CASCADE;
 CREATE TABLE IF NOT EXISTS "Options"
 (
@@ -46,7 +23,6 @@ CREATE TABLE IF NOT EXISTS "CurtainsOptions"
 	"id" SERIAL NOT NULL PRIMARY KEY,
 	"Curtains.id" INT NOT NULL,
 	CHECK("Curtains.id" >= 0),
-	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
 	"Options.id" INT NOT NULL,
 	CHECK("Options.id" >= 0),
 	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
@@ -62,7 +38,6 @@ CREATE TABLE IF NOT EXISTS "CurtainsEvents"
 	"id" SERIAL NOT NULL PRIMARY KEY,
 	"Curtains.id" INT NOT NULL,
 	CHECK("Curtains.id" >= 0),
-	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
 	"Options.id" INT DEFAULT NULL,
 	CHECK("Options.id" >= 0),
 	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),

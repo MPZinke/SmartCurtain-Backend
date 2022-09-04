@@ -54,7 +54,6 @@ class Server(ZWidget):
 			Route("/api/v1.0/curtains/<string:curtain_name>/events/new", "POST"),
 			# Route("/api/v1.0/curtains/<string:curtain_name>/events/<string:event_time>", "GET", "PATCH", "DELETE"),
 
-
 			Route("/api/v1.0/events"),
 			Route("/api/v1.0/events/all"),
 			Route("/api/v1.0/events/<int:event_id>", "GET", "PATCH", "DELETE"),

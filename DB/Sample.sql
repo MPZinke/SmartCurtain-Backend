@@ -7,12 +7,6 @@
 -- 	FUTURE:
 
 
--- MPZinke instance: default length 1000
-INSERT INTO "Curtains" ("length", "name") VALUES
-(43000, 'Livingroom-Curtain'),
-(34000, 'Bedroom-Curtain');
-
-
 INSERT INTO "Options" ("name", "description") VALUES
 ('Adafruit Feed', 'Google API connection'),
 ('Auto Calibrate', 'Curtain calibrates length if it moves full span of rod'),
@@ -47,7 +41,12 @@ FROM
 	('Bedroom-Curtain', 'Temperature Setting', FALSE, NULL, '')  -- Temperature Setting
 ) AS "Temp"("Curtains.name", "Options.name", "is_on", "notes", "data")
 JOIN "Options" ON "Temp"."Options.name" = "Options"."name"
-JOIN "Curtains" ON "Temp"."Curtains.name" = "Curtains"."name";
+JOIN 
+(
+	VALUES
+	(1, 'Livingroom-Curtain'),
+	(2, 'Bedroom-Curtain')
+) AS "Curtains"("id", "name") ON "Temp"."Curtains.name" = "Curtains"."name";
 
 
 -- —————————————————————————————————————————————————— CREATE VIEWS —————————————————————————————————————————————————— --
