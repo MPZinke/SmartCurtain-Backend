@@ -23,9 +23,8 @@ from warnings import warn as Warn;
 
 from Global import *;
 from Manager.ManagerGlobal import *;
-from Manager.ManagerGlobal import datetime_to_utc;
-from Utility import tomorrow_00_00, warning_message;
-import Utility.Logger as Logger;
+from Utility import time_to_midnight, warning_message;
+from Utility import Logger;
 from Utility.ZThread import ZWidget;
 
 
@@ -47,13 +46,14 @@ class SunsetClose(ZWidget):
 
 
 	def sleep_time(self) -> int:
-		return (tomorrow_00_00() - datetime.now()).seconds;
+		return time_to_midnight();
 
 
 	def _loop_process(self):
 		sunset = self.sunset_time().replace(tzinfo=None);
 		if(sunset < datetime.now()):
-			return Warn("Sunset has already passed for today. Skipping today");
+			Warn("Sunset has already passed for today. Skipping today");
+			return;
 
 		for curtain in self._System.Curtains():
 			try:
@@ -62,7 +62,7 @@ class SunsetClose(ZWidget):
 					continue;
 
 				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();
-				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision 
+				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision
 				if(curtain.CurtainEvents_for_range(earliest=sunset-buffer_td, latest=sunset+buffer_td)):
 					Warn("Event already set for sunset time.");
 					continue;  # don't duplicate sunset

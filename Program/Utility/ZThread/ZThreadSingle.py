@@ -19,7 +19,7 @@ from collections.abc import Callable;
 
 
 from Utility.ZThread import ZThread;
-import Utility.Logger as Logger;
+from Utility import Logger;
 
 
 
@@ -35,6 +35,9 @@ class ZThreadSingle(ZThread):
 			self.sleep(self._sleep_time());
 			if(self._is_active):
 				self._loop_process();
+
 		except Exception as error:
-			try: Logger.log_error(error);
-			except: pass;
+			try:
+				Logger.log_error(error);
+			except:
+				pass;

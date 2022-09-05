@@ -26,7 +26,7 @@ from System.Curtain import Curtain;
 from System.DB import AttributeType, DBClass, ObjectAttributeType;
 from System.DB import INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
-import Utility.Logger as Logger;
+from Utility import Logger;
 
 
 class CurtainEvent(DBClass):
@@ -46,14 +46,12 @@ class CurtainEvent(DBClass):
 		self.validate();
 
 		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
-		self.__activation_thread.start_thread(True);
+		self.__activation_thread.start();
 
 
 	# Creates a new entry in the DB and returns the newly created CurtainEvent object
 	@staticmethod
 	def add_event_to_DB(**info: dict) -> dict:
-		from System.Curtain import Curtain;  # must be imported here to prevent circular importing
-
 		# Check attributes are present
 		# https://stackoverflow.com/a/19476841
 		temp = type("Temp", (), {"Curtain": info["Curtain"], "percentage": info["percentage"], "time": info["time"]})();
@@ -82,8 +80,6 @@ class CurtainEvent(DBClass):
 
 
 	def __iter__(self) -> dict:
-		from System.Curtain import Curtain;
-
 		for x, attribute_type in enumerate(self.attribute_types):
 			if(Curtain in attribute_type):
 				del self.attribute_types[x];
@@ -127,7 +123,7 @@ class CurtainEvent(DBClass):
 		print("Post data:", end="");  #TESTING
 		print(post_dict);  #TESTING
 		try:
-			response = post(url=f"http://{curtain.ip_address()}", json=post_dict, timeout=curtain.buffer_time()/10+1);
+			response = post(url=f"http://{curtain.service()}", json=post_dict, timeout=curtain.buffer_time()/10+1);
 			if(int(response.status_code / 100) != 2):
 				raise Exception(f"Received {response.status_code} status code for event {self._id}");
 			if("error" in response.json()):
@@ -161,5 +157,6 @@ class CurtainEvent(DBClass):
 		now = datetime.now();
 		time_plus_1_second = self._time + timedelta(seconds=1);
 		if(time_plus_1_second < now):
-			Warn("Event {} is scheduled at a time in the past".format(self._id));
+			Warn(f"Event {self._id} is scheduled at a time in the past");
+
 		return (self._time - now).seconds if (now < self._time) else .25;

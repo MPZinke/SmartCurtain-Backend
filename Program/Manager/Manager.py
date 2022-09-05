@@ -29,7 +29,7 @@ class Manager(ZWidget):
 		self._SunsetClose = SunsetClose(self._System);
 
 		self._widget_list =	[
-								self._AdafruitFeed, 
+								self._AdafruitFeed,
 								# self._EventPredictor,
 								self._SunriseOpen,
 								self._SunsetClose
@@ -38,11 +38,16 @@ class Manager(ZWidget):
 
 
 	def _loop_process(self):
-		# if(not self._AdafruitFeed.is_alive()): self._AdafruitFeed = AdafruitFeed(self);
-		# if(not self._DaytimeEvents.is_alive()): self._DaytimeEvents = DaytimeEvents(self);
-		if(not self._EventPredictor.is_alive()): self._EventPredictor = EventPredictor(self);
-		if(not self._SunriseOpen.is_alive()): self._SunriseOpen = SunriseOpen(self);
-		if(not self._SunsetClose.is_alive()): self._SunsetClose = SunsetClose(self);
+		# if(not self._AdafruitFeed.is_alive()):
+		# 	self._AdafruitFeed = AdafruitFeed(self);
+		# if(not self._DaytimeEvents.is_alive()):
+		# 	self._DaytimeEvents = DaytimeEvents(self);
+		# if(not self._EventPredictor.is_alive()):
+		# 	self._EventPredictor = EventPredictor(self);
+		if(not self._SunriseOpen.is_alive()):
+			self._SunriseOpen = SunriseOpen(self);
+		if(not self._SunsetClose.is_alive()):
+			self._SunsetClose = SunsetClose(self);
 
 
 	def System(self):

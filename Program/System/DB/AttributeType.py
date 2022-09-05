@@ -25,14 +25,8 @@ class AttributeType:
 
 	def __str__(self) -> str:
 		attribute_name: str = self._attribute_name;
-		attribute_value: Any = self.value();
-		value_type_str: str = type(attribute_value.value()).__name__;
-		allowed_type_str: str = " or ".join([type_instance.__name__ for type_instance in self._types]);
-
-		if(self.is_valid()):
-			return f"'{attribute_name}' value {attribute_value} is of valid type {value_type_str}";
-
-		return f"'{attribute_name}' value {attribute_value}, type: {value_type_str} is not of type {allowed_type_str}";
+		allowed_type_str: str = ", ".join([type_instance.__name__ for type_instance in self._types]);
+		return f"Attribute with name '{attribute_name}' and possible types {allowed_type_str}"
 
 
 	def __contains__(self, type) -> bool:

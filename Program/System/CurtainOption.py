@@ -15,8 +15,6 @@ __author__ = "MPZinke"
 
 
 import json;
-from json import dumps;
-from typing import Union;
 
 
 from Global import NONETYPE;
@@ -30,6 +28,7 @@ class CurtainOption(DBClass):
 	ATTRIBUTE_TYPES =	[
 							AttributeType("_id", int),
 							AttributeType("_name", str),
+							AttributeType("_data", (str, int, NONETYPE)),
 							AttributeType("_Curtains_id", int),
 							AttributeType("_Options_id", int),
 							AttributeType("_is_on", (bool, int)),
@@ -43,17 +42,14 @@ class CurtainOption(DBClass):
 		try:
 			if(self._data is not None):
 				self._data = json.loads(self._data if(isinstance(self._data, str)) else str(self._data));
+
 		except Exception as error:
 			print(type(self._data));
 			Logger.log_error(error);
 
 
-	def __iter__(self) -> dict:
-		return DBClass.__iter__(self, "_data");
-
-
 	def __str__(self) -> str:
-		return dumps(dict(self), default=str);
+		return json.dumps(dict(self), default=str);
 
 
 	def __repr__(self) -> str:

@@ -22,14 +22,14 @@ __author__ = "MPZinke"
 #	on ..
 #
 #	DESCRIPTION: K-Means clustering is used to determine possible events for day based
-#		on events for that particular day of week for the last 4 weeks (hard coded).  Events 
-#		contain the datetime object pulled from the DB, and converts it to a decimal 
+#		on events for that particular day of week for the last 4 weeks (hard coded).  Events
+#		contain the datetime object pulled from the DB, and converts it to a decimal
 #		representation of it for smoother calculation  A centroid is created for the ceil(average
-#		number of events for that weekdat).  This centroid then finds its surrounding event 
-#		times over 20 iterations or once all the centroid averages remain constant over 2 
-#		iterations.  Each centroid then checks if it is valid—3 events within ±30 minutes 
-#		(hardcoded) of the average.  Commented is code that will find the tightest grouping & 
-#		check that it is valid, however it is deemed as unnecessary at the moment.  If a 
+#		number of events for that weekdat).  This centroid then finds its surrounding event
+#		times over 20 iterations or once all the centroid averages remain constant over 2
+#		iterations.  Each centroid then checks if it is valid—3 events within ±30 minutes
+#		(hardcoded) of the average.  Commented is code that will find the tightest grouping &
+#		check that it is valid, however it is deemed as unnecessary at the moment.  If a
 #		centroid is valid, it will average the position of each event and create a new event at
 #		that position average.
 #	BUGS:
@@ -46,8 +46,8 @@ from warnings import warn as Warn;
 from Global import *;
 from Manager.ManagerGlobal import *;
 from Manager.ManagerGlobal import datetime_to_utc;
-from Utility import tomorrow_00_00, warning_message;
-import Utility.Logger as Logger;
+from Utility import midnight, warning_message;
+from Utility import Logger;
 from Utility.ZThread import ZWidget;
 
 

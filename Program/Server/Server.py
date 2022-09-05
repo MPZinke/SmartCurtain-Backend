@@ -14,23 +14,18 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import Flask, request, session;
-from pathlib import Path;
-import sys;
-from time import sleep;
+from flask import Flask;
 from typing import List;
 
 
 from Server import Route;
 from System import System;
-from Utility import try_convert;
-import Utility.Logger as Logger;
 from Utility.ZThread import ZWidget;
 
 
 class Server(ZWidget):
-	def __init__(self, System):
-		ZWidget.__init__(self, "Server", System);
+	def __init__(self, system: System):
+		ZWidget.__init__(self, "Server", system);
 
 		self._app = Flask(__name__);
 		self.add(

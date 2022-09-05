@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from typing import Union;
 
 
-import Utility.Logger as Logger;
+from Utility import Logger;
 from Utility.ZThread import ZThread;
 
 
@@ -29,8 +29,10 @@ class ZWidget:
 
 
 	def __del__(self):
-		try: self._zthread.kill();
-		except: pass;
+		try:
+			self._zthread.kill();
+		except:
+			pass;
 
 
 	# ————————————————————— THREAD —————————————————————

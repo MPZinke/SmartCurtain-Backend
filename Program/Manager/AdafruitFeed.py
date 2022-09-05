@@ -15,18 +15,15 @@ __author__ = "MPZinke"
 
 
 from Adafruit_IO import MQTTClient;
-from datetime import datetime, timedelta;
 from os import getenv as os_getenv;
 import ssl;
-from time import sleep;
 import warnings;
-from warnings import warn as Warn;
 
 
 from Global import *;
 from Manager.ManagerGlobal import *;
 from Utility import try_convert, warning_message;
-import Utility.Logger as Logger;
+from Utility import Logger;
 from Utility.ZThread import ZWidget;
 
 
@@ -52,7 +49,6 @@ class AdafruitFeed(ZWidget):
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
 
 	def _activate(self, client, feed_id, percentage_payload):
-		print(f"AdafruitFeed: client: {client}, feed_id: {feed_id}, percentage: {percentage_payload}");
 		try:
 			# Get the curtain for feed ID
 			curtain = self._curtain_for_feed_id(feed_id);
@@ -74,32 +70,31 @@ class AdafruitFeed(ZWidget):
 
 
 	def _connect(self, client):
-		for curtain in self._System.Curtains_list():
-			curtain_option = curtain.CurtainOption(self._option_id);
+		for curtain in self._System.Curtains():
+			curtain_option = curtain.CurtainOption(id=self._option_id);
 			# if curtain has active CurtainOption for AdafruitIO && CurtainOption has 2 CurtainOptionKeyValue:
 			if(not curtain_option or not curtain_option.is_on()):
 				continue;
-			#HARDCODED: then minimum number of feeds per curtain
+
+			#HARDCODED: the minimum number of feeds per curtain
 			if(len(curtain_option.data()) < 2):
 				continue;
 
-			[client.subscribe(option) for option in curtains_option.data()];
+			[client.subscribe(option) for option in curtain_option.data()];
 
 
 	def _disconnect(self):
 		raise Exception("MQTTClient disconnected")
 
 
-	def _null(self, *args) -> None:
+	def _null(self, *_: list) -> None:
 		return;
 
 
 	def _loop_process(self):
 		username = os_getenv("ADAFRUIT_IO_USERNAME");
 		key = os_getenv("ADAFRUIT_IO_KEY");
-		print(f"AdafruitFeed::_loop_process::username, key: {username}, {key}");
-		assert(username);
-		assert(key);
+		assert(username and key);
 
 		ssl.SSLContext.verify_mode = ssl.VerifyMode.CERT_OPTIONAL
 
@@ -109,8 +104,6 @@ class AdafruitFeed(ZWidget):
 		client.on_disconnect = self._disconnect;
 		client.on_message = self._activate;
 		client.on_subscribe  = self._null;
-		
-		print("Adafruit::_loop_process");
 
 		client.connect();
 		client.loop_blocking();

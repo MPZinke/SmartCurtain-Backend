@@ -14,24 +14,22 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import json;
 from json import dumps;
-from typing import Any, List, Type, Union;
-import inspect
+from typing import Any, List, Union;
 
 
+from System.DB import DBFunctions;
 from System.DB import ObjectAttributeType;
-import System.DB.DBFunctions as DBFunctions;
 from Utility import Logger;
 
 
 
 class DBClass:
 	def __init__(self, db_prefix, **table_values: dict):
-		for attribute in table_values:
+		for attribute, value in table_values.items():
 			method_name = attribute.replace(".", "_");
 			attribute_name = "_" + method_name;
-			setattr(self, attribute_name, table_values[attribute] if(table_values[attribute]) else 0);
+			setattr(self, attribute_name, value if(value) else 0);
 			setattr(self, method_name, self.__getter_setter_method(db_prefix, attribute_name, method_name));
 
 		self.attribute_types = [ObjectAttributeType(self, attr_type) for attr_type in self.ATTRIBUTE_TYPES];

@@ -19,7 +19,7 @@ import inspect;
 import os;
 import re;
 import types;
-from typing import get_type_hints, List;
+from typing import List;
 
 
 from Server import Root;
@@ -103,7 +103,7 @@ class Route:
 
 	def path_parts(self) -> List[str]:
 		"""
-		SUMMARY: Gets the rescinding parts to a path starting at the root directory. 
+		SUMMARY: Gets the rescinding parts to a path starting at the root directory.
 		"""
 		def is_param(part: str) -> bool:
 			return re.fullmatch(self.PARAM_REGEX, part);
@@ -111,7 +111,7 @@ class Route:
 		if(self._endpoint == "/"):
 			return [];
 
-		parts = [part for part in os.path.normpath(self._endpoint).split(os.sep)];
+		parts = os.path.normpath(self._endpoint).split(os.sep);
 		# [param name if(part is param) else part for part in parts]
 		parts = [re.findall(self.PARAM_NAME_REGEX, part)[0] if(is_param(part)) else part for part in parts];
 		return parts[int(self._endpoint[0] == '/'):];  # ignore empty '' if path starts with '/'

@@ -72,8 +72,8 @@ SUNSET_LOOP_WAIT = 86400
 
 # ——————————————————— TIME ———————————————————
 
-# time of day after which to put thread to sleep so that thread will activate at the beginning of 
-# day.  This is so that if the thread calculates for current day only, it does not skip events: 
+# time of day after which to put thread to sleep so that thread will activate at the beginning of
+# day.  This is so that if the thread calculates for current day only, it does not skip events:
 # EG. event predictor set events for today.  If it is activated past 12pm, and creates an event
 # 9am, then that event will be skipped (or activated now)
 HOUR_AFTER_WHICH_WAIT_UNTIL_NEXT_DAY_TO_RECALCULATE = 12
@@ -93,7 +93,6 @@ CLUSTER_SPAN = 4  # number of weeks looked back on to determine applicable logs
 # >>> return close_cnx_and_return(cnx)
 def close_cnx_and_return(cnx):
 	cnx.close()
-	return None
 
 
 # used in if statements: check if value null; if null, sleep; return truthiness
@@ -111,8 +110,8 @@ def current_time_is_past_sleep_point():
 	from datetime import datetime
 
 	today = datetime.today()
-	sleep_point = datetime(year=today.year, month=today.month, day=today.day, 
-				hour=HOUR_AFTER_WHICH_WAIT_UNTIL_NEXT_DAY_TO_RECALCULATE, 
+	sleep_point = datetime(year=today.year, month=today.month, day=today.day,
+				hour=HOUR_AFTER_WHICH_WAIT_UNTIL_NEXT_DAY_TO_RECALCULATE,
 				minute=0, second=0)
 	return datetime.now() > sleep_point
 
@@ -121,8 +120,8 @@ def event_is_not_past_current_time(event_time):
 	from datetime import datetime
 
 	# time without timezone encoding
-	naive_time = datetime(year=event_time.year, month=event_time.month, 
-								day=event_time.day, hour=event_time.hour, 
+	naive_time = datetime(year=event_time.year, month=event_time.month,
+								day=event_time.day, hour=event_time.hour,
 								minute=event_time.minute, second=event_time.second)
 	return naive_time > datetime.now()
 
@@ -133,9 +132,7 @@ def time_to_next_day():
 	from datetime import datetime, timedelta
 
 	today = datetime.today()
-	beginning_of_day = datetime(year=today.year, month=today.month, day=today.day, 
+	beginning_of_day = datetime(year=today.year, month=today.month, day=today.day,
 									hour=0, minute=0, second=0)
 	time_to_tomorrow_object = beginning_of_day + timedelta(days=1) - datetime.now()
 	return time_to_tomorrow_object.seconds + 1  # for good measure
-
-

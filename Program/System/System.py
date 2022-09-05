@@ -14,21 +14,20 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from datetime import datetime, timedelta;
 import json;
 import os;
 import requests;
 from socket import gethostbyname, gethostname;
 from threading import Lock;
-from typing import Any, List, Union;
+from typing import List, Union;
 
 
 from Global import *;
 from System import Curtain, Option;
-from Utility import tomorrow_00_00;
-from Utility import Logger;
-from System.DB import SELECT_Curtains, SELECT_Options;
+from System.DB import SELECT_Options;
 from System.DB import DBClass;
+from Utility import temp, time_to_midnight;
+from Utility import Logger;
 from Utility.ZThread import ZWidget;
 
 
@@ -45,17 +44,23 @@ class System(ZWidget):
 		self.refresh();
 
 
+	def __iter__(self) -> dict:
+		yield from {
+			"Curtains": [dict(curtain) for curtain in self._Curtains],
+			"Options": [dict(option) for option in self._Options]
+		}.items();
+
+
+	def __str__(self) -> str:
+		return json.dumps(dict(self), default=str);
+
+
 	# SUMMARY: Used for if DB values have changed and System information needs to be refreshed.
 	def refresh(self) -> None:
-		try:
-			self._mutex.acquire();  # just to ensure things are executed properly
-
+		with self._mutex:
 			# Cleanup events since destructor doesn't work, especially when called by dict reassignment.
 			self._Options = [Option(**option) for option in SELECT_Options()];
-			self.set_Curtains();
-
-		except Exception as error:
-			Logger.log_error(error);
+			self.check_for_Curtain_updates();
 
 
 	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
@@ -63,7 +68,7 @@ class System(ZWidget):
 		if(self._refresh_failures):
 			return 30;
 
-		return (tomorrow_00_00() - datetime.now()).seconds + 30;  # give time to let event creators to do their thing
+		return time_to_midnight() + 30;  # give time to let event creators to do their thing
 
 
 	def _loop_process(self) -> None:
@@ -94,32 +99,22 @@ class System(ZWidget):
 
 	# ——————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————— #
 
-	def __iter__(self) -> dict:
-		yield from {
-			"Curtains": [dict(curtain) for curtain in self._Curtains],
-			"Options": [dict(option) for option in self._Options]
-		}.items();
-
-
-	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str);
-
-
-	def set_Curtains(self) -> None:
+	def check_for_Curtain_updates(self) -> None:
 		"""
 		SUMMARY: Gets the curtains on the network according to the NetworkLookup.
 		"""
-		[curtain.delete_events() for curtain in self._Curtains];  # Clean up the curtains we are going to replace
-
 		NetworkLookup_host = os.getenv("NETWORKLOOKUP_HOST");
 		NetworkLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
 		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
 
 		try:
-			url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/devices/group/label/Curtain";
+			url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/services/label/SmartCurtain";
 			response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
-			if(response.status_code == 200):
-				self._Curtains = [Curtain(self, curtain["address"], curtain["label"]) for curtain in response.json()];
+			services = [{**service, **service["device"]} for service in response.json()];
+
+			for service in [temp({"address": s["address"], "port": s["port"], "name": s["label"]}) for s in services]:
+				if(self.Curtain(ip_address=service.address, port=service.port) is None):
+					self._Curtains.append(Curtain(self, service.name, service.address, service.port));
 
 			self._refresh_failures = response.status_code != 200;
 

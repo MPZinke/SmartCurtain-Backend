@@ -23,9 +23,8 @@ from warnings import warn as Warn;
 
 from Global import *;
 from Manager.ManagerGlobal import *;
-from Manager.ManagerGlobal import datetime_to_utc;
-from Utility import tomorrow_00_00, warning_message;
-import Utility.Logger as Logger;
+from Utility import time_to_midnight, warning_message;
+from Utility import Logger;
 from Utility.ZThread import ZWidget;
 
 
@@ -47,13 +46,14 @@ class SunriseOpen(ZWidget):
 
 
 	def sleep_time(self) -> int:
-		return (tomorrow_00_00() - datetime.now()).seconds;
+		return time_to_midnight();
 
 
 	def _loop_process(self):
 		sunrise = self.sunrise_time().replace(tzinfo=None);
 		if(sunrise < datetime.now()):
-			return Warn("Sunrise has already passed for today. Skipping today");
+			Warn("Sunrise has already passed for today. Skipping today");
+			return;
 
 		for curtain in self._System.Curtains():
 			try:

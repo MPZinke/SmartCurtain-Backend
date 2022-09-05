@@ -26,24 +26,25 @@ from System.CurtainOption import CurtainOption;
 from System.DB import DBClass;
 from System.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, SELECT_current_CurtainsEvents, \
   SELECT_CurtainsOptions;
-from Utility import Logger;
-from System.DB import AttributeType;
 
 
 class Curtain:
-	def __init__(self, System: object, IP: str, name: str):
+	def __init__(self, System: object, name: str, IP: str, port: int):
 		self._System = System;
 		self._ip_address: str = IP;
+		self._port: int = port;
 		self._name: str = name;
 
-		self._id: int = None;
-		self._is_activated: bool = False;
-		self._is_reachable: bool = True;
-		self._length: int = None;
-		self._moves_discretely: bool = None;
-		self._percentage: int = None;
+		response = requests.post(f"http://{self.service()}", json={"query type": "status"});
+		response_body: dict = response.json();
 
-		self.__lookup_curtain_info();
+		self._id: int = response_body["id"];
+		self._is_activated: bool = False;
+		self._moves_discretely: bool = response_body["discrete movement"];
+		self._length: int = response_body["length"];
+		self._percentage: int = response_body["percentage"];
+
+		# ———————————————————————————————————————————————— DB OBJECTS ———————————————————————————————————————————————— #
 
 		from System.CurtainEvent import CurtainEvent;
 		current_events = SELECT_current_CurtainsEvents(self._id);
@@ -58,7 +59,6 @@ class Curtain:
 			"name": self._name,
 			"ip_address": self._ip_address,
 			"is_activated": self._is_activated,
-			"is_reachable": self._is_reachable,
 			"length": self._length,
 			"moves_discretely": self._moves_discretely,
 			"percentage": self._percentage,
@@ -84,7 +84,7 @@ class Curtain:
 			curtain_event.delete();
 
 
-	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
+	# ——————————————————————————————————————— GETTERS/SETTERS::PRIMITIVE TYPES ——————————————————————————————————————— #
 
 	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
 	def id(self) -> int:
@@ -100,13 +100,6 @@ class Curtain:
 			return self._is_activated;
 
 		self._is_activated = value[0];
-
-
-	def is_reachable(self, *value: list) -> Union[bool, None]:
-		if(len(value) == 0):
-			return self._is_reachable;
-
-		self._is_reachable = value[0];
 
 
 	def length(self, *value: list) -> Union[int, None]:
@@ -130,7 +123,11 @@ class Curtain:
 		self._percentage = value[0];
 
 
-	# ———————————————————————————————————————————————— GETTERS: OBJECTS ————————————————————————————————————————————————
+	def service(self) -> str:
+		return f"{self._ip_address}:{self._port}";
+
+
+	# ——————————————————————————————————————————————— GETTERS: OBJECTS ——————————————————————————————————————————————— #
 
 	def CurtainEvents(self) -> List["CurtainEvent"]:
 		return self._CurtainEvents;
@@ -150,7 +147,7 @@ class Curtain:
 		return self._System;
 
 
-	# ———————————————————————————————————————————————— GETTERS: SPECIAL ————————————————————————————————————————————————
+	# ——————————————————————————————————————————————— GETTERS: SPECIAL ——————————————————————————————————————————————— #
 
 	def CurtainEvent(self, **kwargs: dict) -> Union["CurtainEvent", None]:
 		"""
@@ -160,18 +157,18 @@ class Curtain:
 		RETURNS: Returns the Event if it is found, else None.
 		"""
 		from System.CurtainEvent import CurtainEvent;
+		exclusive_match = DBClass._exclusive_match;
 
-		if((curtain_event := DBClass._exclusive_match(self._CurtainEvents, **kwargs)) is not None):
+		if((curtain_event := exclusive_match(self._CurtainEvents, **kwargs)) is not None):
 			return curtain_event;
 
 		# Not found, check if in DB
-		if((curtain_events := SELECT_CurtainsEvents_for_Curtains_id(self._id))):
-			for event in curtain_events:
-				# If found in DB, create an object and add to the list
-				if(all(event.get(key) == value for key, value in kwargs)):
-					curtain_event = CurtainEvent(**{**event, "Curtain": self});
-					self._CurtainEvents.append(curtain_event);
-					return curtain_event;
+		if((events := SELECT_CurtainsEvents_for_Curtains_id(self._id))):
+			# If found in DB, create an object and add to the list
+			if((event := exclusive_match([type("Temp", (), event)() for event in events], **kwargs)) is not None):
+				curtain_event = CurtainEvent(**{**event, "Curtain": self});
+				self._CurtainEvents.append(curtain_event);
+				return curtain_event;
 
 		return None;
 
@@ -185,7 +182,7 @@ class Curtain:
 		RETURNS: A list of curtain events within that time range.
 		"""
 		if(not earliest and not latest):
-			return [self._CurtainEvents[event_id] for event_id in self._CurtainEvents];
+			return self._CurtainEvents.copy();
 
 		events = [];
 		for event in self._CurtainEvents:
@@ -206,26 +203,8 @@ class Curtain:
 		CurtainEvents_data = SELECT_CurtainsEvents();
 
 
-	# ——————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————— #
-
-	def __lookup_curtain_info(self: object) -> Union[str, None]:
-		"""
-		SUMMARY: Looks up the curtain from the NetworkLookup endpoint.
-		PARAMS:  Takes the name of the curtain to lookup from NetworkLookup.
-		DETAILS: Queries the NetworkLookup endpoint with the label for the curtain.
-		RETURNS: The IP address string for the curtain.
-		"""
-		response = requests.post(f"http://{self._ip_address}", json={"query type": "status"});
-		response_body: dict = response.json();
-
-		self._id = response_body["id"];
-		self._percentage = response_body["percentage"];
-		self._direction = response_body["direction"];
-		self._moves_discretely = response_body["discrete movement"];
-		self._length = response_body["length"];
-
-
 	# ———————————————————————————————————————————————— EVENT CREATION ———————————————————————————————————————————————— #
+	# —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 	def _new_event(self, percentage: int=0, *, Options_id: int=None, time: object=None) -> int:
 		from System.CurtainEvent import CurtainEvent;
