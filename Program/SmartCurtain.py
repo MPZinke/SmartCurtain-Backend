@@ -35,15 +35,6 @@ class SmartCurtain:
 		self._Updater.start();
 
 
-	def dict(self):
-		return {"_System" : self._System.dict()};
-
-
-	def print(self, tab=0, next_tab=0):
-		print('\t'*tab, "_System : ");
-		self._System.print(tab+next_tab, next_tab);
-
-
 
 def main():
 	smartcurtain = SmartCurtain();

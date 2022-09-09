@@ -99,6 +99,8 @@ class Curtain:
 		if(len(value) == 0):
 			return self._is_activated;
 
+		if(not isinstance(value[0], bool)):
+			raise Exception(f"is_activated must be of type '{bool.__name__}' not '{type(value[0]).__name__}'");
 		self._is_activated = value[0];
 
 
@@ -106,6 +108,8 @@ class Curtain:
 		if(len(value) == 0):
 			return self._length;
 
+		if(not isinstance(value[0], int)):
+			raise Exception(f"length must be of type '{int.__name__}' not '{type(value[0]).__name__}'");
 		self._length = value[0];
 
 
@@ -113,6 +117,8 @@ class Curtain:
 		if(len(value) == 0):
 			return self._moves_discretely;
 
+		if(not isinstance(value[0], bool)):
+			raise Exception(f"moves_discretely must be of type '{bool.__name__}' not '{type(value[0]).__name__}'");
 		self._moves_discretely = value[0];
 
 
@@ -120,6 +126,8 @@ class Curtain:
 		if(len(value) == 0):
 			return self._percentage;
 
+		if(not isinstance(value[0], int)):
+			raise Exception(f"percentage must be of type '{int.__name__}' not '{type(value[0]).__name__}'");
 		self._percentage = value[0];
 
 

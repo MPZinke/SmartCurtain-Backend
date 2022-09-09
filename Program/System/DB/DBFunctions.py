@@ -16,6 +16,7 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta;
 import os;
+# https://stackoverflow.com/a/73626299 pip3 install psycopg2-binary --force-reinstall --no-cache-dir
 import psycopg2;
 import psycopg2.extras;
 from typing import Any, Set, Union;
