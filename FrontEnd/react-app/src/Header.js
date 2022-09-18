@@ -1,32 +1,5 @@
 import React from 'react';
-
-
-
-function CurtainSelect(props)
-{
-	return (
-		<select
-			onChange={props.onChange}
-		>
-			<option value="0" selected disabled hidden></option>
-			{
-				Object.keys(props.curtains).map(
-					(id, index) =>
-					{
-						return (
-							<option
-								key={id}
-								value={id}
-							>
-								{props.curtains[id]}
-							</option>
-						);
-					}
-				)
-			}
-		</select>
-	);
-}
+import CurtainSelect from './Blocks/Selects';
 
 
 class Header extends React.Component
@@ -49,8 +22,9 @@ class Header extends React.Component
 		return (
 			<div>
 				<CurtainSelect
+					curtains={this.smart_curtain.state.curtains}
 					onChange={this.on_curtain_select.bind(this)}
-					curtains={this.smart_curtain.curtains}
+					style={{width:"100%"}}
 				/>
 			</div>
 		);

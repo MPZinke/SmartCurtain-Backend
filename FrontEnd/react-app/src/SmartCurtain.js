@@ -12,43 +12,69 @@ class SmartCurtain extends React.Component
 	constructor(props)
 	{
 		super(props);
-		this.curtains = {1: "Livingroom-Curtain", 2: "Bedroom-Curtain"};
+		this.curtains = null;
 		this.state = {
-			curtain_id: 0,
+			curtains: null,
+			is_loaded: false,
+			selected_curtain: null,
 		};
 	}
 
 
 	select_curtain(id)
 	{
-		this.setState({ curtain_id: id });
-		console.log(id)
+		const curtain = this.state.curtains.find(curtain => {return curtain.id == id;});
+		this.setState({selected_curtain: curtain});
+		console.log("Set curtain", curtain)
+	}
+
+
+	// FROM: https://reactjs.org/docs/faq-ajax.html
+	componentDidMount()
+	{
+		fetch("http://localhost:8080/api/v1.0/curtains/all", {"Access-Control-Allow-Origin": "*"})
+		  .then(response => response.json())
+		  .then(
+			(result) => {
+				this.setState(
+					{
+						curtains: result,
+						select_curtain: result.find(curtain => {return true;}),
+					}
+				);
+				console.log("State", this.state.curtains);
+			},
+			(error) =>
+			{
+				this.setState(
+					{
+						error
+					}
+				);
+			}
+		);
 	}
 
 
 	render()
 	{
-		return (
+		if(this.state.error)
+		{
+			return this.state.error;
+		}
+		else if(this.state.curtains)
+		{
+			return (
 				<Header
 					smart_curtain={this}
 				/>
-			// <div className="App">
-			// 	<header className="App-header">
-			// 		<img src={logo} className="App-logo" alt="logo" />
-			// 		<p>
-			// 			Edit <code>src/App.js</code> and save to reload.
-			// 		</p>
-			// 		<a
-			// 			className="App-link"
-			// 			href="https://reactjs.org"
-			// 			target="_blank"
-			// 			rel="noopener noreferrer"
-			// 		>
-			// 			Learn React
-			// 		</a>
-			// 	</header>
-			// </div>
-		);
+
+			);
+		}
+		else
+		{
+			return <p>Loading...</p>
+		}
 	}
 }
 

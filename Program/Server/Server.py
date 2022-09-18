@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 
 
 from flask import Flask;
+from flask_cors import CORS;
 from typing import List;
 
 
@@ -28,6 +29,10 @@ class Server(ZWidget):
 		ZWidget.__init__(self, "Server", system);
 
 		self._app = Flask(__name__);
+
+		self._cors = CORS(self._app);
+		self._app.config['CORS_HEADERS'] = 'Content-Type';
+
 		self.add(
 		  [
 		  	Route("/"),
@@ -75,4 +80,4 @@ class Server(ZWidget):
 		SUMMARY: Adds routes to server & class, and starts the server instance.
 		DETAILS: Sets routes using hardcoded routes, functions & HTTP request methods. Calls the Flask::run method.
 		"""
-		self._app.run(host="0.0.0.0", port=80);
+		self._app.run(host="0.0.0.0", port=8080);
