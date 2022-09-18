@@ -1,8 +1,5 @@
 import React from 'react';
 
-// import './Static/Style/Bootstrap/bootstrap.min.css';
-// import './Static/Style/SmartCurtain.css';
-
 
 import Header from './Header/Header';
 import Body from './Body/Body';
@@ -25,8 +22,16 @@ class SmartCurtain extends React.Component
 	{
 		const curtain = this.state.curtains.find(curtain => {return curtain.id == id;});
 		this.setState({selected_curtain: curtain});
-		console.log("Set curtain", curtain)
 	}
+
+
+	selected_curtain()
+	{
+		return this.state.selected_curtain;
+	}
+
+
+	// update_curtain_value()
 
 
 	// FROM: https://reactjs.org/docs/faq-ajax.html
@@ -39,10 +44,9 @@ class SmartCurtain extends React.Component
 				this.setState(
 					{
 						curtains: result,
-						select_curtain: result.find(curtain => {return true;}),
+						selected_curtain: result.find(curtain => {return true;}),
 					}
 				);
-				console.log("State", this.state.curtains);
 			},
 			(error) =>
 			{

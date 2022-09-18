@@ -6,7 +6,7 @@ function StatusTD(props)
 	{
 		return (
 			<td
-				style={{width: "100%", backgroundColor: "#FFFFAA"}}
+				style={{width: "100%"}}
 			/>
 		);
 
@@ -21,6 +21,7 @@ function StatusTD(props)
 	}
 	else
 	{
+		console.log("Percentage", props.percentage)
 		return [
 			<td
 				key={1}

@@ -110,11 +110,11 @@ class System(ZWidget):
 		try:
 			url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/services/label/SmartCurtain";
 			response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
-			services = [{**service, **service["device"]} for service in response.json()];
 
-			for service in [temp({"address": s["address"], "port": s["port"], "name": s["label"]}) for s in services]:
-				if(self.Curtain(ip_address=service.address, port=service.port) is None):
-					self._Curtains.append(Curtain(self, service.name, service.address, service.port));
+			for service in [{**service, **service["device"]} for service in response.json()]:
+				if(self.Curtain(ip_address=service["address"], port=service["port"]) is None):
+					self._Curtains.append(Curtain(self, service["auth_value"], service["label"], service["address"],
+					  service["port"]));
 
 			self._refresh_failures = response.status_code != 200;
 

@@ -29,8 +29,9 @@ from System.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEven
 
 
 class Curtain:
-	def __init__(self, System: object, name: str, IP: str, port: int):
+	def __init__(self, System: object, auth_value: str, name: str, IP: str, port: int):
 		self._System = System;
+		self._auth_value: str = auth_value;
 		self._ip_address: str = IP;
 		self._port: int = port;
 		self._name: str = name;
@@ -89,6 +90,10 @@ class Curtain:
 	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
 	def id(self) -> int:
 		return self._id;
+
+
+	def auth_header(self) -> dict:
+		return {"Authorization": f"Bearer {self._auth_value}"}
 
 
 	def ip_address(self) -> str:

@@ -123,7 +123,8 @@ class CurtainEvent(DBClass):
 		print("Post data:", end="");  #TESTING
 		print(post_dict);  #TESTING
 		try:
-			response = post(url=f"http://{curtain.service()}", json=post_dict, timeout=curtain.buffer_time()/10+1);
+			response = post(url=f"http://{curtain.service()}", headers=curtain.auth_header(), json=post_dict,
+			  timeout=curtain.buffer_time()/10+1);
 			if(int(response.status_code / 100) != 2):
 				raise Exception(f"Received {response.status_code} status code for event {self._id}");
 			if("error" in response.json()):
