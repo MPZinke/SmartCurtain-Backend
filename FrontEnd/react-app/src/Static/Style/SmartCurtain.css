@@ -1,3 +1,18 @@
+html, body, div, input
+{
+	background-color: #282c34;
+}
+
+
+.curtain_select
+{
+	background-color: #282c34;
+	border-color: #000000;
+	color: #DDDDCC;
+	text-align: center;
+}
+
+
 .App
 {
 	text-align: center;

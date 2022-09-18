@@ -1,10 +1,11 @@
 import React from 'react';
 
-import './App.css';
+// import './Static/Style/Bootstrap/bootstrap.min.css';
+// import './Static/Style/SmartCurtain.css';
 
-import Header from './Header';
 
-
+import Header from './Header/Header';
+import Body from './Body/Body';
 
 
 class SmartCurtain extends React.Component
@@ -15,7 +16,6 @@ class SmartCurtain extends React.Component
 		this.curtains = null;
 		this.state = {
 			curtains: null,
-			is_loaded: false,
 			selected_curtain: null,
 		};
 	}
@@ -32,7 +32,7 @@ class SmartCurtain extends React.Component
 	// FROM: https://reactjs.org/docs/faq-ajax.html
 	componentDidMount()
 	{
-		fetch("http://localhost:8080/api/v1.0/curtains/all", {"Access-Control-Allow-Origin": "*"})
+		fetch("http://localhost:8080/api/v1.0/curtains/all")
 		  .then(response => response.json())
 		  .then(
 			(result) => {
@@ -46,6 +46,8 @@ class SmartCurtain extends React.Component
 			},
 			(error) =>
 			{
+				console.log("error")
+				console.log(error)
 				this.setState(
 					{
 						error
@@ -64,12 +66,14 @@ class SmartCurtain extends React.Component
 		}
 		else if(this.state.curtains)
 		{
-			return (
+			return [
 				<Header
 					smart_curtain={this}
+				/>,
+				<Body
+					smart_curtain={this}
 				/>
-
-			);
+			];
 		}
 		else
 		{

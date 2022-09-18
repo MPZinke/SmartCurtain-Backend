@@ -18,6 +18,7 @@ function CurtainSelect(props)
 	return (
 		<select
 			onChange={props.onChange}
+			className={"form-control curtain_select"}
 			style={props.style}
 		>
 			{props.default_option}

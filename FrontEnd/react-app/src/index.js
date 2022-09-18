@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+
+import './Static/Style/Bootstrap/bootstrap.min.css';
+import './Static/Style/SmartCurtain.css';
 import SmartCurtain from './SmartCurtain';
 
 

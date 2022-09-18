@@ -1,5 +1,6 @@
 import React from 'react';
-import CurtainSelect from './Blocks/Selects';
+// import CurtainSelect from '../Blocks/Selects';
+// import Status from './Status';
 
 
 class Header extends React.Component
@@ -21,11 +22,19 @@ class Header extends React.Component
 	{
 		return (
 			<div>
-				<CurtainSelect
+				<button
+					className={"btn btn-info"}
+				>
+					Open
+				</button>
+				{/*<CurtainSelect
 					curtains={this.smart_curtain.state.curtains}
 					onChange={this.on_curtain_select.bind(this)}
-					style={{width:"100%"}}
+					style={{width:"100%", height: "64px", fontSize: "32px"}}
 				/>
+				<Status
+					percentage={20}
+				/>*/}
 			</div>
 		);
 	}
