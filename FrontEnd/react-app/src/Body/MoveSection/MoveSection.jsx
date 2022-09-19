@@ -13,21 +13,44 @@ class MoveSection extends React.Component
 		super(props);
 		this.state = {
 			smart_curtain: props.smart_curtain,
-			moves_discretely: props.moves_discretely,
 		};
 	}
 
 	on_basic_click()
 	{
-		const percentage = 100 * +(this.state.smart_curtain.state.selected_curtain.percentage == 0);
-		this.state.smart_curtain.state.selected_curtain.percentage = percentage;
-		this.state.smart_curtain.setState({selected_curtain: this.state.smart_curtain.state.selected_curtain});
+		const percentage = 100 * +(this.smart_curtain().selected_curtain().percentage == 0);
+		const request_options = {
+			method: "POST",
+			headers: { 'Content-Type': 'application/json' }, 
+			body: JSON.stringify({percentage: percentage})
+		};
+
+		const curtain_id = this.smart_curtain().selected_curtain().id;
+		fetch(`http://localhost:8080/api/v1.0/curtains/${curtain_id}/events/new`, request_options)
+		  .then(response => response.json())
+		  .then((result) =>
+			{
+				this.smart_curtain().selected_curtain().is_activated = true;
+				this.smart_curtain().selected_curtain()
+				this.smart_curtain().setState({selected_curtain: this.smart_curtain().selected_curtain()});
+			},
+			(error) =>
+			{
+				console.log("error")
+				console.log(error)
+				this.setState(
+					{
+						error
+					}
+				);
+			}
+		  );
 	}
 
 
 	on_discrete_click()
 	{
-		console.log("Discrete Click");
+		console.log("TODO");
 	}
 
 
@@ -39,21 +62,26 @@ class MoveSection extends React.Component
 
 	render()
 	{
-		if(this.state.moves_discretely)
+		if(this.smart_curtain().selected_curtain().moves_discretely)
 		{
 			return (<p>TODO</p>);
 		}
 		else
 		{
 			return [
-				<p
-					style={{color: "#DDDDCC"}}
+				<div
+					className={"d-flex justify-content-center"}
+					style={{width: "100%"}}
 				>
-					{this.smart_curtain().selected_curtain().percentage}
-				</p>,
+					<p
+						style={{color: "#DDDDCC"}}
+					>
+						{this.smart_curtain().selected_curtain().percentage}
+					</p>
+				</div>,
 				<BasicMoveButton
 					onClick={this.on_basic_click.bind(this)}
-					percentage={this.state.smart_curtain.state.selected_curtain.percentage}
+					percentage={this.smart_curtain().selected_curtain().percentage}
 				/>
 			];
 		}

@@ -37,6 +37,7 @@ class Header extends React.Component
 					}
 				/>
 				<Status
+					is_activated={this.smart_curtain().selected_curtain().is_activated}
 					percentage={this.smart_curtain().selected_curtain().percentage}
 				/>
 			</div>

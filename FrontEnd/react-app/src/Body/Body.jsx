@@ -25,8 +25,7 @@ class Body extends React.Component
 	{
 		return (
 			<MoveSection
-				moves_discretely={this.state.smart_curtain.moves_discretely}
-				smart_curtain={this.state.smart_curtain}
+				smart_curtain={this.smart_curtain()}
 			/>
 		);
 	}

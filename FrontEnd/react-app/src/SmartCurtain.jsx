@@ -10,7 +10,6 @@ class SmartCurtain extends React.Component
 	constructor(props)
 	{
 		super(props);
-		this.curtains = null;
 		this.state = {
 			curtains: null,
 			selected_curtain: null,
@@ -31,34 +30,49 @@ class SmartCurtain extends React.Component
 	}
 
 
-	// update_curtain_value()
-
-
 	// FROM: https://reactjs.org/docs/faq-ajax.html
 	componentDidMount()
 	{
-		fetch("http://localhost:8080/api/v1.0/curtains/all")
-		  .then(response => response.json())
-		  .then(
-			(result) => {
-				this.setState(
+		this.iterval = setInterval(() =>
+		  {
+			fetch("http://localhost:8080/api/v1.0/curtains/all")
+			  .then(response => response.json())
+			  .then(
+				(result) => {
+					this.setState({curtains: result});
+					const selected_curtain = this.selected_curtain();
+					// If curtain is not selected
+					if(!selected_curtain)
 					{
-						curtains: result,
-						selected_curtain: result.find(curtain => {return true;}),
+						this.setState({selected_curtain: result.find(curtain => {return true;})});
 					}
-				);
-			},
-			(error) =>
-			{
-				console.log("error")
-				console.log(error)
-				this.setState(
+					// If the selected curtain has changed
+					else if(selected_curtain != result.find(curtain => {return curtain.id == selected_curtain.id;}))
 					{
-						error
+						const updated_curtain = result.find(curtain => {return curtain.id == selected_curtain.id;});
+						this.setState({selected_curtain: updated_curtain});
 					}
-				);
-			}
+				},
+				(error) =>
+				{
+					console.log("error")
+					console.log(error)
+					this.setState(
+						{
+							error
+						}
+					);
+				}
+			)
+		  },
+		  1000
 		);
+	}
+
+
+	componentWillUnmount()
+	{
+		clearInterval(this.interval);
 	}
 
 

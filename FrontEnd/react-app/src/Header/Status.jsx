@@ -2,6 +2,8 @@
 
 function StatusTD(props)
 {
+	const background_color = props.is_activated ? "#11FF11": "#FFFFAA";
+
 	if(props.percentage == 0)
 	{
 		return (
@@ -15,7 +17,7 @@ function StatusTD(props)
 	{
 		return (
 			<td
-				style={{width: "100%", backgroundColor: "#FFFFAA"}}
+				style={{width: "100%", backgroundColor: background_color}}
 			/>
 		);
 	}
@@ -29,7 +31,7 @@ function StatusTD(props)
 			/>,
 			<td
 				key={2}
-				style={{width: `${props.percentage}%`, backgroundColor: "#FFFFAA"}}
+				style={{width: `${props.percentage}%`, backgroundColor: background_color}}
 			/>,
 			<td
 				key={3}
@@ -50,6 +52,7 @@ function Status(props)
 			<tbody>
 				<tr>
 					<StatusTD
+						is_activated={props.is_activated}
 						percentage={props.percentage}
 					/>
 				</tr>
