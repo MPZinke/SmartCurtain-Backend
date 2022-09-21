@@ -25,6 +25,7 @@ class Body extends React.Component
 	{
 		return (
 			<MoveSection
+				key="move_section"
 				smart_curtain={this.smart_curtain()}
 			/>
 		);

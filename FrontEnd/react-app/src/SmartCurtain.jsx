@@ -17,6 +17,23 @@ class SmartCurtain extends React.Component
 	}
 
 
+	any_curtain_has_changed(curtains)
+	{
+		if(!this.state.curtains || curtains.length != this.state.curtains.length)
+		{
+			return true;
+		}
+
+		return !curtains.every(
+			(curtain) =>
+			{
+				let state_curtain = this.state.curtains.find(state_curtain => {return state_curtain.id == curtain.id;});
+				return curtain == state_curtain;
+			}
+		);
+	}
+
+
 	select_curtain(id)
 	{
 		const curtain = this.state.curtains.find(curtain => {return curtain.id == id;});
@@ -33,14 +50,25 @@ class SmartCurtain extends React.Component
 	// FROM: https://reactjs.org/docs/faq-ajax.html
 	componentDidMount()
 	{
-		this.iterval = setInterval(() =>
+		this.iterval = setInterval(() =>  // FROM: https://stackoverflow.com/a/66044632
 		  {
-			fetch("http://localhost:8080/api/v1.0/curtains/all")
+		  	const header = {
+		  		headers: new Headers({
+		  			'method': "GET",
+		  			'Authorization': `Bearer ${process.env.REACT_APP_BACKEND_API_KEY}`
+		  		})
+			};
+
+			fetch("http://localhost:8080/api/v1.0/curtains/all", header)
 			  .then(response => response.json())
 			  .then(
 				(result) => {
-					this.setState({curtains: result});
-					const selected_curtain = this.selected_curtain();
+					if(this.any_curtain_has_changed(result))
+					{
+						this.setState({curtains: result});
+					}
+
+					let selected_curtain = this.selected_curtain();
 					// If curtain is not selected
 					if(!selected_curtain)
 					{
@@ -49,8 +77,8 @@ class SmartCurtain extends React.Component
 					// If the selected curtain has changed
 					else if(selected_curtain != result.find(curtain => {return curtain.id == selected_curtain.id;}))
 					{
-						const updated_curtain = result.find(curtain => {return curtain.id == selected_curtain.id;});
-						this.setState({selected_curtain: updated_curtain});
+						selected_curtain = result.find(curtain => {return curtain.id == selected_curtain.id;});
+						this.setState({selected_curtain: selected_curtain});
 					}
 				},
 				(error) =>
@@ -87,9 +115,11 @@ class SmartCurtain extends React.Component
 			return [
 				<Header
 					smart_curtain={this}
+					key="header"
 				/>,
 				<Body
 					smart_curtain={this}
+					key="body"
 				/>
 			];
 		}

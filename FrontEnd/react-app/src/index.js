@@ -9,7 +9,7 @@ import SmartCurtain from './SmartCurtain';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 	<React.StrictMode>
-		<SmartCurtain/>
+		<SmartCurtain key="main"/>
 	</React.StrictMode>
 );
 

@@ -5,6 +5,7 @@ function BasicMoveButton(props)
 	const button_text = props.percentage == 0 ? "Open" : "Close";
 	return (
 		<div
+			key="basic_div"
 			className={"d-flex justify-content-center"}
 			style={{width: "100%"}}
 		>

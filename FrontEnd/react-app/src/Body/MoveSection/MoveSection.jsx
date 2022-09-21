@@ -70,16 +70,19 @@ class MoveSection extends React.Component
 		{
 			return [
 				<div
+					key="move_section-div"
 					className={"d-flex justify-content-center"}
 					style={{width: "100%"}}
 				>
 					<p
+						key="move_section-p"
 						style={{color: "#DDDDCC"}}
 					>
 						{this.smart_curtain().selected_curtain().percentage}
 					</p>
 				</div>,
 				<BasicMoveButton
+					key="basicmovebutton"
 					onClick={this.on_basic_click.bind(this)}
 					percentage={this.smart_curtain().selected_curtain().percentage}
 				/>
