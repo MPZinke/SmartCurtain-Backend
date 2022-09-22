@@ -20,6 +20,7 @@ import os;
 import re;
 import types;
 from typing import List;
+from werkzeug.exceptions import Forbidden, Unauthorized
 
 
 from Server import Root;
@@ -29,13 +30,20 @@ from System import System;
 Module = types.ModuleType;  # typedef types.ModuleType
 
 
+assert(bool(os.getenv("SMARTCURTAIN_API_TOKEN")) is not False), "'SMARTCURTAIN_API_TOKEN' cannot evaluate to false"
+
+
 class Route:
 	PARAM_REGEX = r"<(int|string):([_a-zA-Z][_a-zA-Z0-9]*)>"
 	PARAM_NAME_REGEX = r"<(?:int|string):([_a-zA-Z][_a-zA-Z0-9]*)>";
 
-	def __init__(self, endpoint: str, *methods: List[str]):
+	def __init__(self, server: Flask, system: System, endpoint: str, *methods: List[str], secure: bool=True):
+		self._System: System = system;
+		self._server: Flask = server;
+
 		self._endpoint: str = endpoint;
 		self._methods: List[str] = ["GET"] if(not methods) else methods;
+		self._is_secure = secure;
 		self._callbacks = {method: self.callback_function(method) for method in self._methods};
 
 
@@ -44,14 +52,40 @@ class Route:
 		return f"{self._endpoint} {callback_str}";
 
 
-	# Instead of @app.route decorator, adds a route to the server.
-	# https://stackoverflow.com/a/40466535
-	def add_to_server(self, server: Flask, system: System) -> None:
+	def add_to_server(self) -> None:
+		"""
+		Instead of @app.route decorator, adds a route to the server.
+		https://stackoverflow.com/a/40466535
+		"""
 		def endpoint_function(*args: list, **kwargs: dict):  # system instead of self
-			return self._callbacks[request.method](system, *args, **kwargs);
+			if(self._is_secure):
+				if("Authorization" not in request.headers):
+					raise Unauthorized();
 
-		server.add_url_rule(self._endpoint, self._endpoint, endpoint_function, methods=self._methods);
-		server.add_url_rule(self._endpoint+"/", self._endpoint+"/", endpoint_function, methods=self._methods);
+				if(self.unauthorized()):
+					raise Forbidden();
+
+				return self._callbacks[request.method](self._System, *args, **kwargs);
+
+		self._server.add_url_rule(self._endpoint, self._endpoint, endpoint_function, methods=self._methods);
+		if(len(self._endpoint) > 1 and self._endpoint[-1] == '/'):
+			self._server.add_url_rule(self._endpoint+"/", self._endpoint+"/", endpoint_function, methods=self._methods);
+
+
+	def unauthorized(self) -> bool:
+		AUTHORIZED, UNAUTHORIZED = False, True;
+
+		token: str = os.getenv("SMARTCURTAIN_API_TOKEN");
+		if((auth_header := request.headers.get("Authorization")) == f"Bearer {token}"):
+			return AUTHORIZED;
+
+		if((curtain := self._System.Curtain(ip_address=request.remote_addr)) is None):
+			return UNAUTHORIZED;
+
+		if(curtain.auth_header()["Authorization"] == auth_header):
+			return AUTHORIZED;
+
+		return UNAUTHORIZED;
 
 
 	def callback_function(self, method: str) -> str:
