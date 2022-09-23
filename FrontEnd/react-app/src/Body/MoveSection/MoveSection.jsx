@@ -21,7 +21,10 @@ class MoveSection extends React.Component
 		const percentage = 100 * +(this.smart_curtain().selected_curtain().percentage == 0);
 		const request_options = {
 			method: "POST",
-			headers: { 'Content-Type': 'application/json' }, 
+			headers: {
+	  			"Authorization": `Bearer ${process.env.REACT_APP_BACKEND_API_KEY}`,
+				'Content-Type': 'application/json',
+			}, 
 			body: JSON.stringify({percentage: percentage})
 		};
 

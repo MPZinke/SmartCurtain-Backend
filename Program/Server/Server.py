@@ -67,11 +67,6 @@ class Server(ZWidget):
 		self.route("/api/v1.0/options/<string:option_name>");
 
 
-	def add(self, routes: List[Route]) -> None:
-		for route in routes:
-			route.add_to_server(self._app, self._System);
-
-
 	def debug(self, flag=True) -> None:
 		self._app.debug = flag;
 
