@@ -22,7 +22,6 @@ import warnings;
 from warnings import warn as Warn;
 
 from Global import *;
-from Manager.ManagerGlobal import *;
 from SmartCurtain import SmartCurtain;
 from Utility import time_to_midnight, warning_message;
 from Utility import Logger;
@@ -38,31 +37,46 @@ class SunsetClose(ZWidget):
 		warnings.formatwarning = warning_message;
 
 
-	def sunset_time(self):
+	def sunset_time(self, city: str) -> datetime:
+		"""
+		SUMMARY: Determines the time of sunset.
+		DETAILS: Uses the astral library to determine the sunset based on the nearest major city.
+		RETURNS: The datetime of the sunset.
+		"""
 		from astral import Astral;
 
 		astr_object = Astral();
 		astr_object.solar_depression = "civil";
-		return astr_object[CITY].sun(local=True)["sunset"];
+		return astr_object[city].sun(local=True)["sunset"];
 
 
 	def sleep_time(self) -> int:
+		"""
+		SUMMARY: Determines the time in seconds until this object's next run.
+		"""
 		return time_to_midnight();
 
 
 	def _loop_process(self):
-		sunset = self.sunset_time().replace(tzinfo=None);
-		if(sunset < datetime.now()):
-			Warn("Sunset has already passed for today. Skipping today");
-			return;
-
+		"""
+		SUMMARY: Creates an event for closing curtains at sunset.
+		DETAILS: Determines sunset and removes the timezone info. Iterates through the curtains. If a curtain has
+		         sunset close option enabled, an event is created if no existing event is within the range.
+		"""
 		for curtain in self._SmartCurtain.Curtains():
 			try:
 				curtain_option = curtain.CurtainOption(Options_id=self._option_id);
 				if(not curtain_option.is_on()):
 					continue;
 
-				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), type(None))) else curtain.buffer_time();
+				# Determine sunset
+				city: str = curtain_option.data().get("city", "");
+				if((sunset := self.sunset_time(city).replace(tzinfo=None)) < datetime.now()):
+					Warn("Sunset has already passed for today. Skipping today");
+					return;
+
+				# Check if event exists in range
+				curtain_buffer_time = 0 if(isinstance(curtain.buffer_time(), NONETYPE)) else curtain.buffer_time();
 				buffer_td = timedelta(seconds=curtain_buffer_time / 10 / 2);  # .5: buffer both sides; .10: precision
 				if(curtain.CurtainEvents_for_range(earliest=sunset-buffer_td, latest=sunset+buffer_td)):
 					Warn("Event already set for sunset time.");

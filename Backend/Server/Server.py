@@ -38,10 +38,10 @@ class Server(ZWidget):
 
 		self._routes: List[Route] = [];
 
-		self.route("/");
-		self.route("/api");
-		self.route("/api/v1.0");
-		self.route("/api/v1.0/curtains");
+		self.route("/", secure=False);
+		self.route("/api", secure=False);
+		self.route("/api/v1.0", secure=False);
+		self.route("/api/v1.0/curtains", secure=False);
 		self.route("/api/v1.0/curtains/all");
 
 		self.route("/api/v1.0/curtains/<int:curtain_id>", "GET", "PATCH");
@@ -73,6 +73,8 @@ class Server(ZWidget):
 
 	def handle_error(self, error):
 		"""
+		SUMMARY: Handles the return response for any server error that occurs during a request.
+		PARAMS:  Takes the error that has occured.
 		FROM: https://readthedocs.org/projects/pallet/downloads/pdf/latest/
 		 AND: https://stackoverflow.com/a/29332131
 		"""
@@ -96,7 +98,11 @@ class Server(ZWidget):
 		self._app.run(host="0.0.0.0", port=8080);
 
 
-	def route(self, endpoint: str, *methods: list) -> None:
-		route = Route(self._app, self._SmartCurtain, endpoint, *methods);
+	def route(self, endpoint: str, *methods: list, secure: bool=True) -> None:
+		"""
+		SUGAR:  Makes a cleaner version to add a Route to the Flask server.
+		PARAMS: Takes the endpoint to route, the request methods to accept, whether the route requires authorization.
+		"""
+		route = Route(self._app, self._SmartCurtain, endpoint, *methods, secure=secure);
 		route.add_to_server();
 		self._routes.append(route);

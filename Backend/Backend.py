@@ -8,7 +8,7 @@ __author__ = "MPZinke"
 #   on 2020.12.29                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION: SmartCurtain class is the primary operational part of the Hub. Creates & controls submodules of Hub   #
-#    (Manager, Server, & System). This script is invoded by the SmartCurtain Systemd Service.                          #
+#    (Manager, Server, & System). This script is invoked by the SmartCurtain Systemd Service.                          #
 #   BUGS:                                                                                                              #
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
@@ -22,6 +22,9 @@ from Updater.Updater import Updater;
 
 
 class Backend:
+	"""
+	The main object that holds the various parts of the backend.
+	"""
 	def __init__(self):
 		self._SmartCurtain = SmartCurtain();
 		self._Manager = Manager(self._SmartCurtain);

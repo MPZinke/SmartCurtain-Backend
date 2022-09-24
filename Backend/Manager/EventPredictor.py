@@ -44,8 +44,6 @@ from warnings import warn as Warn;
 
 
 from Global import *;
-from Manager.ManagerGlobal import *;
-from Manager.ManagerGlobal import datetime_to_utc;
 from SmartCurtain import SmartCurtain;
 from Utility import midnight, warning_message;
 from Utility import Logger;

@@ -28,16 +28,16 @@ FROM
 	('Livingroom-Curtain', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
 	('Livingroom-Curtain', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
 	('Livingroom-Curtain', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
-	('Livingroom-Curtain', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
-	('Livingroom-Curtain', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
+	('Livingroom-Curtain', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', '{"city": "DALLAS"}'),  -- Sunrise Open
+	('Livingroom-Curtain', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', '{"city": "DALLAS"}'),  -- Sunset Close
 	('Livingroom-Curtain', 'Temperature Setting', FALSE, NULL, ''),  -- Temperature Setting
 	('Bedroom-Curtain', 'Adafruit Feed', TRUE, NULL, '{"bedroom.curtain-close": 0, "bedroom.curtain-open": 100}'),  -- Adafruit Feed
 	('Bedroom-Curtain', 'Auto Calibrate', TRUE, NULL, ''),  -- Auto Calibrate
 	('Bedroom-Curtain', 'Auto Correct', TRUE, NULL, ''),  -- Auto Correct
 	('Bedroom-Curtain', 'Event Prediction', TRUE, 'Value is for clustering leniency in hours', '1.0'),  -- Event Prediction
 	('Bedroom-Curtain', 'Google Calendar Curtain Events', FALSE, NULL, ''),  -- Google Calendar
-	('Bedroom-Curtain', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', ''),  -- Sunrise Open
-	('Bedroom-Curtain', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', ''),  -- Sunset Close
+	('Bedroom-Curtain', 'Sunrise Open', TRUE, 'Value is for time before/after sunrise that curtain opens', '{"city": "DALLAS"}'),  -- Sunrise Open
+	('Bedroom-Curtain', 'Sunset Close', TRUE, 'Value is for time before/after sunset that curtain closes', '{"city": "DALLAS"}'),  -- Sunset Close
 	('Bedroom-Curtain', 'Temperature Setting', FALSE, NULL, '')  -- Temperature Setting
 ) AS "Temp"("Curtains.name", "Options.name", "is_on", "notes", "data")
 JOIN "Options" ON "Temp"."Options.name" = "Options"."name"

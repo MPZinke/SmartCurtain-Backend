@@ -36,7 +36,8 @@ class Curtain:
 		self._port: int = port;
 		self._name: str = name;
 
-		response = requests.post(f"http://{self.service()}", json={"query type": "status"});
+		# Get curtain info from curtain
+		response = requests.post(f"http://{self.service()}", json={"query type": "status"}, headers=self.auth_header());
 		response_body: dict = response.json();
 
 		self._id: int = response_body["id"];
@@ -93,7 +94,7 @@ class Curtain:
 
 
 	def auth_header(self) -> dict:
-		return {"Authorization": f"Bearer {self._auth_value}"}
+		return {"Authorization": f"{self._auth_value}"}
 
 
 	def ip_address(self) -> str:

@@ -22,7 +22,6 @@ import warnings;
 
 from Global import *;
 from SmartCurtain import SmartCurtain;
-from Manager.ManagerGlobal import *;
 from Utility import try_convert, warning_message;
 from Utility import Logger;
 from Utility.ZThread import ZWidget;
@@ -39,9 +38,12 @@ class AdafruitFeed(ZWidget):
 
 
 	def _curtain_for_feed_id(self, feed_id):
+		"""
+		SUMMARY: Determines the curtain based on the feed_id.
+		"""
 		curtains = self._SmartCurtain.Curtains();
 		for curtain in curtains:
-			if(curtain.CurtainOptionKeyValue(key=feed_id)):
+			if(feed_id in curtain.CurtainOptions(Options_id=self._option_id).data()):
 				return curtain;
 
 		return None;
