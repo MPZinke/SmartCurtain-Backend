@@ -24,13 +24,13 @@ class Manager(ZWidget):
 	def __init__(self, smart_curtain: SmartCurtain):
 		ZWidget.__init__(self, "Manager", smart_curtain, 60);
 
-		self._AdafruitFeed = AdafruitFeed(self._SmartCurtain);
+		# self._AdafruitFeed = AdafruitFeed(self._SmartCurtain);
 		# self._EventPredictor = EventPredictor(self._SmartCurtain);
 		self._SunriseOpen = SunriseOpen(self._SmartCurtain);
 		self._SunsetClose = SunsetClose(self._SmartCurtain);
 
 		self._widget_list =	[
-								self._AdafruitFeed,
+								# self._AdafruitFeed,
 								# self._EventPredictor,
 								self._SunriseOpen,
 								self._SunsetClose
