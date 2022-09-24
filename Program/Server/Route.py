@@ -76,16 +76,13 @@ class Route:
 		AUTHORIZED, UNAUTHORIZED = False, True;
 
 		token: str = os.getenv("SMARTCURTAIN_API_TOKEN");
-		if((auth_header := request.headers.get("Authorization")) == f"Bearer {token}"):
+		if(request.headers.get("Authorization") == f"Bearer {token}"):
 			return AUTHORIZED;
 
-		if((curtain := self._System.Curtain(ip_address=request.remote_addr)) is None):
+		if(self._System.Curtain(ip_address=request.remote_addr) is None):
 			return UNAUTHORIZED;
 
-		if(curtain.auth_header()["Authorization"] == auth_header):
-			return AUTHORIZED;
-
-		return UNAUTHORIZED;
+		return AUTHORIZED;
 
 
 	def callback_function(self, method: str) -> str:
