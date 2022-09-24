@@ -5,7 +5,7 @@ After=mariadb.service
 [Service]
 Environment=ADAFRUIT_IO_USERNAME=<POPULATE>
 Environment=ADAFRUIT_IO_KEY=<POPULATE>
-ExecStart=sudo -E /usr/bin/python3 /usr/local/SmartCurtain/Hub/Program/SmartCurtain.py
+ExecStart=sudo -E /usr/bin/python3 /usr/local/SmartCurtain/Hub/Backend/Backend.py
 Restart=always
 StandardOutput=syslog
 StandardError=syslog
