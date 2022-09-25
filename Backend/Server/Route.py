@@ -30,7 +30,8 @@ from SmartCurtain import SmartCurtain;
 Module = types.ModuleType;  # typedef types.ModuleType
 
 
-assert(bool(os.getenv("SMARTCURTAIN_API_TOKEN")) is not False), "'SMARTCURTAIN_API_TOKEN' cannot evaluate to false"
+assert(bool(os.getenv("SMARTCURTAIN_BACKEND_API_KEY")) is not False), \
+  "'SMARTCURTAIN_BACKEND_API_KEY' cannot evaluate to false"
 
 
 class Route:
@@ -89,7 +90,7 @@ class Route:
 		"""
 		AUTHORIZED, UNAUTHORIZED = False, True;
 
-		token: str = os.getenv("SMARTCURTAIN_API_TOKEN");
+		token: str = os.getenv("SMARTCURTAIN_BACKEND_API_KEY");
 		if(request.headers.get("Authorization") == f"Bearer {token}"):
 			return AUTHORIZED;
 

@@ -22,7 +22,7 @@ class MoveSection extends React.Component
 		const request_options = {
 			method: "POST",
 			headers: {
-	  			"Authorization": `Bearer ${process.env.REACT_APP_BACKEND_API_KEY}`,
+	  			"Authorization": `Bearer ${process.env.REACT_APP_SMARTCURTAIN_BACKEND_API_KEY}`,
 				'Content-Type': 'application/json',
 			}, 
 			body: JSON.stringify({percentage: percentage})

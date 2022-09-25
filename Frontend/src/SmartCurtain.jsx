@@ -65,7 +65,7 @@ class SmartCurtain extends React.Component
 		const header = {
   			method: "GET",
 	  		headers: new Headers({
-	  			"Authorization": `Bearer ${process.env.REACT_APP_BACKEND_API_KEY}`
+	  			"Authorization": `Bearer ${process.env.REACT_APP_SMARTCURTAIN_BACKEND_API_KEY}`
 	  		})
 		};
 
@@ -102,16 +102,29 @@ class SmartCurtain extends React.Component
 	{
 		if(this.state.curtains)
 		{
-			return (
-				<div>
-					<Header
-						smart_curtain={this}
-					/>
-					<Body
-						smart_curtain={this}
-					/>
-				</div>
-			);
+			if(this.state.curtains.length)
+			{
+				return (
+					<div>
+						<Header
+							smart_curtain={this}
+						/>
+						<Body
+							smart_curtain={this}
+						/>
+					</div>
+				);
+			}
+			else
+			{
+				return (
+					<p
+						style={{color: "white"}}
+					>
+						No curtains loaded
+					</p>
+				);
+			}
 		}
 		else
 		{
