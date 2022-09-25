@@ -18,7 +18,6 @@ __author__ = "MPZinke"
 from Manager import Manager;
 from Server import Server;
 from SmartCurtain import SmartCurtain;
-from Updater.Updater import Updater;
 
 
 class Backend:
@@ -29,14 +28,12 @@ class Backend:
 		self._SmartCurtain = SmartCurtain();
 		self._Manager = Manager(self._SmartCurtain);
 		self._Server = Server(self._SmartCurtain);
-		# self._Updater = Updater();
 
 
 	def start(self):
 		# self._Manager.start();
 		self._Server.start();
 		self._SmartCurtain.start();
-		# self._Updater.start();
 
 
 
