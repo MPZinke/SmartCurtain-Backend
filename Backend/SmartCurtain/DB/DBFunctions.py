@@ -23,6 +23,7 @@ from typing import Any, Set, Union;
 
 
 DB_USER: str = os.getenv("SMARTCURTAIN_DB_USER");
+DB_HOST: str = os.getenv("SMARTCURTAIN_DB_HOST");
 DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD");
 assert(bool(DB_USER) is True), "'SMARTCURTAIN_DB_USER' cannot have a value that evaluates to False";
 
@@ -44,7 +45,7 @@ def connection_wrapper(function: callable) -> callable:
 		RETURNS: Value(s) if values.
 		THROWS:  Whatever exceptions occur during function call.
 		"""
-		connection_string = f"host=localhost dbname=SmartCurtain user={DB_USER} password={DB_PASSWORD}";
+		connection_string = f"host={DB_HOST} dbname=SmartCurtain user={DB_USER} password={DB_PASSWORD}";
 		connection = psycopg2.connect(connection_string);
 		connection.autocommit = True;  # Automatically commit changes to DB
 		cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor);

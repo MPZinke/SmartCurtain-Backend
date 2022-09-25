@@ -83,7 +83,7 @@ class SunriseOpen(ZWidget):
 					Warn("Event already set for sunrise time.");
 					continue;  # don't duplicate sunrise
 
-				percentage = curtain_option.data() if curtain_option.data() else 100;
+				percentage = curtain_option.data().get("percentage", 100) if curtain_option.data() else 100;
 				curtain.open(percentage, Options_id=self._option_id, time=sunrise);
 
 			except Exception as error:

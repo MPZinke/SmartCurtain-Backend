@@ -1,40 +1,11 @@
 
 
-all:
-	# Error display setup
-	touch ./Installation/InstallErrors.log
+build:
+	docker build -t test --build-arg NETWORKLOOKUP_BEARERTOKEN="${NETWORKLOOKUP_BEARERTOKEN}" --build-arg NETWORKLOOKUP_HOST="${NETWORKLOOKUP_HOST}" --build-arg SMARTCURTAIN_NETWORKNAME="${SMARTCURTAIN_NETWORKNAME}" --build-arg SMARTCURTAIN_DB_USER="${SMARTCURTAIN_DB_USER}" --build-arg SMARTCURTAIN_DB_HOST="${SMARTCURTAIN_DB_HOST}" --build-arg SMARTCURTAIN_API_TOKEN="${SMARTCURTAIN_API_TOKEN}" .
 
-	# Pi setup
-	sudo apt-get update
-	sudo apt-get upgrade -y
+run:
+	# https://stackoverflow.com/a/49907758
+	docker run --add-host="host.docker.internal:host-gateway" -p 3000:3000 -p 8080:8080 test
 
-	# DB setup
-	sudo apt-get install mariadb-server -y || echo "Failed to install mariadb-server with command: sudo apt-get install mariadb-server -y" > ./Installation/InstallErrors.log
-	sudo mysql -uroot < DB/Schema.sql || echo "Failed to setup DB with command: sudo mysql -uroot -praspberry < DB/Schema.sql" > ./Installation/InstallErrors.log
-	sudo mysql -uroot < DB/User_Simple.sql || echo "Failed to setup DB user with command: sudo mariadb -uroot -praspberry < DB/Users_Simple.sql" > ./Installation/InstallErrors.log
-
-	# Local folder setup
-	sudo mkdir /usr/local/SmartCurtain || echo "Failed to make directory /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
-	# Setup for updater
-	git clone --sparse --depth=1 https://github.com/MPZinke/SmartCurtain.git /usr/local/SmartCurtain || echo "Failed to sparse clone repository into dir /usr/local/SmartCurtain" > ./Installation/InstallErrors.log
-	git -C /usr/local/SmartCurtain sparse-checkout set Hub/Program Hub/DB/Updates || echo "Failed to set sparse-checkout directories" > ./Installation/InstallErrors.log
-	git -C /usr/local/SmartCurtain/ config core.filemode false
-
-	# Python setup
-	sudo apt-get install python3-pip -y || echo "Failed to install python3-pip with command: sudo apt-get install python3-pip -y" > ./Installation/InstallErrors.log
-	sudo pip3 install adafruit-io || echo "Failed to install adafruit-io with command: pip3 install adafruit-io" > ./Installation/InstallErrors.log
-	pip3 install astral==1.10.1 || echo "Failed to install astral with command: pip3 install astral" > ./Installation/InstallErrors.log
-	sudo pip3 install flask || echo "Failed to install flask with command: pip3 install flask" > ./Installation/InstallErrors.log
-	sudo apt-get install python3-mysql.connector || echo "Failed to install python3-mysql.connector with command: sudo apt-get install python3-mysql.connector" > ./Installation/InstallErrors.log
-	pip3 install numpy || echo "Failed to install numpy with command: pip3 install numpy" > ./Installation/InstallErrors.log
-	pip3 install setuptool || echo "Failed to install setuptool with command: pip3 install setuptool" > ./Installation/InstallErrors.log
-	pip3 install sklearn || echo "Failed to install sklearn with command: pip3 install sklearn" > ./Installation/InstallErrors.log
-
-	# Service setup
-	sudo cp ./Installation/SmartCurtain.service /etc/systemd/system/ || echo "Failed to copy SmartCurtain service with command: sudo cp ./Installation/SmartCurtain.service /etc/systemd/system/" > ./Installation/InstallErrors.log
-	sudo systemctl enable SmartCurtain.service || echo "Failed to enable service SmartCurtain.service with command: sudo systemctl enable SmartCurtain.service" > ./Installation/InstallErrors.log
-
-	# Clean up (setdown?)
-	echo "Finished"
-	cat ./Installation/InstallErrors.log
-	rm ./Installation/InstallErrors.log
+kill:
+	docker stop $(docker ps)

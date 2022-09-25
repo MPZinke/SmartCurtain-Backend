@@ -82,7 +82,7 @@ class SunsetClose(ZWidget):
 					Warn("Event already set for sunset time.");
 					continue;  # don't duplicate sunset
 
-				percentage = curtain_option.data() if curtain_option.data() else 0;
+				percentage = curtain_option.data().get("percentage", 0) if curtain_option.data() else 0;
 				curtain.open(percentage=percentage, Options_id=self._option_id, time=sunset);
 
 			except Exception as error:
