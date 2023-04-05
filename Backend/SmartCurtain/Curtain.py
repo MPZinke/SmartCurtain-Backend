@@ -18,54 +18,46 @@ from datetime import datetime, timedelta;
 from json import dumps;
 import os;
 import requests;
-from typing import List, Union;
+from typing import List, TypeVar, Union;
 
 
 from Global import NONETYPE;
 from SmartCurtain.CurtainOption import CurtainOption;
-from SmartCurtain.DB import DBClass;
-from SmartCurtain.DB import SELECT_CurtainsEvents_for_Curtains_id, SELECT_CurtainsEvents, \
-  SELECT_current_CurtainsEvents, SELECT_CurtainsOptions;
+from SmartCurtain.DB import DBFunctions;
+
+
+Curtain = TypeVar("Curtain")
+Hub = TypeVar("Hub")
 
 
 class Curtain:
-	def __init__(self, smart_curtain: object, auth_value: str, name: str, IP: str, port: int):
-		self._SmartCurtain = smart_curtain;
-		self._auth_value: str = auth_value;
-		self._ip_address: str = IP;
-		self._port: int = port;
-		self._name: str = name;
-
-		# Get curtain info from curtain
-		response = requests.post(f"http://{self.service()}", json={"query type": "status"}, headers=self.auth_header());
-		response_body: dict = response.json();
-
-		self._id: int = response_body["id"];
-		self._is_activated: bool = False;
-		self._moves_discretely: bool = response_body["discrete movement"];
-		self._length: int = response_body["length"];
-		self._percentage: int = response_body["percentage"];
-
-		# ———————————————————————————————————————————————— DB OBJECTS ———————————————————————————————————————————————— #
-
-		from SmartCurtain.CurtainEvent import CurtainEvent;
-		current_events = SELECT_current_CurtainsEvents(self._id);
-		curtains_options = SELECT_CurtainsOptions(self._id);
-		self._CurtainEvents = [CurtainEvent(**{**event, "Curtain": self}) for event in current_events];
-		self._CurtainOptions = [CurtainOption(**option) for option in curtains_options];
+	def __init__(self, hub: Hub, *, id: int, buffer_time: int, is_deleted: bool, curtain_events: list[CurtainEvent],
+	  curtain_options: list[CurtainOption], name: str
+	):
+		# STRUCTURE #
+		self._hub = hub
+		# DATABASE #
+		self._id: int = id
+		self._buffer_time: int = buffer_time
+		self._is_deleted: bool = is_deleted
+		self._curtain_events: list[CurtainEvent] = curtain_events
+		self._curtain_options: list[CurtainOption] = curtain_options
+		self._name: str = name
+		# TEMP STATE #
+		self._is_moving: bool = False
+		self._percentage: int = 0
 
 
 	def __iter__(self) -> dict:
 		yield from {
 			"id": self._id,
+			"buffer_time": self._buffer_time,
+			"is_deleted": self._is_deleted,
+			"curtain_events": list(map(dict, self._curtain_events)),
+			"curtain_options": list(map(dict, self._curtain_options)),
 			"name": self._name,
-			"ip_address": self._ip_address,
-			"is_activated": self._is_activated,
-			"length": self._length,
-			"moves_discretely": self._moves_discretely,
-			"percentage": self._percentage,
-			"CurtainEvents": [dict(event) for event in self._CurtainEvents],
-			"CurtainOptions": [dict(option) for option in self._CurtainOptions],
+			"is_moving": self._is_moving,
+			"percentage": self._percentage
 		}.items();
 
 
@@ -91,14 +83,6 @@ class Curtain:
 	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
 	def id(self) -> int:
 		return self._id;
-
-
-	def auth_header(self) -> dict:
-		return {"Authorization": f"{self._auth_value}"}
-
-
-	def ip_address(self) -> str:
-		return self._ip_address;
 
 
 	def is_activated(self, *value: list) -> Union[bool, None]:
@@ -135,10 +119,6 @@ class Curtain:
 		if(not isinstance(value[0], int)):
 			raise Exception(f"percentage must be of type '{int.__name__}' not '{type(value[0]).__name__}'");
 		self._percentage = value[0];
-
-
-	def service(self) -> str:
-		return f"{self._ip_address}:{self._port}";
 
 
 	# ——————————————————————————————————————————————— GETTERS: OBJECTS ——————————————————————————————————————————————— #

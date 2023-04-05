@@ -16,6 +16,7 @@ __author__ = "MPZinke"
 
 import json;
 import os;
+from paho.mqtt.client import Client as MQTTClient;
 import requests;
 from socket import gethostbyname, gethostname;
 from threading import Lock;
@@ -31,9 +32,11 @@ from Utility import Logger;
 from Utility.ZThread import ZWidget;
 
 
-class SmartCurtain(ZWidget):
+class SmartCurtain(ZWidget, MQTTClient):
 	def __init__(self):
 		ZWidget.__init__(self, "SmartCurtain", self);
+		MQTTClient.__init__(self)
+
 		self._mutex = Lock();
 		self._Curtains: List[Curtain] = [];
 		self._Options: List[Option] = [];
@@ -60,7 +63,7 @@ class SmartCurtain(ZWidget):
 		with self._mutex:
 			# Cleanup events since destructor doesn't work, especially when called by dict reassignment.
 			self._Options = [Option(**option) for option in SELECT_Options()];
-			self.check_for_Curtain_updates();
+			# self.check_for_Curtain_updates();
 
 
 	# Compliments of https://jacobbridges.github.io/post/how-many-seconds-until-midnight/
@@ -72,7 +75,24 @@ class SmartCurtain(ZWidget):
 
 
 	def _loop_process(self) -> None:
-		self.refresh();
+		self.connect("localhost", 1883, 60)
+		self.loop_forever()
+
+
+	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
+
+	def on_connect(self, client, userdata, flags, result_code) -> None:
+		print(f"Connected with result code {str(result_code)}")
+		self.subscribe("curtains/hub")
+		self.publish("curtains/all", """{"type": "status"}""")
+
+
+	def on_message(self, client, userdata, message) -> None:
+		curtain_info: dict = json.loads(message.payload)
+		# if((curtain := self.Curtain(id=curtain_info.get("id"))) is None):
+		# 	self._Curtains.append()
+		# self.curtains[curtain_info["id"]] = curtain_info
+		print(curtain_info)
 
 
 	# ——————————————————————————————————————————————————— GETTERS ——————————————————————————————————————————————————— #
@@ -98,34 +118,3 @@ class SmartCurtain(ZWidget):
 
 
 	# ——————————————————————————————————————————————————— UTILITY ——————————————————————————————————————————————————— #
-
-	def check_for_Curtain_updates(self) -> None:
-		"""
-		SUMMARY: Gets the curtains on the network according to the NetworkLookup.
-		"""
-		NetworkLookup_host = os.getenv("NETWORKLOOKUP_HOST");
-		NetworkLookup_bearer_token = os.getenv("NETWORKLOOKUP_BEARERTOKEN");
-		Curtain_network_name = os.getenv("SMARTCURTAIN_NETWORKNAME");
-
-		try:
-			url = f"http://{NetworkLookup_host}/api/v1.0/network/label/{Curtain_network_name}/services/label/SmartCurtain";
-			response = requests.get(url, headers={"Authorization": f"Bearer {NetworkLookup_bearer_token}"});
-
-			current_failures = False;
-			for service in [{**service, **service["device"]} for service in response.json()]:
-				try:
-					if(self.Curtain(ip_address=service["address"], port=service["port"]) is not None):
-						continue;
-
-					self._Curtains.append(Curtain(self, service["auth_value"], service["label"], service["address"],
-					  service["port"]));
-
-				except Exception as error:
-					Logger.log_error(error)
-					current_failures = True;
-
-			self._refresh_failures = response.status_code != 200 or current_failures;
-
-		except Exception as error:
-			self._refresh_failures = True;
-			Logger.log_error(error);
