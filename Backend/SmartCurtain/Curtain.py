@@ -27,15 +27,15 @@ from SmartCurtain.DB import DBFunctions;
 
 
 Curtain = TypeVar("Curtain")
-Hub = TypeVar("Hub")
+Room = TypeVar("Room")
 
 
 class Curtain:
-	def __init__(self, hub: Hub, *, id: int, buffer_time: int, is_deleted: bool, curtain_events: list[CurtainEvent],
+	def __init__(self, room: Room, *, id: int, buffer_time: int, is_deleted: bool, curtain_events: list[CurtainEvent],
 	  curtain_options: list[CurtainOption], name: str
 	):
 		# STRUCTURE #
-		self._hub = hub
+		self._room = room
 		# DATABASE #
 		self._id: int = id
 		self._buffer_time: int = buffer_time

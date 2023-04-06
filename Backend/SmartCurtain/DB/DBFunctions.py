@@ -20,10 +20,30 @@ Base = automap_base()
 Base.prepare(autoload_with=ENGINE)
 
 
+Homes = Base.classes.Homes
+Rooms = Base.classes.Rooms
 Curtains = Base.classes.Curtains
 Options = Base.classes.Options
 CurtainsEvents = Base.classes.CurtainsEvents
 CurtainsOptions = Base.classes.CurtainsOptions
+
+
+def Homes__iter__(self) -> dict:
+	yield from {
+		"id": self.id,
+		"is_deleted": self.is_deleted,
+		"name": self.name,
+		"Rooms": list(map(dict, self.rooms_collection))
+	}.items()
+
+
+def Rooms__iter__(self) -> dict:
+	yield from {
+		"id": self.id,
+		"is_deleted": self.is_deleted,
+		"name": self.name,
+		"Curtains": list(map(dict, self.curtains_collection))
+	}.items()
 
 
 def Curtains__iter__(self) -> dict:
@@ -31,9 +51,9 @@ def Curtains__iter__(self) -> dict:
 		"id": self.id,
 		"buffer_time": self.buffer_time,
 		"is_deleted": self.is_deleted,
+		"name": self.name,
 		"CurtainsEvents": list(map(dict, self.curtainsevents_collection)),
-		"CurtainsOptions": list(map(dict, self.curtainsoptions_collection)),
-		"name": self.name
+		"CurtainsOptions": list(map(dict, self.curtainsoptions_collection))
 	}.items()
 
 
@@ -61,15 +81,30 @@ def CurtainsEvents__iter__(self) -> dict:
 	yield from {
 		"id": self.id,
 		"is_activated": self.is_activated,
+		"is_deleted": self.is_deleted,
 		"percentage": self.percentage,
 		"time": self.time,
 	}.items()
 
 
+Homes.__iter__ = Homes__iter__
+Rooms.__iter__ = Rooms__iter__
 Curtains.__iter__ = Curtains__iter__
 Options.__iter__ = Options__iter__
 CurtainsEvents.__iter__ = CurtainsEvents__iter__
 CurtainsOptions.__iter__ = CurtainsOptions__iter__
+
+
+def SELECT_Homes() -> list:
+	with Session(ENGINE) as session:
+		statement = select(Homes)
+		return list(map(dict, session.scalars(statement)))
+
+
+def SELECT_Rooms() -> list:
+	with Session(ENGINE) as session:
+		statement = select(Rooms)
+		return list(map(dict, session.scalars(statement)))
 
 
 def SELECT_Curtains() -> list:
@@ -85,7 +120,8 @@ def SELECT_Options() -> list:
 
 
 def test():
-	print(SELECT_Curtains())
+	import json
+	print(json.dumps(SELECT_Homes(), default=str, indent=4))
 
 
 if(__name__ == "__main__"):
