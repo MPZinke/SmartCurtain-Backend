@@ -22,16 +22,16 @@ from warnings import warn as Warn;
 
 
 from Global import *;
-from SmartCurtain.Curtain import Curtain;
+# from SmartCurtain.Curtain import Curtain;
 from SmartCurtain.DB import AttributeType, DBClass, ObjectAttributeType;
-from SmartCurtain.DB import INSERT_CurtainsEvents;
+# from SmartCurtain.DB import INSERT_CurtainsEvents;
 from Utility.ZThread import ZThreadSingle;
 from Utility import Logger;
 
 
-class CurtainEvent(DBClass):
+class CurtainEvent:
 	ATTRIBUTE_TYPES =	[
-							AttributeType("_Curtain", Curtain),
+							# AttributeType("_Curtain", Curtain),
 							AttributeType("_id", int),
 							AttributeType("_percentage", (int, NONETYPE)),
 							AttributeType("_is_activated", (int, bool, NONETYPE)),

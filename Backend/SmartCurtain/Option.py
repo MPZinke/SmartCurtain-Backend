@@ -14,16 +14,10 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from SmartCurtain.DB import AttributeType, DBClass;
+# from SmartCurtain.DB import AttributeType, DBClass;
 
 
-class Option(DBClass):
-	ATTRIBUTE_TYPES =	[
-							AttributeType("_id", int),
-							AttributeType("_name", str),
-							AttributeType("_description", str),
-							AttributeType("_is_current", int)
-						];
+class Option:
 
 
 	def __init__(self, **option_info):

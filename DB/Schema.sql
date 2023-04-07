@@ -23,8 +23,12 @@ CREATE TABLE IF NOT EXISTS "Homes"
 (
 	"id" SERIAL NOT NULL PRIMARY KEY,
 	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"name" VARCHAR(32) NOT NULL UNIQUE
+	"name" VARCHAR(32) NOT NULL
 );
+
+
+CREATE UNIQUE INDEX ON "Homes"("name")
+  WHERE "is_deleted" = FALSE;
 
 
 DROP TABLE IF EXISTS "HomesOptions" CASCADE;
@@ -47,10 +51,14 @@ CREATE TABLE IF NOT EXISTS "Rooms"
 (
 	"id" SERIAL NOT NULL PRIMARY KEY,
 	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"name" VARCHAR(32) NOT NULL UNIQUE,
+	"name" VARCHAR(32) NOT NULL,
 	"Homes.id" INT NOT NULL,
 	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id")
 );
+
+
+CREATE UNIQUE INDEX ON "Rooms"("Home.id", REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
+  WHERE "is_deleted" = FALSE;
 
 
 DROP TABLE IF EXISTS "RoomsOptions" CASCADE;
@@ -73,11 +81,18 @@ CREATE TABLE IF NOT EXISTS "Curtains"
 (
 	"id" SERIAL NOT NULL PRIMARY KEY,
 	"buffer_time" SMALLINT NOT NULL DEFAULT 0,
+	"direction" BOOLEAN DEFAULT NULL,  -- NULL if curtain should use hardcoded values otherwise valued
 	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"name" VARCHAR(32) NOT NULL UNIQUE,
+	"length" INT DEFAULT NULL,  -- NULL if curtain should use hardcoded values otherwise valued
+	CHECK("length" > 0 OR "length" IS NULL),
+	"name" VARCHAR(32) NOT NULL,
 	"Rooms.id" INT NOT NULL,
 	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id")
 );
+
+
+CREATE UNIQUE INDEX ON "Curtains"("Rooms.id", REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
+  WHERE "is_deleted" = FALSE;
 
 
 DROP TABLE IF EXISTS "CurtainsOptions" CASCADE;

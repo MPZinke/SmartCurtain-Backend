@@ -95,15 +95,7 @@ FROM
 	('Livingroom-Curtain', 'Calendar Events',     FALSE, NULL,                            ''),  -- Google Calendar
 	('Livingroom-Curtain', 'Sunrise Open',        FALSE, JSON '{"city": "DALLAS"}',       'Value is for time before/after sunrise that curtain opens'),  -- Sunrise Open
 	('Livingroom-Curtain', 'Sunset Close',        FALSE, JSON '{"city": "DALLAS"}',       'Value is for time before/after sunset that curtain closes'),  -- Sunset Close
-	('Livingroom-Curtain', 'Temperature Setting', FALSE, NULL,                            ''),  -- Temperature Setting
-	('Bedroom-Curtain',    'Voice Assistant',     FALSE, NULL,                            ''),  -- Voice Assistant
-	('Bedroom-Curtain',    'Auto Calibrate',      FALSE, NULL,                            ''),  -- Auto Calibrate
-	('Bedroom-Curtain',    'Auto Correct',        FALSE, NULL,                            ''),  -- Auto Correct
-	('Bedroom-Curtain',    'Event Prediction',    FALSE, JSON '{"leniency": "01:00:00"}', 'Value is for clustering leniency'),  -- Event Prediction
-	('Bedroom-Curtain',    'Calendar Events',     FALSE, NULL,                            ''),  -- Google Calendar
-	('Bedroom-Curtain',    'Sunrise Open',        FALSE, JSON '{"city": "DALLAS"}',       'Value is for time before/after sunrise that curtain opens'),  -- Sunrise Open
-	('Bedroom-Curtain',    'Sunset Close',        FALSE, JSON '{"city": "DALLAS"}',       'Value is for time before/after sunset that curtain closes'),  -- Sunset Close
-	('Bedroom-Curtain',    'Temperature Setting', FALSE, NULL,                            '')   -- Temperature Setting
+	('Livingroom-Curtain', 'Temperature Setting', FALSE, NULL,                            '')  -- Temperature Setting
 ) AS "Temp"("Curtains.name", "Options.name", "is_on", "data", "notes")
 JOIN "Options" ON "Temp"."Options.name" = "Options"."name"
 JOIN "Curtains" ON "Temp"."Curtains.name" = "Curtains"."name";

@@ -15,15 +15,14 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta;
-from json import dumps;
+import json;
 import os;
 import requests;
-from typing import List, TypeVar, Union;
+from typing import List, Optional, TypeVar, Union;
 
 
-from Global import NONETYPE;
-from SmartCurtain.CurtainOption import CurtainOption;
-from SmartCurtain.DB import DBFunctions;
+from SmartCurtain import AreaOption;
+from SmartCurtain import CurtainEvent;
 
 
 Curtain = TypeVar("Curtain")
@@ -31,31 +30,38 @@ Room = TypeVar("Room")
 
 
 class Curtain:
-	def __init__(self, room: Room, *, id: int, buffer_time: int, is_deleted: bool, curtain_events: list[CurtainEvent],
-	  curtain_options: list[CurtainOption], name: str
+	def __init__(self, Room: Optional[Room]=None, *, id: int, buffer_time: int, direction: Optional[bool],
+	  is_deleted: bool, length: Optional[int], name: str, curtain_events: list[CurtainEvent],
+	  CurtainOptions: list[AreaOption[Curtain]]
 	):
 		# STRUCTURE #
-		self._room = room
+		self._Room = Room
 		# DATABASE #
 		self._id: int = id
 		self._buffer_time: int = buffer_time
+		self._direction: Optional[bool] = direction
 		self._is_deleted: bool = is_deleted
-		self._curtain_events: list[CurtainEvent] = curtain_events
-		self._curtain_options: list[CurtainOption] = curtain_options
+		self._length: Optional[int] = length
 		self._name: str = name
+		self._curtain_events: list[CurtainEvent] = curtain_events.copy()
+		self._CurtainOptions: list[AreaOption[Curtain]] = CurtainOptions.copy()
 		# TEMP STATE #
 		self._is_moving: bool = False
 		self._percentage: int = 0
+
+		[setattr(curtain_option, "_Curtain", self) for curtain_option in self._CurtainOptions]
 
 
 	def __iter__(self) -> dict:
 		yield from {
 			"id": self._id,
 			"buffer_time": self._buffer_time,
+			"direction": self._direction,
 			"is_deleted": self._is_deleted,
-			"curtain_events": list(map(dict, self._curtain_events)),
-			"curtain_options": list(map(dict, self._curtain_options)),
+			"length": self._length,
 			"name": self._name,
+			"curtain_events": list(map(dict, self._curtain_events)),
+			"CurtainOptions": list(map(dict, self._CurtainOptions)),
 			"is_moving": self._is_moving,
 			"percentage": self._percentage
 		}.items();
@@ -66,7 +72,12 @@ class Curtain:
 
 
 	def __str__(self) -> str:
-		return dumps(dict(self), default=str);
+		return json.dumps(dict(self), default=str);
+
+
+	def path(self) -> str:
+		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
+		return f"{self._room.path()}/Curtain-{path_name}"
 
 
 	# ———————————————————————————————————————————————— GETTERS/SETTERS ————————————————————————————————————————————————
@@ -85,43 +96,41 @@ class Curtain:
 		return self._id;
 
 
-	def is_activated(self, *value: list) -> Union[bool, None]:
-		if(len(value) == 0):
-			return self._is_activated;
+	def is_moving(self, new_is_moving: Optional[bool]=None) -> Optional[bool]:
+		if(new_is_moving is None):
+			return self._is_moving;
 
-		if(not isinstance(value[0], bool)):
-			raise Exception(f"is_activated must be of type '{bool.__name__}' not '{type(value[0]).__name__}'");
-		self._is_activated = value[0];
+		if(not isinstance(new_is_moving, bool)):
+			raise Exception(f"'is_moving' must be of type '{bool.__name__}' not '{type(new_is_moving).__name__}'");
+
+		self._is_moving = new_is_moving;
 
 
-	def length(self, *value: list) -> Union[int, None]:
-		if(len(value) == 0):
+	def length(self, new_length: Optional[int]=None) -> Optional[int]:
+		if(new_length is None):
 			return self._length;
 
-		if(not isinstance(value[0], int)):
-			raise Exception(f"length must be of type '{int.__name__}' not '{type(value[0]).__name__}'");
-		self._length = value[0];
+		if(not isinstance(new_length, int)):
+			raise Exception(f"'length' must be of type '{int.__name__}' not '{type(new_length).__name__}'");
+
+		self._length = new_length;
 
 
-	def moves_discretely(self, *value: list) -> Union[bool, None]:
-		if(len(value) == 0):
-			return self._moves_discretely;
-
-		if(not isinstance(value[0], bool)):
-			raise Exception(f"moves_discretely must be of type '{bool.__name__}' not '{type(value[0]).__name__}'");
-		self._moves_discretely = value[0];
-
-
-	def percentage(self, *value: list) -> Union[int, None]:
-		if(len(value) == 0):
+	def percentage(self, new_percentage: Optional[int]=None) -> Optional[int]:
+		if(new_percentage is None):
 			return self._percentage;
 
-		if(not isinstance(value[0], int)):
-			raise Exception(f"percentage must be of type '{int.__name__}' not '{type(value[0]).__name__}'");
-		self._percentage = value[0];
+		if(not isinstance(new_percentage, int)):
+			raise Exception(f"'percentage' must be of type '{int.__name__}' not '{type(new_percentage).__name__}'");
+
+		self._percentage = new_percentage;
 
 
 	# ——————————————————————————————————————————————— GETTERS: OBJECTS ——————————————————————————————————————————————— #
+
+	def __getitem__(self, curtain_event_id: int) -> Optional[CurtainEvent]:
+		return next((event for event in self._curtain_events if(event.id() == curtain_event_id)), None)
+
 
 	def CurtainEvents(self) -> List["CurtainEvent"]:
 		return self._CurtainEvents;
@@ -129,16 +138,16 @@ class Curtain:
 
 	# Gets the CurtainOption based on either name or id.
 	# Takes a string or an int for the name of the CurtainOption.Option or the id of the CurtainOption.Option.id.
-	def CurtainOption(self, **kwargs: dict) -> CurtainOption:
+	def CurtainOption(self, **kwargs: dict) -> AreaOption[Curtain]:
 		return DBClass._exclusive_match(self._CurtainOptions, **kwargs);
 
 
-	def CurtainOptions(self) -> List[CurtainOption]:
+	def CurtainOptions(self) -> list[AreaOption[Curtain]]:
 		return self._CurtainOptions;
 
 
-	def SmartCurtain(self):
-		return self._SmartCurtain;
+	def Room(self):
+		return self._Room;
 
 
 	# ——————————————————————————————————————————————— GETTERS: SPECIAL ——————————————————————————————————————————————— #
@@ -228,3 +237,13 @@ class Curtain:
 			time = datetime.now();
 
 		return self._new_event(percentage, Options_id=Options_id, time=time);
+
+
+def test():
+	CurtainOptions = [AreaOption[Curtain](id=1, option=None, data={}, is_on=False, notes="Test")]
+	print(str(Curtain(id=1, buffer_time=0, direction=None, is_deleted=False, length=None, name="Curtain",
+	  curtain_events=[], CurtainOptions=CurtainOptions)))
+
+
+if(__name__ == "__main__"):
+	test()
