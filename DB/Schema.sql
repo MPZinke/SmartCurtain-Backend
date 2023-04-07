@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS "Rooms"
 );
 
 
-CREATE UNIQUE INDEX ON "Rooms"("Home.id", REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
+CREATE UNIQUE INDEX ON "Rooms"("Homes.id", REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
   WHERE "is_deleted" = FALSE;
 
 
@@ -129,6 +129,23 @@ CREATE TABLE IF NOT EXISTS "CurtainsEvents"
 CREATE UNIQUE INDEX ON "CurtainsEvents"("Curtains.id", "time")
   WHERE "is_deleted" = FALSE;
 
+
+DROP FUNCTION IF EXISTS update_old_CurtainsEvents() CASCADE;
+CREATE FUNCTION update_old_CurtainsEvents() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "CurtainsEvents" SET "is_deleted" = TRUE WHERE "time" < CURRENT_TIMESTAMP;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+-- DROP TRIGGER IF EXISTS "DeleteOldCurtainEvents" ON "CurtainsEvents";
+-- CREATE TRIGGER "DeleteOldCurtainEvents"
+--   BEFORE SELECT ON "CurtainsEvents"
+--   FOR EACH ROW
+--   EXECUTE PROCEDURE update_old_CurtainsEvents();
+
+
+-- ———————————————————————————————————————————————— DELETE INTEGRITY ———————————————————————————————————————————————— --
 
 DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
 CREATE FUNCTION update_Homes_deletion() RETURNS TRIGGER AS $$

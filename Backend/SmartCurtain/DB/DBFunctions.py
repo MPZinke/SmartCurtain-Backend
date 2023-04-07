@@ -20,10 +20,12 @@ Base = automap_base()
 Base.prepare(autoload_with=ENGINE)
 
 
-Homes = Base.classes.Homes
-Rooms = Base.classes.Rooms
-Curtains = Base.classes.Curtains
 Options = Base.classes.Options
+Homes = Base.classes.Homes
+HomesOptions = Base.classes.HomesOptions
+Rooms = Base.classes.Rooms
+RoomsOptions = Base.classes.RoomsOptions
+Curtains = Base.classes.Curtains
 CurtainsEvents = Base.classes.CurtainsEvents
 CurtainsOptions = Base.classes.CurtainsOptions
 
@@ -33,6 +35,7 @@ def Homes__iter__(self) -> dict:
 		"id": self.id,
 		"is_deleted": self.is_deleted,
 		"name": self.name,
+		"HomesOptions": list(map(dict, self.homesoptions_collection)),
 		"Rooms": list(map(dict, self.rooms_collection))
 	}.items()
 
@@ -42,6 +45,7 @@ def Rooms__iter__(self) -> dict:
 		"id": self.id,
 		"is_deleted": self.is_deleted,
 		"name": self.name,
+		"RoomsOptions": list(map(dict, self.roomsoptions_collection)),
 		"Curtains": list(map(dict, self.curtains_collection))
 	}.items()
 
@@ -50,7 +54,9 @@ def Curtains__iter__(self) -> dict:
 	yield from {
 		"id": self.id,
 		"buffer_time": self.buffer_time,
+		"direction": self.direction,
 		"is_deleted": self.is_deleted,
+		"length": self.length,
 		"name": self.name,
 		"CurtainsEvents": list(map(dict, self.curtainsevents_collection)),
 		"CurtainsOptions": list(map(dict, self.curtainsoptions_collection))
@@ -66,7 +72,7 @@ def Options__iter__(self) -> dict:
 	}.items()
 
 
-def CurtainsOptions__iter__(self) -> dict:
+def AreaOptions__iter__(self) -> dict:
 	yield from {
 		"id": self.id,
 		"Option": dict(self.options),
@@ -87,12 +93,14 @@ def CurtainsEvents__iter__(self) -> dict:
 	}.items()
 
 
-Homes.__iter__ = Homes__iter__
-Rooms.__iter__ = Rooms__iter__
-Curtains.__iter__ = Curtains__iter__
 Options.__iter__ = Options__iter__
+Homes.__iter__ = Homes__iter__
+HomesOptions.__iter__ = AreaOptions__iter__
+Rooms.__iter__ = Rooms__iter__
+RoomsOptions.__iter__ = AreaOptions__iter__
+Curtains.__iter__ = Curtains__iter__
 CurtainsEvents.__iter__ = CurtainsEvents__iter__
-CurtainsOptions.__iter__ = CurtainsOptions__iter__
+CurtainsOptions.__iter__ = AreaOptions__iter__
 
 
 def SELECT_Homes() -> list:

@@ -18,14 +18,14 @@ import json;
 from typing import Any, Generic, Optional, TypeVar, get_args
 
 
-from SmartCurtain import Option
+# from SmartCurtain import Option
 
 
 Area = TypeVar("Area")
 
 
 class AreaOption:
-	def __init__(self, area: Optional[Area]=None, *, id: int, option: Option, data: Optional[dict|list], is_on: bool,
+	def __init__(self, area: Optional[Area]=None, *, id: int, Option: object, data: Optional[dict|list], is_on: bool,
 	  notes: str
 	):
 		# STRUCTURE #
@@ -33,7 +33,7 @@ class AreaOption:
 		setattr(self, self._Area.__name__, self.get_or_set_Area)
 		# DATABASE #
 		self._id: int = id
-		self._Option: Option = option
+		self._Option: object = Option
 		self._data: Optional[dict|list] = data
 		self._is_on: bool = is_on
 		self._notes: bool = notes

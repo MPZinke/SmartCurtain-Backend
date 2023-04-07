@@ -15,12 +15,15 @@ __author__ = "MPZinke"
 
 
 import json
+import re
 from typing import Optional, TypeVar
 
 
+from SmartCurtain import Option
 from SmartCurtain import AreaOption
 from SmartCurtain import Curtain
 from SmartCurtain import Room
+from SmartCurtain.DB import DBFunctions
 
 
 Home = TypeVar("Home")
@@ -35,7 +38,31 @@ class Home:
 		self._Rooms: list[Room] = Rooms.copy()
 
 		[setattr(home_option, "_Home", self) for home_option in self._HomeOptions]
-		[setattr(room, "_Home", self) for room in self._Rooms]
+		[room.Home(self) for room in self._Rooms]
+
+
+	@staticmethod
+	def all() -> list[Home]:
+		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes()]
+
+
+	@staticmethod
+	def from_dictionary(home_data: dict) -> Home:
+		rooms: list[Room] = [Room.from_dictionary(room_data) for room_data in home_data["Rooms"]]
+
+		options: list = []
+		for option_data in home_data["HomesOptions"]:
+			options.append(AreaOption[Home](**{**option_data, "Option": Option(**option_data["Option"])}))
+
+		return Home(id=home_data["id"], is_deleted=home_data["is_deleted"], name=home_data["name"],
+		  HomeOptions=options, Rooms=rooms
+		)
+
+
+	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+
+	def __getitem__(self, Room_id: int) -> Optional[Room]:
+		return next((room for room in self._Rooms if(room.id() == Room_id)), None)
 
 
 	def __iter__(self) -> dict:
@@ -45,21 +72,15 @@ class Home:
 			"name": self._name,
 			"HomeOptions": list(map(dict, self._HomeOptions)),
 			"Rooms": list(map(dict, self._Rooms))
-		}.items();
+		}.items()
 
 
 	def __repr__(self) -> str:
-		return str(self);
+		return str(self)
 
 
 	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str);
-
-
-	def path(self) -> str:
-		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
-		return f"SmartCurtain/{path_name}"
-
+		return json.dumps(dict(self), default=str, indent=4)
 
 
 	def id(self):
@@ -68,46 +89,32 @@ class Home:
 
 	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
 		if(new_is_deleted is None):
-			return self._is_deleted;
+			return self._is_deleted
 
 		if(not isinstance(new_is_deleted, int)):
 			value_type_str = type(new_is_deleted).__name__
-			raise Exception(f"'Home::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'");
+			raise Exception(f"'Home::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'")
 
-		self._is_deleted = new_is_deleted;
+		self._is_deleted = new_is_deleted
 
 
 	def name(self, new_name: Optional[int]=None) -> Optional[int]:
 		if(new_name is None):
-			return self._name;
+			return self._name
 
 		if(not isinstance(new_name, int)):
 			value_type_str = type(new_name).__name__
-			raise Exception(f"'Home::name' must be of type '{int.__name__}' not '{value_type_str}'");
+			raise Exception(f"'Home::name' must be of type '{int.__name__}' not '{value_type_str}'")
 
-		self._name = new_name;
-
-
-	def __getitem__(self, Room_id: int) -> Optional[Room]:
-		return next((room for room in self._Rooms if(room.id() == Room_id)), None)
+		self._name = new_name
 
 
 	def Rooms(self):
 		return self._Rooms
 
 
-def test():
-	CurtainOptions = [AreaOption[Curtain](id=1, option=None, data={}, is_on=False, notes="Test")]
-	Curtains = [
-		Curtain(id=1, buffer_time=0, direction=None, is_deleted=False, length=None, name="Curtain", curtain_events=[],
-		  CurtainOptions=CurtainOptions)
-	]
-	RoomOptions = [AreaOption[Room](id=2, option=None, data={}, is_on=False, notes="Test")]
-	Rooms = [Room(id=1, is_deleted=False, name="Room", RoomOptions=RoomOptions, Curtains=Curtains)]
-	HomeOptions = [AreaOption[Home](id=3, option=None, data={}, is_on=False, notes="Test")]
-	print(str(Home(id=1, is_deleted=False, name="Home", HomeOptions=HomeOptions, Rooms=Rooms)))
+	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
 
-
-
-if(__name__ == "__main__"):
-	test()
+	def path(self) -> str:
+		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
+		return f"SmartCurtain/{path_name}"

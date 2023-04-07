@@ -15,10 +15,12 @@ __author__ = "MPZinke"
 
 
 import json
+import re
 from typing import Optional, TypeVar
 
 
-from SmartCurtain import AreaOption;
+from SmartCurtain import Option
+from SmartCurtain import AreaOption
 from SmartCurtain import Curtain
 
 
@@ -40,7 +42,25 @@ class Room:
 		self._Curtains: list[Curtain] = Curtains.copy()
 
 		[setattr(room_option, "_Room", self) for room_option in self._RoomOptions]
-		[setattr(curtain, "_Room", self) for curtain in self._Curtains]
+		[curtain.Room(self) for curtain in self._Curtains]
+
+
+	@staticmethod
+	def from_dictionary(room_data: dict) -> Room:
+		curtains: list[Curtain] = [Curtain.from_dictionary(curtain_data) for curtain_data in room_data["Curtains"]]
+
+		options: list = []
+		for option_data in room_data["RoomsOptions"]:
+			options.append(AreaOption[Room](**{**option_data, "Option": Option(**option_data["Option"])}))
+
+		return Room(id=room_data["id"], is_deleted=room_data["is_deleted"], name=room_data["name"],
+		  RoomOptions=options, Curtains=curtains)
+
+
+	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+
+	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
+		return next((room for room in self._Curtains if(room.id() == Curtain_id)), None)
 
 
 	def __iter__(self) -> dict:
@@ -50,21 +70,15 @@ class Room:
 			"name": self._name,
 			"RoomOptions": list(map(dict, self._RoomOptions)),
 			"Curtains": list(map(dict, self._Curtains))
-		}.items();
+		}.items()
 
 
 	def __repr__(self) -> str:
-		return str(self);
+		return str(self)
 
 
 	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str);
-
-
-	def path(self) -> str:
-		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
-		return f"SmartCurtain/{path_name}"
-
+		return json.dumps(dict(self), default=str, indent=4)
 
 
 	def id(self):
@@ -73,43 +87,42 @@ class Room:
 
 	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
 		if(new_is_deleted is None):
-			return self._is_deleted;
+			return self._is_deleted
 
 		if(not isinstance(new_is_deleted, int)):
 			value_type_str = type(new_is_deleted).__name__
-			raise Exception(f"'Home::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'");
+			raise Exception(f"'Room::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'")
 
-		self._is_deleted = new_is_deleted;
+		self._is_deleted = new_is_deleted
 
 
 	def name(self, new_name: Optional[int]=None) -> Optional[int]:
 		if(new_name is None):
-			return self._name;
+			return self._name
 
 		if(not isinstance(new_name, int)):
 			value_type_str = type(new_name).__name__
-			raise Exception(f"'Home::name' must be of type '{int.__name__}' not '{value_type_str}'");
+			raise Exception(f"'Room::name' must be of type '{int.__name__}' not '{value_type_str}'")
 
-		self._name = new_name;
-
-
-	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
-		return next((room for room in self._Curtains if(room.id() == Curtain_id)), None)
+		self._name = new_name
 
 
 	def Curtains(self):
-		return self._Curtains
+		return self._Curtains.copy()
 
 
-def test():
-	CurtainOptions = [AreaOption[Curtain](id=1, option=None, data={}, is_on=False, notes="Test")]
-	Curtains = [
-		Curtain(id=1, buffer_time=0, direction=None, is_deleted=False, length=None, name="Curtain", curtain_events=[],
-		  CurtainOptions=CurtainOptions)
-	]
-	RoomOptions = [AreaOption[Room](id=2, option=None, data={}, is_on=False, notes="Test")]
-	print(str(Room(id=1, is_deleted=False, name="Room", RoomOptions=RoomOptions, Curtains=Curtains)))
+	def Home(self, new_Home: Optional[int]=None) -> Optional[int]:
+		if(new_Home is None):
+			return self._Home
+
+		if(not isinstance(new_Home, int)):
+			raise Exception(f"'Room::Home' must be of type 'int' not '{type(new_Home).__name__}'")
+
+		self._Home = new_Home
 
 
-if(__name__ == "__main__"):
-	test()
+	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
+
+	def path(self) -> str:
+		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
+		return f"{self._Home.path()}/{path_name}"
