@@ -51,7 +51,8 @@ class Curtain:
 		self._is_moving: bool = False
 		self._percentage: int = 0
 
-		[setattr(curtain_option, "_Curtain", self) for curtain_option in self._CurtainOptions]
+		[curtain_event.Curtain(self) for curtain_event in self._CurtainOptions]
+		[curtain_option.Curtain(self) for curtain_option in self._CurtainOptions]
 
 
 	@staticmethod

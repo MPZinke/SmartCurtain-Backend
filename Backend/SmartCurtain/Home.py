@@ -37,7 +37,7 @@ class Home:
 		self._HomeOptions: list[AreaOption[Home]] = HomeOptions.copy()
 		self._Rooms: list[Room] = Rooms.copy()
 
-		[setattr(home_option, "_Home", self) for home_option in self._HomeOptions]
+		[home_option.Home(self) for home_option in self._HomeOptions]
 		[room.Home(self) for room in self._Rooms]
 
 

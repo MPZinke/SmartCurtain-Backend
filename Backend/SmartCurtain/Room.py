@@ -41,7 +41,7 @@ class Room:
 		self._RoomOptions: list[AreaOption[Room]] = RoomOptions.copy()
 		self._Curtains: list[Curtain] = Curtains.copy()
 
-		[setattr(room_option, "_Room", self) for room_option in self._RoomOptions]
+		[room_option.Room(self) for room_option in self._RoomOptions]
 		[curtain.Room(self) for curtain in self._Curtains]
 
 

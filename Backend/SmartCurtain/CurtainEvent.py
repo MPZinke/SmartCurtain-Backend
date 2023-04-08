@@ -118,6 +118,18 @@ class CurtainEvent:
 		self._time = new_time
 
 
+	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
+
+	def Curtain(self, new_Curtain: Optional[Curtain]=None) -> Optional[Curtain]:
+		if(new_Curtain is None):
+			return self._Curtain
+
+		if(not isinstance(new_Curtain, Curtain)):
+			raise Exception(f"'Curtain::Curtain' must be of type 'Curtain' not '{type(new_Curtain).__name__}'")
+
+		self._Curtain = new_Curtain
+
+
 	# ——————————————————————————————————————————————————— PUBLISH  ——————————————————————————————————————————————————— #
 
 	def publish(self) -> None:
