@@ -29,8 +29,8 @@ class AreaOption:
 	  notes: str
 	):
 		# STRUCTURE #
-		setattr(self, f"_{self._Area.__name__}", area)
-		setattr(self, self._Area.__name__, self.get_or_set_Area)
+		setattr(self, f"_{self.__args__[0].__name__}", area)
+		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
 		# DATABASE #
 		self._id: int = id
 		self._Option: object = Option
@@ -39,9 +39,9 @@ class AreaOption:
 		self._notes: bool = notes
 
 
-	def __class_getitem__(cls, _Area):
-		# TODO: change _Area to __args__
-		return type(f"AreaOption[{_Area.__name__}]", (AreaOption,), {"_Area": _Area})
+	def __class_getitem__(cls, __args__):
+		# TODO: change __args__ to __args__
+		return type(f"AreaOption[{__args__.__name__}]", (AreaOption,), {"__args__": (__args__,)})
 
 
 	def __iter__(self) -> dict:
@@ -66,16 +66,16 @@ class AreaOption:
 		return self._id
 
 
-	def get_or_set_Area(self, new_Area: Optional[Area]=None) -> Optional[Area]:
-		Area_name = self._Area.__name__
-		if(new_Area is None):
-			return getattr(self, f"_{Area_name}")
+	def get_or_set__args__(self, new__args__: Optional[Area]=None) -> Optional[Area]:
+		__args___name = self.__args__[0].__name__
+		if(new__args__ is None):
+			return getattr(self, f"_{__args___name}")
 
-		if(not isinstance(new_Area, self._Area)):
-			value_type_str = type(new_Area).__name__
-			raise Exception(f"'AreaOption::{Area_name}' must be of type '{Area_name}' not '{value_type_str}'");
+		if(not isinstance(new__args__, self.__args__[0])):
+			value_type_str = type(new__args__).__name__
+			raise Exception(f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'");
 
-		setattr(self, f"_{Area_name}", new_Area)
+		setattr(self, f"_{__args___name}", new__args__)
 
 
 	def Option(self):

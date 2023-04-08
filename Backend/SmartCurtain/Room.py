@@ -106,7 +106,7 @@ class Room:
 		self._name = new_name
 
 
-	def RoomOption(self, Option_id: int) -> Optional[AreaOption[Host]]:
+	def RoomOption(self, Option_id: int) -> Optional[AreaOption[Room]]:
 		return next((option for option in self._RoomOptions if(option.Option().id() == Option_id)), None)
 
 
@@ -126,6 +126,7 @@ class Room:
 		if(new_Home is None):
 			return self._Home
 
+		from SmartCurtain import Home
 		if(not isinstance(new_Home, Home)):
 			raise Exception(f"'Room::Home' must be of type 'Home' not '{type(new_Home).__name__}'")
 

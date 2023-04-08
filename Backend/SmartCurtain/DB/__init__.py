@@ -12,8 +12,3 @@ __author__ = "MPZinke"
 #   FUTURE:                                                                                                            #
 #                                                                                                                      #
 ########################################################################################################################
-
-
-from SmartCurtain.DB.AttributeType import AttributeType, ObjectAttributeType;
-from SmartCurtain.DB.DBClass import DBClass;
-from SmartCurtain.DB.DBFunctions import *;

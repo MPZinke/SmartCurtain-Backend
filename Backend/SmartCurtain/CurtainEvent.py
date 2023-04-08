@@ -15,23 +15,28 @@ __author__ = "MPZinke"
 
 
 from datetime import datetime, timedelta
-from json import dumps
+import json
 from requests import post
 from typing import Optional, TypeVar
 from warnings import warn as Warn
 
 
+from SmartCurtain import Option
 from Utility.ZThread import ZThreadSingle
 from Utility import Logger
 
 
+Curtain = TypeVar("Curtain")
 CurtainEvent = TypeVar("CurtainEvent")
+Option = TypeVar("Option")
 
 
 class CurtainEvent:
 	def __init__(self, Curtain: Optional[Curtain]=None, *, id: int, Option: Optional[object], is_activated: bool,
 	  is_deleted: bool, percentage: int, time: datetime
 	):
+		# STRUCTURE #
+		self._Curtain = Curtain
 		# DATABASE #
 		self._id: int = id
 		self._is_activated: bool = is_activated
@@ -40,9 +45,19 @@ class CurtainEvent:
 		self._Option: Optional[object] = Option
 		self._time: datetime = time
 		# THREAD #
-		self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
-		self._publish_thread.start()
+		if(not self._is_activate and not self._is_deleted and datetime.now() < self._time):
+			self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
+			self._publish_thread.start()
 
+
+	@staticmethod
+	def from_dictionary(curtain_event_data: dict) -> CurtainEvent:
+		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
+		return CurtainEvent(**{**curtain_event_data, "Option": option})
+
+
+	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __iter__(self) -> dict:
 		yield from {
@@ -50,7 +65,7 @@ class CurtainEvent:
 			"is_activated": self._is_activated,
 			"is_deleted": self._is_deleted,
 			"percentage": self._percentage,
-			"Option": dict(self._Option),
+			"Option": dict(self._Option) if(self._Option is not None) else None,
 			"time": self._time
 		}.items()
 
@@ -124,6 +139,7 @@ class CurtainEvent:
 		if(new_Curtain is None):
 			return self._Curtain
 
+		from SmartCurtain import Curtain
 		if(not isinstance(new_Curtain, Curtain)):
 			raise Exception(f"'Curtain::Curtain' must be of type 'Curtain' not '{type(new_Curtain).__name__}'")
 
@@ -133,9 +149,10 @@ class CurtainEvent:
 	# ——————————————————————————————————————————————————— PUBLISH  ——————————————————————————————————————————————————— #
 
 	def publish(self) -> None:
+		print("Beep Boop")
 		payload = {"type": "move", "event": {"id": self._id, "percentage": self._percentage}}
 		self._Curtain.publish(json.dumps(payload))
-		UPDATE_CurtainsEvents(self,_id, is_activated=True)
+		UPDATE_CurtainsEvents(self._id, is_activated=True)
 
 
 	def sleep_time(self):

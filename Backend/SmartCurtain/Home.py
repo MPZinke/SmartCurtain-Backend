@@ -47,6 +47,11 @@ class Home:
 
 
 	@staticmethod
+	def current() -> list[Home]:
+		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes_WHERE_Current()]
+
+
+	@staticmethod
 	def from_dictionary(home_data: dict) -> Home:
 		rooms: list[Room] = [Room.from_dictionary(room_data) for room_data in home_data["Rooms"]]
 
@@ -108,7 +113,7 @@ class Home:
 		self._name = new_name
 
 
-	def HomeOption(self, Option_id: int) -> Optional[AreaOption[Host]]:
+	def HomeOption(self, Option_id: int) -> Optional[AreaOption[Home]]:
 		return next((option for option in self._HomeOptions if(option.Option().id() == Option_id)), None)
 
 

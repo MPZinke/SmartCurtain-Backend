@@ -17,6 +17,7 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta
 import json
 import os
+from paho.mqtt.client import Client as MQTTClient
 import re
 import requests
 from typing import List, Optional, TypeVar, Union
@@ -51,16 +52,13 @@ class Curtain:
 		self._is_moving: bool = False
 		self._percentage: int = 0
 
-		[curtain_event.Curtain(self) for curtain_event in self._CurtainOptions]
+		[curtain_event.Curtain(self) for curtain_event in self._CurtainEvents]
 		[curtain_option.Curtain(self) for curtain_option in self._CurtainOptions]
 
 
 	@staticmethod
 	def from_dictionary(curtain_data: dict) -> Curtain:
-		events: list[CurtainEvents] = []
-		for event in curtain_data["CurtainsEvents"]:
-			# print("Event", event)
-			pass
+		events: list[CurtainEvents] = [CurtainEvent.from_dictionary(event) for event in curtain_data["CurtainsEvents"]]
 
 		options: list[CurtainOptions] = []
 		for option_data in curtain_data["CurtainsOptions"]:
@@ -158,7 +156,7 @@ class Curtain:
 		self._percentage = new_percentage
 
 
-	def CurtainOption(self, Option_id: int) -> Optional[AreaOption[Host]]:
+	def CurtainOption(self, Option_id: int) -> Optional[AreaOption[Curtain]]:
 		return next((option for option in self._CurtainOptions if(option.Option().id() == Option_id)), None)
 
 
@@ -199,12 +197,13 @@ class Curtain:
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
-	def Room(self, new_Room: Optional[int]=None) -> Optional[int]:
+	def Room(self, new_Room: Optional[Room]=None) -> Optional[Room]:
 		if(new_Room is None):
 			return self._Room
 
-		if(not isinstance(new_Room, int)):
-			raise Exception(f"'Curtain::Room' must be of type 'int' not '{type(new_Room).__name__}'")
+		from SmartCurtain import Room
+		if(not isinstance(new_Room, Room)):
+			raise Exception(f"'Curtain::Room' must be of type 'Room' not '{type(new_Room).__name__}'")
 
 		self._Room = new_Room
 

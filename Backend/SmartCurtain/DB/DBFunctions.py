@@ -91,7 +91,7 @@ def CurtainsEvents__iter__(self) -> dict:
 		"is_deleted": self.is_deleted,
 		"percentage": self.percentage,
 		"time": self.time,
-		"Option": dict(self.options)
+		"Option": dict(self.options) if(self.options is not None) else None
 	}.items()
 
 
@@ -129,6 +129,13 @@ def SELECT_Options() -> list:
 		return list(map(dict, session.scalars(statement)))
 
 
+def SELECT_Homes_WHERE_Current() -> list:
+	with Session(ENGINE) as session:
+		# statement = select(Homes).join(Curtains).join(CurtainsEvents).where(CurtainsEvents.is_activated == False).where(CurtainsEvents.is_deleted == False)
+		# return list(map(dict, session.scalars(statement)))
+		return Homes.query.join(CurtainsEvents).filter(is_activated=False, is_deleted=False)
+
+
 def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_deleted: Optional[bool]=None,
   percentage: Optional[int]=None, time: Optional[datetime]=None, **kwargs: dict
 ):
@@ -158,7 +165,8 @@ def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_dele
 def test():
 	import json
 	# print(json.dumps(SELECT_Homes(), default=str, indent=4))
-	UPDATE_CurtainsEvents(1, is_activated=True, is_deleted=True)
+	print(json.dumps(SELECT_Homes_WHERE_Current(), default=str, indent=4))
+	# UPDATE_CurtainsEvents(1, is_activated=True, is_deleted=True)
 
 
 if(__name__ == "__main__"):
