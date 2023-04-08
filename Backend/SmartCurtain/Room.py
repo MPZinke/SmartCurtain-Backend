@@ -58,6 +58,7 @@ class Room:
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
 		return next((room for room in self._Curtains if(room.id() == Curtain_id)), None)
@@ -85,38 +86,48 @@ class Room:
 		return self._id
 
 
-	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
+	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
 		if(new_is_deleted is None):
 			return self._is_deleted
 
-		if(not isinstance(new_is_deleted, int)):
-			value_type_str = type(new_is_deleted).__name__
-			raise Exception(f"'Room::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'")
+		if(not isinstance(new_is_deleted, bool)):
+			raise Exception(f"'Room::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
 
 		self._is_deleted = new_is_deleted
 
 
-	def name(self, new_name: Optional[int]=None) -> Optional[int]:
+	def name(self, new_name: Optional[str]=None) -> Optional[str]:
 		if(new_name is None):
 			return self._name
 
-		if(not isinstance(new_name, int)):
-			value_type_str = type(new_name).__name__
-			raise Exception(f"'Room::name' must be of type '{int.__name__}' not '{value_type_str}'")
+		if(not isinstance(new_name, str)):
+			raise Exception(f"'Room::name' must be of type '{str.__name__}' not '{type(new_name).__name__}'")
 
 		self._name = new_name
 
+
+	def RoomOption(self, Option_id: int) -> Optional[AreaOption[Host]]:
+		return next((option for option in self._RoomOptions if(option.Option().id() == Option_id)), None)
+
+
+	def RoomOptions(self) -> list[AreaOption[Room]]:
+		return self._RoomOptions.copy()
+
+
+	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
 	def Curtains(self):
 		return self._Curtains.copy()
 
 
-	def Home(self, new_Home: Optional[int]=None) -> Optional[int]:
+	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
+
+	def Home(self, new_Home: Optional[Home]=None) -> Optional[Home]:
 		if(new_Home is None):
 			return self._Home
 
-		if(not isinstance(new_Home, int)):
-			raise Exception(f"'Room::Home' must be of type 'int' not '{type(new_Home).__name__}'")
+		if(not isinstance(new_Home, Home)):
+			raise Exception(f"'Room::Home' must be of type 'Home' not '{type(new_Home).__name__}'")
 
 		self._Home = new_Home
 

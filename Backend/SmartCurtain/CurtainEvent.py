@@ -14,150 +14,120 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from datetime import datetime, timedelta;
-from json import dumps;
-from requests import post;
-from typing import List;
-from warnings import warn as Warn;
+from datetime import datetime, timedelta
+from json import dumps
+from requests import post
+from typing import Optional, TypeVar
+from warnings import warn as Warn
 
 
-from Global import *;
-# from SmartCurtain.Curtain import Curtain;
-from SmartCurtain.DB import AttributeType, DBClass, ObjectAttributeType;
-# from SmartCurtain.DB import INSERT_CurtainsEvents;
-from Utility.ZThread import ZThreadSingle;
-from Utility import Logger;
+from Utility.ZThread import ZThreadSingle
+from Utility import Logger
+
+
+CurtainEvent = TypeVar("CurtainEvent")
 
 
 class CurtainEvent:
-	ATTRIBUTE_TYPES =	[
-							# AttributeType("_Curtain", Curtain),
-							AttributeType("_id", int),
-							AttributeType("_percentage", (int, NONETYPE)),
-							AttributeType("_is_activated", (int, bool, NONETYPE)),
-							AttributeType("_is_current", (int, bool, NONETYPE)),
-							AttributeType("_time", datetime)
-						];
-
-	# ———————————————————————————————————————————————— CON/DESTRUCTOR ———————————————————————————————————————————————— #
-
-	def __init__(self, **event_info: dict):
-		DBClass.__init__(self, "UPDATE_CurtainsEvents", **event_info);
-		self.validate();
-
-		self.__activation_thread = ZThreadSingle(f"Event Thread: {self._id}", self.activate, self.sleep_time);
-		self.__activation_thread.start();
-
-
-	# Creates a new entry in the DB and returns the newly created CurtainEvent object
-	@staticmethod
-	def add_event_to_DB(**info: dict) -> dict:
-		# Check attributes are present
-		# https://stackoverflow.com/a/19476841
-		temp = type("Temp", (), {"Curtain": info["Curtain"], "percentage": info["percentage"], "time": info["time"]})();
-		attribute_types: List[ObjectAttributeType] =[
-														ObjectAttributeType(temp, AttributeType("Curtain", Curtain)),
-														ObjectAttributeType(temp, AttributeType("percentage", int)),
-														ObjectAttributeType(temp, AttributeType("time", datetime))
-													];
-
-		DBClass.validate(None, attribute_types);
-
-		# Set possible missing attributes
-		names_and_defaults = {"Options.id": None, "is_activated": False, "is_current": True};
-		[info.update({name: info.get(name, default)}) for name, default in names_and_defaults.items()];
-
-		# Add to DB
-		event_params = [info["Curtain"].id(), info["Options.id"], info["percentage"], info["time"]];
-		return INSERT_CurtainsEvents(*event_params);
-
-
-	def __del__(self):
-		try:
-			self.__activation_thread.kill();
-		except:
-			return;
+	def __init__(self, Curtain: Optional[Curtain]=None, *, id: int, Option: Optional[object], is_activated: bool,
+	  is_deleted: bool, percentage: int, time: datetime
+	):
+		# DATABASE #
+		self._id: int = id
+		self._is_activated: bool = is_activated
+		self._is_deleted: bool = is_deleted
+		self._percentage: int = percentage
+		self._Option: Optional[object] = Option
+		self._time: datetime = time
+		# THREAD #
+		self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
+		self._publish_thread.start()
 
 
 	def __iter__(self) -> dict:
-		for x, attribute_type in enumerate(self.attribute_types):
-			if(Curtain in attribute_type):
-				del self.attribute_types[x];
-				break;
-
-		return DBClass.__iter__(self);
+		yield from {
+			"id": self._id,
+			"is_activated": self._is_activated,
+			"is_deleted": self._is_deleted,
+			"percentage": self._percentage,
+			"Option": dict(self._Option),
+			"time": self._time
+		}.items()
 
 
 	def __repr__(self) -> str:
-		return str(self);
+		return str(self)
 
 
 	def __str__(self) -> str:
-		return dumps(dict(self), default=str);
+		return json.dumps(dict(self), default=str, indent=4)
 
 
-	def delete(self):
-		# kill here since destructor doesn't kill very well
-		try:
-			self.__activation_thread.kill();
-		# clear event from structure (later tater)
-		finally:
-			for x, event in enumerate(self._Curtain.CurtainEvents()):
-				if(event.id() == self._id):
-					del self._Curtain.CurtainEvents()[x];
+	def id(self):
+		return self._id
 
 
-	# ——————————————————————————————————— GETTERS/SETTERS::DB COLUMN SIMPLE QUERIES ———————————————————————————————————
+	def is_activated(self, new_is_activated: Optional[bool]=None) -> Optional[bool]:
+		if(new_is_activated is None):
+			return self._is_activated
 
-	# Overwrite default DBCLass function for getting _id. This prevents it from being able to overwrite the value.
-	def id(self) -> int:
-		return self._id;
+		if(not isinstance(new_is_activated, bool)):
+			message = f"'CurtainEvent::is_activated' must be of type 'bool' not '{type(new_is_activated).__name__}'"
+			raise Exception(message)
 
-
-	# ———————————————————————————————————————————————————— ACTIVATE ————————————————————————————————————————————————————
-
-	def activate(self):
-		curtain = self._Curtain;
-
-		post_dict = self.activation_dict();
-		print("Post data:", end="");  #TESTING
-		print(post_dict);  #TESTING
-		try:
-			response = post(url=f"http://{curtain.service()}", headers=curtain.auth_header(), json=post_dict,
-			  timeout=curtain.buffer_time()/10+1);
-			if(int(response.status_code / 100) != 2):
-				raise Exception(f"Received {response.status_code} status code for event {self._id}");
-			if("error" in response.json()):
-				raise Exception(f"Received error message: {response.json()['error']}");
-			print(response.json());  #TESTING
-
-			if(not self.is_activated(True) or not self._is_activated):
-				raise Exception("Failed to set event activated");
-
-			curtain.is_activated(True);
-			curtain.percentage(self._percentage);
-
-		except Exception as error:
-			Logger.log_error(error);
-
-		self.delete();
+		self._is_activated = new_is_activated
 
 
-	def activation_dict(self):
-		return	{
-					"query type": "move",
-					"event":
-					{
-						"id" : self._id,
-						"percentage": int(self._percentage) if self._percentage else 0,
-					}
-				};
+	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
+		if(new_is_deleted is None):
+			return self._is_deleted
+
+		if(not isinstance(new_is_deleted, bool)):
+			raise Exception(f"'CurtainEvent::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
+
+		self._is_deleted = new_is_deleted
+
+
+	def percentage(self, new_percentage: Optional[int]=None) -> Optional[int]:
+		if(new_percentage is None):
+			return self._percentage
+
+		if(not isinstance(new_percentage, int)):
+			raise Exception(f"'CurtainEvent::percentage' must be of type 'int' not '{type(new_percentage).__name__}'")
+
+		self._percentage = new_percentage
+
+
+	def Option(self, new_Option: Optional[Option]=None) -> Optional[Option]:
+		if(new_Option is None):
+			return self._Option
+
+		if(not isinstance(new_Option, Option)):
+			raise Exception(f"'CurtainEvent::Option' must be of type 'Option' not '{type(new_Option).__name__}'")
+
+		self._Option = new_Option
+
+
+	def time(self, new_time: Optional[datetime]=None) -> Optional[datetime]:
+		if(new_time is None):
+			return self._time
+
+		if(not isinstance(new_time, datetime)):
+			raise Exception(f"'CurtainEvent::time' must be of type 'datetime' not '{type(new_time).__name__}'")
+
+		self._time = new_time
+
+
+	# ——————————————————————————————————————————————————— PUBLISH  ——————————————————————————————————————————————————— #
+
+	def publish(self) -> None:
+		payload = {"type": "move", "event": {"id": self._id, "percentage": self._percentage}}
+		self._Curtain.publish(json.dumps(payload))
+		UPDATE_CurtainsEvents(self,_id, is_activated=True)
 
 
 	def sleep_time(self):
-		now = datetime.now();
-		time_plus_1_second = self._time + timedelta(seconds=1);
-		if(time_plus_1_second < now):
-			Warn(f"Event {self._id} is scheduled at a time in the past");
+		if((now := datetime.now()) > self._time + timedelta(seconds=1)):
+			Warn(f"Event {self._id} is scheduled at a time in the past")
 
-		return (self._time - now).seconds if (now < self._time) else .25;
+		return (self._time - now).seconds if(now < self._time) else .25

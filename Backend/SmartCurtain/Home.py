@@ -60,6 +60,7 @@ class Home:
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __getitem__(self, Room_id: int) -> Optional[Room]:
 		return next((room for room in self._Rooms if(room.id() == Room_id)), None)
@@ -87,30 +88,38 @@ class Home:
 		return self._id
 
 
-	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
+	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
 		if(new_is_deleted is None):
 			return self._is_deleted
 
-		if(not isinstance(new_is_deleted, int)):
-			value_type_str = type(new_is_deleted).__name__
-			raise Exception(f"'Home::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'")
+		if(not isinstance(new_is_deleted, bool)):
+			raise Exception(f"'Home::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
 
 		self._is_deleted = new_is_deleted
 
 
-	def name(self, new_name: Optional[int]=None) -> Optional[int]:
+	def name(self, new_name: Optional[str]=None) -> Optional[str]:
 		if(new_name is None):
 			return self._name
 
-		if(not isinstance(new_name, int)):
-			value_type_str = type(new_name).__name__
-			raise Exception(f"'Home::name' must be of type '{int.__name__}' not '{value_type_str}'")
+		if(not isinstance(new_name, str)):
+			raise Exception(f"'Home::name' must be of type 'str' not '{type(new_is_deleted).__name__}'")
 
 		self._name = new_name
 
 
+	def HomeOption(self, Option_id: int) -> Optional[AreaOption[Host]]:
+		return next((option for option in self._HomeOptions if(option.Option().id() == Option_id)), None)
+
+
+	def HomeOptions(self) -> list[AreaOption[Home]]:
+		return self._HomeOptions.copy()
+
+
+	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
+
 	def Rooms(self):
-		return self._Rooms
+		return self._Rooms.copy()
 
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #

@@ -1,7 +1,8 @@
 
 
+from datetime import datetime
 import os
-from sqlalchemy import create_engine, func, select, MetaData
+from sqlalchemy import create_engine, func, select, update, MetaData
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.ext.automap import automap_base
 from typing import Optional
@@ -90,6 +91,7 @@ def CurtainsEvents__iter__(self) -> dict:
 		"is_deleted": self.is_deleted,
 		"percentage": self.percentage,
 		"time": self.time,
+		"Option": dict(self.options)
 	}.items()
 
 
@@ -127,9 +129,36 @@ def SELECT_Options() -> list:
 		return list(map(dict, session.scalars(statement)))
 
 
+def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_deleted: Optional[bool]=None,
+  percentage: Optional[int]=None, time: Optional[datetime]=None, **kwargs: dict
+):
+	if(any(key != "Option" for key in kwargs)):
+		raise Exception(f"""{", ".join([key for key in kwargs if(key != "Options")])} are not allowed""")
+
+	with Session(ENGINE) as session:
+		statement = update(CurtainsEvents).where(CurtainsEvents.id == id)
+		# if((curtain_event := session.scalar(select(CurtainsEvents))) is None):
+		# 	raise Exception(f"Could not find CurtainsEvents by id {id}")
+
+		if(is_activated is not None):
+			statement = statement.values(is_activated=is_activated)
+		if(is_deleted is not None):
+			statement = statement.values(is_deleted=is_deleted)
+		if(percentage is not None):
+			statement = statement.values(percentage=percentage)
+		if(time is not None):
+			statement = statement.values(time=time)
+		if("Option" in kwargs):
+			statement = statement.values(**{"Options.id": kwargs["Option"].id()})
+
+		session.execute(statement)
+		session.commit()
+
+
 def test():
 	import json
-	print(json.dumps(SELECT_Homes(), default=str, indent=4))
+	# print(json.dumps(SELECT_Homes(), default=str, indent=4))
+	UPDATE_CurtainsEvents(1, is_activated=True, is_deleted=True)
 
 
 if(__name__ == "__main__"):

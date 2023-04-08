@@ -72,6 +72,7 @@ class Curtain:
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __getitem__(self, curtain_event_id: int) -> Optional[CurtainEvent]:
 		return next((event for event in self._CurtainEvents if(event.id() == curtain_event_id)), None)
@@ -102,6 +103,10 @@ class Curtain:
 		return json.dumps(dict(self), default=str, indent=4)
 
 
+	def id(self):
+		return self._id
+
+
 	def buffer_time(self, new_buffer_time: Optional[int]=None) -> Optional[int]:
 		if(new_buffer_time is None):
 			return self._buffer_time
@@ -110,6 +115,16 @@ class Curtain:
 			raise Exception(f"'Curtain::buffer_time' must be of type 'int' not '{type(new_buffer_time).__name__}'")
 
 		self._buffer_time = new_buffer_time
+
+
+	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
+		if(new_is_deleted is None):
+			return self._is_deleted
+
+		if(not isinstance(new_is_deleted, int)):
+			raise Exception(f"'Curtain::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
+
+		self._is_deleted = new_is_deleted
 
 
 	def is_moving(self, new_is_moving: Optional[bool]=None) -> Optional[bool]:
@@ -142,6 +157,47 @@ class Curtain:
 		self._percentage = new_percentage
 
 
+	def CurtainOption(self, Option_id: int) -> Optional[AreaOption[Host]]:
+		return next((option for option in self._CurtainOptions if(option.Option().id() == Option_id)), None)
+
+
+	def CurtainOptions(self) -> list[AreaOption[Curtain]]:
+		return self._CurtainOptions.copy()
+
+
+	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
+
+	def CurtainEvent(self, *, id: Optional[int]=None, time: Optional[datetime]=None) -> Optional[CurtainEvent]:
+		if(id is not None):
+			if((event := next((event for event in self._CurtainEvents if(event.id() == id)), None)) is not None):
+				return event
+
+		if(time is not None):
+			if((event := next((event for event in self._CurtainEvents if(event.time() == time)), None)) is not None):
+				return event
+
+		return None
+
+
+	def CurtainEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
+	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
+	) -> list[CurtainEvent]:
+		known_events: list[CurtainEvent] = self._CurtainEvents.copy()
+
+		if(Option_id is not None):
+			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
+		if(is_activated is not None):
+			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
+		if(is_deleted is not None):
+			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
+		if(percentage is not None):
+			known_events = [event for event in known_events if(event.percentage() == percentage)]
+
+		return known_events
+
+
+	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
+
 	def Room(self, new_Room: Optional[int]=None) -> Optional[int]:
 		if(new_Room is None):
 			return self._Room
@@ -157,3 +213,9 @@ class Curtain:
 	def path(self) -> str:
 		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
 		return f"{self._Room.path()}/{path_name}"
+
+
+	def publish(self, payload: str) -> None:
+		client = MQTTClient()
+		client.connect("localhost", 1883, 60)
+		client.publish(self.path(), payload)

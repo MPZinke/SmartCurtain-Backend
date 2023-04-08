@@ -7,6 +7,8 @@
 -- 	FUTURE:
 
 
+CREATE EXTENSION btree_gist;
+
 
 DROP TABLE IF EXISTS "Options" CASCADE;
 CREATE TABLE IF NOT EXISTS "Options"
@@ -80,7 +82,7 @@ DROP TABLE IF EXISTS "Curtains" CASCADE;
 CREATE TABLE IF NOT EXISTS "Curtains"
 (
 	"id" SERIAL NOT NULL PRIMARY KEY,
-	"buffer_time" SMALLINT NOT NULL DEFAULT 0,
+	"buffer_time" INT NOT NULL DEFAULT 0,  -- seconds
 	"direction" BOOLEAN DEFAULT NULL,  -- NULL if curtain should use hardcoded values otherwise valued
 	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
 	"length" INT DEFAULT NULL,  -- NULL if curtain should use hardcoded values otherwise valued
@@ -122,7 +124,13 @@ CREATE TABLE IF NOT EXISTS "CurtainsEvents"
 	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
 	"percentage" INT NOT NULL,
 	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	EXCLUDE USING GIST
+	(
+		"Curtains.id" WITH =, 
+		TSRANGE("time" - INTERVAL '2 SECONDS', "time" + INTERVAL '2 SECONDS') WITH &&
+    )
+    WHERE ("is_deleted" = FALSE)
 );
 
 
