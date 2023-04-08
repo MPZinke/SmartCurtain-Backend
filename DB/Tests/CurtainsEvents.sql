@@ -160,7 +160,7 @@ FROM
 JOIN "Curtains" ON "T"."Curtains.name" = "Curtains"."name";
 
 
-INSERT INTO "RoomsE vents" ("Rooms.id", "percentage", "time")
+INSERT INTO "RoomsEvents" ("Rooms.id", "percentage", "time")
 SELECT "Rooms"."id", 0, "T"."time"
 FROM
 (
@@ -217,7 +217,7 @@ FROM
 JOIN "Curtains" ON "T"."Curtains.name" = "Curtains"."name";
 
 
-INSERT INTO "Room sEvents" ("Rooms.id", "percentage", "time")
+INSERT INTO "RoomsEvents" ("Rooms.id", "percentage", "time")
 SELECT "Rooms"."id", 0, "T"."time"
 FROM
 (
