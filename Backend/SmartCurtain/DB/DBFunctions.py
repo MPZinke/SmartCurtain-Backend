@@ -16,7 +16,7 @@ DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD");
 # ————————————————————————————————————————————————— OBJECT  CREATION ————————————————————————————————————————————————— #
 
 # FROM: https://docs.sqlalchemy.org/en/20/orm/extensions/automap.html
-ENGINE = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/SmartCurtain")
+ENGINE = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/SmartCurtain", future=True)
 Base = automap_base()
 Base.prepare(autoload_with=ENGINE)
 
@@ -85,13 +85,16 @@ def AreaOptions__iter__(self) -> dict:
 
 
 def CurtainsEvents__iter__(self) -> dict:
+	print(dir(self))
+	print(getattr(self, "Options.id"))
 	yield from {
 		"id": self.id,
 		"is_activated": self.is_activated,
 		"is_deleted": self.is_deleted,
 		"percentage": self.percentage,
 		"time": self.time,
-		"Option": dict(self.options) if(self.options is not None) else None
+		"Option.id": getattr(self, "Options.id")
+		# "Option": dict(self.options) if(self.options is not None) else None
 	}.items()
 
 
@@ -164,8 +167,8 @@ def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_dele
 
 def test():
 	import json
-	# print(json.dumps(SELECT_Homes(), default=str, indent=4))
-	print(json.dumps(SELECT_Homes_WHERE_Current(), default=str, indent=4))
+	print(json.dumps(SELECT_Homes(), default=str, indent=4))
+	# print(json.dumps(SELECT_Homes_WHERE_Current(), default=str, indent=4))
 	# UPDATE_CurtainsEvents(1, is_activated=True, is_deleted=True)
 
 
