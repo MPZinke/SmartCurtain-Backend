@@ -107,280 +107,6 @@ CREATE TRIGGER "DeleteRoomsTrigger"
   EXECUTE PROCEDURE update_Rooms_deletion();
 
 
-
-
--- DROP TRIGGER IF EXISTS "DeleteOldCurtainEvents" ON "CurtainsEvents";
--- CREATE TRIGGER "DeleteOldCurtainEvents"
---   BEFORE SELECT ON "CurtainsEvents"
---   FOR EACH ROW
---   EXECUTE PROCEDURE update_old_CurtainsEvents();
-
-
--- ————————————————————————————————————————————————————— EVENTS ————————————————————————————————————————————————————— --
--- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
-
-DROP TABLE IF EXISTS "HomesEvents" CASCADE;
-CREATE TABLE IF NOT EXISTS "HomesEvents"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Homes.id" INT NOT NULL,
-	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id"),
-	"Options.id" INT DEFAULT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"percentage" INT NOT NULL,
-	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	EXCLUDE USING GIST
-	(
-		"Homes.id" WITH =, 
-		TSRANGE("time" - INTERVAL '5 SECONDS', "time" + INTERVAL '5 SECONDS') WITH &&
-	)
-	WHERE ("is_deleted" = FALSE)
-);
-
-
-DROP TABLE IF EXISTS "RoomsEvents" CASCADE;
-CREATE TABLE IF NOT EXISTS "RoomsEvents"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Rooms.id" INT NOT NULL,
-	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id"),
-	"Options.id" INT DEFAULT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"percentage" INT NOT NULL,
-	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	EXCLUDE USING GIST
-	(
-		"Rooms.id" WITH =, 
-		TSRANGE("time" - INTERVAL '5 SECONDS', "time" + INTERVAL '5 SECONDS') WITH &&
-	)
-	WHERE ("is_deleted" = FALSE)
-);
-
-
-DROP TABLE IF EXISTS "CurtainsEvents" CASCADE;
-CREATE TABLE IF NOT EXISTS "CurtainsEvents"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Curtains.id" INT NOT NULL,
-	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
-	"Options.id" INT DEFAULT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"percentage" INT NOT NULL,
-	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	EXCLUDE USING GIST
-	(
-		"Curtains.id" WITH =, 
-		TSRANGE("time" - INTERVAL '5 SECONDS', "time" + INTERVAL '5 SECONDS') WITH &&
-	)
-	WHERE ("is_deleted" = FALSE)
-);
-
-
-CREATE UNIQUE INDEX ON "CurtainsEvents"("Curtains.id", "time")
-  WHERE "is_deleted" = FALSE;
-
-
--- ———————————————————————————————————————————— EVENTS::INSERT INTEGRITY ———————————————————————————————————————————— --
-
-DROP FUNCTION IF EXISTS update_for_HomesEvents_insertion() CASCADE;
-CREATE FUNCTION update_for_HomesEvents_insertion() RETURNS TRIGGER AS $$
-BEGIN
-	UPDATE "RoomsEvents"
-	SET "is_deleted" = TRUE
-	WHERE "id" IN
-	(
-		SELECT "RoomsEvents"."id"
-		FROM "RoomsEvents"
-		JOIN "Rooms" ON "RoomsEvents"."Rooms.id" = "Rooms"."id"
-		WHERE "Rooms"."Homes.id" = NEW."Homes.id"
-		  AND "RoomsEvents"."is_deleted" = FALSE
-		  AND NEW."time" < "RoomsEvents"."time" + INTERVAL '5 SECONDS'
-		  AND "RoomsEvents"."time" - INTERVAL '5 SECONDS' < NEW."time"
-	);
-
-	UPDATE "CurtainsEvents"
-	SET "is_deleted" = TRUE
-	WHERE "id" IN
-	(
-		SELECT "CurtainsEvents"."id"
-		FROM "CurtainsEvents"
-		JOIN "Curtains" ON "CurtainsEvents"."Curtains.id" = "Curtains"."id"
-		JOIN "Rooms" ON "Curtains"."Rooms.id" = "Rooms"."id"
-		WHERE "Rooms"."Homes.id" = NEW."Homes.id"
-		  AND "CurtainsEvents"."is_deleted" = FALSE
-		  AND NEW."time" < "CurtainsEvents"."time" + INTERVAL '5 SECONDS'
-		  AND "CurtainsEvents"."time" - INTERVAL '5 SECONDS' < NEW."time"
-	);
-	RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
-
-DROP TRIGGER IF EXISTS "UpdateForHomesEventsInsertionTrigger" ON "HomesEvents";
-CREATE TRIGGER "UpdateForHomesEventsInsertionTrigger"
-  BEFORE INSERT ON "HomesEvents"
-  FOR EACH ROW
-  EXECUTE PROCEDURE update_for_HomesEvents_insertion();
-
-
-DROP FUNCTION IF EXISTS update_for_RoomsEvents_insertion() CASCADE;
-CREATE FUNCTION update_for_RoomsEvents_insertion() RETURNS TRIGGER AS $$
-DECLARE
-	"HomesEvents_Count" INT;
-BEGIN
-	-- Check if any Home Events already exist
-	SELECT COUNT("HomesEvents"."id") INTO "HomesEvents_Count"
-	FROM "HomesEvents"
-	JOIN "Homes" ON "HomesEvents"."Homes.id" = "Homes"."id"
-	JOIN "Rooms" ON "Homes"."id" = "Rooms"."Homes.id"
-	WHERE "Rooms"."id" = NEW."Rooms.id"
-	  AND "HomesEvents"."is_deleted" = FALSE
-	  AND NEW."time" < "HomesEvents"."time" + INTERVAL '5 SECONDS'
-	  AND "HomesEvents"."time" - INTERVAL '5 SECONDS' < NEW."time";
-	IF "HomesEvents_Count" > 0
-	THEN
-		RAISE 'A Home Event already exists for %', NEW."time";
-	END IF;
-
-	UPDATE "CurtainsEvents"
-	SET "is_deleted" = TRUE
-	WHERE "id" IN
-	(
-		SELECT "CurtainsEvents"."id"
-		FROM "CurtainsEvents"
-		JOIN "Curtains" ON "CurtainsEvents"."Curtains.id" = "Curtains"."id"
-		WHERE "Curtains"."Rooms.id" = NEW."Rooms.id"
-		  AND "CurtainsEvents"."is_deleted" = FALSE
-		  AND NEW."time" < "CurtainsEvents"."time" + INTERVAL '5 SECONDS'
-		  AND "CurtainsEvents"."time" - INTERVAL '5 SECONDS' < NEW."time"
-	);
-
-	RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
-
-DROP TRIGGER IF EXISTS "UpdateForRoomsEventsInsertionTrigger" ON "RoomsEvents";
-CREATE TRIGGER "UpdateForRoomsEventsInsertionTrigger"
-  BEFORE INSERT ON "RoomsEvents"
-  FOR EACH ROW
-  EXECUTE PROCEDURE update_for_RoomsEvents_insertion();
-
-
-DROP FUNCTION IF EXISTS update_for_CurtainsEvents_insertion() CASCADE;
-CREATE FUNCTION update_for_CurtainsEvents_insertion() RETURNS TRIGGER AS $$
-DECLARE
-	"HomesEvents_Count" INT;
-	"RoomsEvents_Count" INT;
-BEGIN
-	-- Check if any Home Events already exist
-	SELECT COUNT("HomesEvents"."id") INTO "HomesEvents_Count"
-	FROM "HomesEvents"
-	JOIN "Homes" ON "HomesEvents"."Homes.id" = "Homes"."id"
-	JOIN "Rooms" ON "Homes"."id" = "Rooms"."Homes.id"
-	JOIN "Curtains" ON "Rooms"."id" = "Curtains"."Rooms.id"
-	WHERE "Curtains"."id" = NEW."Curtains.id"
-	  AND "HomesEvents"."is_deleted" = FALSE
-	  AND NEW."time" < "HomesEvents"."time" + INTERVAL '5 SECONDS'
-	  AND "HomesEvents"."time" - INTERVAL '5 SECONDS' < NEW."time";
-	IF "HomesEvents_Count" > 0
-	THEN
-		RAISE 'A Home Event already exists for %', NEW."time";
-	END IF;
-
-	-- Check if any Room Events already exist
-	SELECT COUNT("RoomsEvents"."id") INTO "RoomsEvents_Count"
-	FROM "RoomsEvents"
-	JOIN "Rooms" ON "RoomsEvents"."Rooms.id" = "Rooms"."id"
-	JOIN "Curtains" ON "Rooms"."id" = "Curtains"."Rooms.id"
-	WHERE "Curtains"."id" = NEW."Curtains.id"
-	  AND "RoomsEvents"."is_deleted" = FALSE
-	  AND NEW."time" < "RoomsEvents"."time" + INTERVAL '5 SECONDS'
-	  AND "RoomsEvents"."time" - INTERVAL '5 SECONDS' < NEW."time";
-	IF "RoomsEvents_Count" > 0
-	THEN
-		RAISE 'A Room Event already exists for %', NEW."time";
-	END IF;
-
-	RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
-
-DROP TRIGGER IF EXISTS "UpdateForCurtainsEventsInsertionTrigger" ON "CurtainsEvents";
-CREATE TRIGGER "UpdateForCurtainsEventsInsertionTrigger"
-  BEFORE INSERT ON "CurtainsEvents"
-  FOR EACH ROW
-  EXECUTE PROCEDURE update_for_CurtainsEvents_insertion();
-
-
--- ———————————————————————————————————————————— EVENTS::DELETE INTEGRITY ———————————————————————————————————————————— --
-
-DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
-CREATE FUNCTION update_Homes_deletion() RETURNS TRIGGER AS $$
-BEGIN
-	UPDATE "HomesEvents" SET "is_deleted" = TRUE WHERE "Homes.id" = NEW."id";
-	RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
-
--- Delete HomesEvents & HomesOptions when Home is deleted.
-DROP TRIGGER IF EXISTS "DeleteHomesTrigger" ON "Homes";
-CREATE TRIGGER "DeleteHomesTrigger"
-  AFTER UPDATE ON "Homes"
-  FOR EACH ROW
-  WHEN (NEW."is_deleted" = TRUE)
-  EXECUTE PROCEDURE update_Homes_deletion();
-
-
-DROP FUNCTION IF EXISTS update_Rooms_deletion() CASCADE;
-CREATE FUNCTION update_Rooms_deletion() RETURNS TRIGGER AS $$
-BEGIN
-	UPDATE "RoomsEvents" SET "is_deleted" = TRUE WHERE "Rooms.id" = NEW."id";
-	RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
-
--- Delete RoomsEvents & RoomsOptions when Room is deleted.
-DROP TRIGGER IF EXISTS "DeleteRoomsTrigger" ON "Rooms";
-CREATE TRIGGER "DeleteRoomsTrigger"
-  AFTER UPDATE ON "Rooms"
-  FOR EACH ROW
-  WHEN (NEW."is_deleted" = TRUE)
-  EXECUTE PROCEDURE update_Rooms_deletion();
-
-
-
-DROP FUNCTION IF EXISTS update_Curtains_deletion() CASCADE;
-CREATE FUNCTION update_Curtains_deletion() RETURNS TRIGGER AS $$
-BEGIN
-	UPDATE "CurtainsEvents" SET "is_deleted" = TRUE WHERE "Curtains.id" = NEW."id";
-	RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
-
--- Delete CurtainsEvents & CurtainsOptions when Curtain is deleted.
-DROP TRIGGER IF EXISTS "DeleteCurtainsTrigger" ON "Curtains";
-CREATE TRIGGER "DeleteCurtainsTrigger"
-  AFTER UPDATE ON "Curtains"
-  FOR EACH ROW
-  WHEN (NEW."is_deleted" = TRUE)
-  EXECUTE PROCEDURE update_Curtains_deletion();
-
-
-
 -- ———————————————————————————————————————————————————— OPTIONS  ———————————————————————————————————————————————————— --
 -- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
 
@@ -440,3 +166,305 @@ CREATE TABLE IF NOT EXISTS "CurtainsOptions"
 
 
 -- ——————————————————————————————————————————— OPTIONS::DELETE INTEGRITY  ——————————————————————————————————————————— --
+
+
+
+-- ————————————————————————————————————————————————————— EVENTS ————————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+
+
+DROP TABLE IF EXISTS "Events" CASCADE;
+CREATE TABLE IF NOT EXISTS "Events"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Options.id" INT DEFAULT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
+	"percentage" INT NOT NULL,
+	CHECK("percentage" >= 0),
+	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE("Options.id", "percentage", "time")
+);
+
+
+DROP TABLE IF EXISTS "HomesEvents" CASCADE;
+CREATE TABLE IF NOT EXISTS "HomesEvents"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Homes.id" INT NOT NULL,
+	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id"),
+	"Events.id" INT NOT NULL,
+	FOREIGN KEY ("Events.id") REFERENCES "Events"("id"),
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+
+CREATE UNIQUE INDEX ON "HomesEvents"("Homes.id", "Events.id")
+  WHERE "is_deleted" = FALSE;
+
+
+DROP TABLE IF EXISTS "RoomsEvents" CASCADE;
+CREATE TABLE IF NOT EXISTS "RoomsEvents"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Rooms.id" INT NOT NULL,
+	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id"),
+	"Events.id" INT NOT NULL,
+	FOREIGN KEY ("Events.id") REFERENCES "Events"("id"),
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+
+DROP TABLE IF EXISTS "CurtainsEvents" CASCADE;
+CREATE TABLE IF NOT EXISTS "CurtainsEvents"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Curtains.id" INT NOT NULL,
+	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
+	"Events.id" INT NOT NULL,
+	FOREIGN KEY ("Events.id") REFERENCES "Events"("id"),
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+
+
+-- ———————————————————————————————————————————— EVENTS::INSERT INTEGRITY ———————————————————————————————————————————— --
+
+-- ———— HomesEvents ———— --
+
+DROP VIEW IF EXISTS "HomesEventsView";
+CREATE VIEW "HomesEventsView" AS
+SELECT "HomesEvents".*, "Events"."is_activated", "Events"."Options.id", "Events"."percentage", "Events"."time"
+FROM "HomesEvents"
+JOIN "Events" ON "HomesEvents"."Events.id" = "Events"."id"
+WHERE "HomesEvents"."is_deleted" = FALSE;
+
+
+DROP FUNCTION IF EXISTS insert_HomesEvent() CASCADE;
+CREATE FUNCTION insert_HomesEvent() RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW."time" IS NULL
+	THEN
+		NEW."time" = CURRENT_TIMESTAMP;
+	END IF;
+
+	-- Determine if an event exists
+	SELECT "id" INTO NEW."Events.id"
+	FROM "Events"
+	WHERE "time" = NEW."time"
+	  AND "percentage" = NEW."percentage"
+	  AND "Options.id" = NEW."Options.id";
+
+	-- If event does not exist, create it
+	IF NEW."Events.id" IS NULL
+	THEN
+		INSERT INTO "Events" ("Options.id", "percentage", "time") VALUES
+		(NEW."Options.id", NEW."percentage", NEW."time")
+		RETURNING "id" INTO NEW."Events.id";
+	END IF;
+	
+	UPDATE "RoomsEvents"
+	SET "is_deleted" = TRUE
+	WHERE "RoomsEvents"."Events.id" = NEW."Events.id";
+	
+	UPDATE "CurtainsEvents"
+	SET "is_deleted" = TRUE
+	WHERE "CurtainsEvents"."Events.id" = NEW."Events.id";
+
+	INSERT INTO "HomesEvents"("Homes.id", "Events.id") VALUES
+	(NEW."Homes.id", NEW."Events.id") RETURNING "id" INTO NEW."id";
+
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+DROP TRIGGER IF EXISTS "InsertHomesEventTrigger" ON "HomesEvents";
+CREATE TRIGGER "InsertHomesEventTrigger"
+  INSTEAD OF INSERT ON "HomesEventsView"
+  FOR EACH ROW EXECUTE PROCEDURE insert_HomesEvent();
+
+
+-- ———— RoomsEvents ———— --
+
+DROP VIEW IF EXISTS "RoomsEventsView";
+CREATE VIEW "RoomsEventsView" AS
+SELECT "RoomsEvents".*, "Events"."is_activated", "Events"."Options.id", "Events"."percentage", "Events"."time"
+FROM "RoomsEvents"
+JOIN "Events" ON "RoomsEvents"."Events.id" = "Events"."id"
+WHERE "RoomsEvents"."is_deleted" = FALSE;
+
+
+DROP FUNCTION IF EXISTS insert_RoomsEvent() CASCADE;
+CREATE FUNCTION insert_RoomsEvent() RETURNS TRIGGER AS $$
+DECLARE
+	"HomesEventsCount" INT;
+BEGIN
+	IF NEW."time" IS NULL
+	THEN
+		NEW."time" = CURRENT_TIMESTAMP;
+	END IF;
+
+	-- Determine if an event exists
+	SELECT "id" INTO NEW."Events.id"
+	FROM "Events"
+	WHERE "time" = NEW."time"
+	  AND "percentage" = NEW."percentage"
+	  AND "Options.id" = NEW."Options.id";
+
+	-- If event does not exist, create it
+	IF NEW."Events.id" IS NULL
+	THEN
+		INSERT INTO "Events" ("Options.id", "percentage", "time") VALUES
+		(NEW."Options.id", NEW."percentage", NEW."time")
+		RETURNING "id" INTO NEW."Events.id";
+	END IF;
+
+	SELECT COUNT("HomesEvents"."id") INTO "HomesEventsCount"
+	FROM "HomesEvents"
+	WHERE "Homes.id" = (SELECT "Homes.id" FROM "Rooms" WHERE "id" = NEW."id")
+	  AND "Events.id" = NEW."Events.id";
+	IF "HomesEventsCount" > 0
+	THEN
+		RAISE 'A Home Event already exists for %', NEW."time";
+	END IF;
+
+	UPDATE "CurtainsEvents"
+	SET "is_deleted" = TRUE
+	WHERE "CurtainsEvents"."Events.id" = NEW."Events.id";
+
+	INSERT INTO "RoomsEvents"("Rooms.id", "Events.id") VALUES
+	(NEW."Rooms.id", NEW."Events.id") RETURNING "id" INTO NEW."id";
+
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+DROP TRIGGER IF EXISTS "InsertRoomsEventTrigger" ON "RoomsEvents";
+CREATE TRIGGER "InsertRoomsEventTrigger"
+  INSTEAD OF INSERT ON "RoomsEventsView"
+  FOR EACH ROW EXECUTE PROCEDURE insert_RoomsEvent();
+
+
+-- ———— CurtainsEvents ———— --
+
+DROP VIEW IF EXISTS "CurtainsEventsView";
+CREATE VIEW "CurtainsEventsView" AS
+SELECT "CurtainsEvents".*, "Events"."is_activated", "Events"."Options.id", "Events"."percentage", "Events"."time"
+FROM "CurtainsEvents"
+JOIN "Events" ON "CurtainsEvents"."Events.id" = "Events"."id"
+WHERE "CurtainsEvents"."is_deleted" = FALSE;
+
+
+DROP FUNCTION IF EXISTS insert_CurtainsEvent() CASCADE;
+CREATE FUNCTION insert_CurtainsEvent() RETURNS TRIGGER AS $$
+DECLARE
+	"HomesEventsCount" INT;
+	"RoomsEventsCount" INT;
+BEGIN
+	IF NEW."time" IS NULL
+	THEN
+		NEW."time" = CURRENT_TIMESTAMP;
+	END IF;
+
+	-- Determine if an event exists
+	SELECT "id" INTO NEW."Events.id"
+	FROM "Events"
+	WHERE "time" = NEW."time";
+
+	-- If event does not exist, create it
+	IF NEW."Events.id" IS NULL
+	THEN
+		INSERT INTO "Events" ("Options.id", "percentage", "time") VALUES
+		(NEW."Options.id", NEW."percentage", NEW."time")
+		RETURNING "id" INTO NEW."Events.id";
+	END IF;
+
+	SELECT COUNT("HomesEvents"."id") INTO "HomesEventsCount"
+	FROM "HomesEvents"
+	WHERE "Homes.id" = (SELECT "Homes.id" FROM "Rooms" WHERE "id" = NEW."id")
+	  AND "Events.id" = NEW."Events.id";
+	IF "HomesEventsCount" > 0
+	THEN
+		RAISE 'A Home Event already exists for %', NEW."time";
+	END IF;
+
+	SELECT COUNT("RoomsEvents"."id") INTO "RoomsEventsCount"
+	FROM "RoomsEvents"
+	WHERE "Rooms.id" = (SELECT "Rooms.id" FROM "Rooms" WHERE "id" = NEW."id")
+	  AND "Events.id" = NEW."Events.id";
+	IF "RoomsEventsCount" > 0
+	THEN
+		RAISE 'A Room Event already exists for %', NEW."time";
+	END IF;
+
+	INSERT INTO "CurtainsEvents"("Curtains.id", "Events.id") VALUES
+	(NEW."Curtains.id", NEW."Events.id") RETURNING "id" INTO NEW."id";
+
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+DROP TRIGGER IF EXISTS "InsertCurtainsEventTrigger" ON "CurtainsEvents";
+CREATE TRIGGER "InsertCurtainsEventTrigger"
+  INSTEAD OF INSERT ON "CurtainsEventsView"
+  FOR EACH ROW EXECUTE PROCEDURE insert_CurtainsEvent();
+
+
+-- ———————————————————————————————————————————— EVENTS::DELETE INTEGRITY ———————————————————————————————————————————— --
+
+DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
+CREATE FUNCTION update_Homes_deletion() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "HomesEvents" SET "is_deleted" = TRUE WHERE "Homes.id" = NEW."id";
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+-- Delete HomesEvents & HomesOptions when Home is deleted.
+DROP TRIGGER IF EXISTS "DeleteHomesTrigger" ON "Homes";
+CREATE TRIGGER "DeleteHomesTrigger"
+  AFTER UPDATE ON "Homes"
+  FOR EACH ROW
+  WHEN (NEW."is_deleted" = TRUE)
+  EXECUTE PROCEDURE update_Homes_deletion();
+
+
+DROP FUNCTION IF EXISTS update_Rooms_deletion() CASCADE;
+CREATE FUNCTION update_Rooms_deletion() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "RoomsEvents" SET "is_deleted" = TRUE WHERE "Rooms.id" = NEW."id";
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+-- Delete RoomsEvents & RoomsOptions when Room is deleted.
+DROP TRIGGER IF EXISTS "DeleteRoomsTrigger" ON "Rooms";
+CREATE TRIGGER "DeleteRoomsTrigger"
+  AFTER UPDATE ON "Rooms"
+  FOR EACH ROW
+  WHEN (NEW."is_deleted" = TRUE)
+  EXECUTE PROCEDURE update_Rooms_deletion();
+
+
+
+DROP FUNCTION IF EXISTS update_Curtains_deletion() CASCADE;
+CREATE FUNCTION update_Curtains_deletion() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "CurtainsEvents" SET "is_deleted" = TRUE WHERE "Curtains.id" = NEW."id";
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+-- Delete CurtainsEvents & CurtainsOptions when Curtain is deleted.
+DROP TRIGGER IF EXISTS "DeleteCurtainsTrigger" ON "Curtains";
+CREATE TRIGGER "DeleteCurtainsTrigger"
+  AFTER UPDATE ON "Curtains"
+  FOR EACH ROW
+  WHEN (NEW."is_deleted" = TRUE)
+  EXECUTE PROCEDURE update_Curtains_deletion();

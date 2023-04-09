@@ -45,7 +45,7 @@ class CurtainEvent:
 		self._Option: Optional[object] = Option
 		self._time: datetime = time
 		# THREAD #
-		if(not self._is_activate and not self._is_deleted and datetime.now() < self._time):
+		if(not self._is_activated and not self._is_deleted and datetime.now() < self._time):
 			self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
 			self._publish_thread.start()
 

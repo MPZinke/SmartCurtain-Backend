@@ -21,14 +21,19 @@ Base = automap_base()
 Base.prepare(autoload_with=ENGINE)
 
 
-Options = Base.classes.Options
 Homes = Base.classes.Homes
-HomesOptions = Base.classes.HomesOptions
 Rooms = Base.classes.Rooms
-RoomsOptions = Base.classes.RoomsOptions
 Curtains = Base.classes.Curtains
-CurtainsEvents = Base.classes.CurtainsEvents
+
+Options = Base.classes.Options
+HomesOptions = Base.classes.HomesOptions
+RoomsOptions = Base.classes.RoomsOptions
 CurtainsOptions = Base.classes.CurtainsOptions
+
+Events = Base.classes.Events
+HomesEvents = Base.classes.HomesEvents
+RoomsEvents = Base.classes.RoomsEvents
+CurtainsEvents = Base.classes.CurtainsEvents
 
 
 def Homes__iter__(self) -> dict:
@@ -36,6 +41,7 @@ def Homes__iter__(self) -> dict:
 		"id": self.id,
 		"is_deleted": self.is_deleted,
 		"name": self.name,
+		"HomesEvents": list(map(dict, self.homesevents_collection)),
 		"HomesOptions": list(map(dict, self.homesoptions_collection)),
 		"Rooms": list(map(dict, self.rooms_collection))
 	}.items()
@@ -46,6 +52,7 @@ def Rooms__iter__(self) -> dict:
 		"id": self.id,
 		"is_deleted": self.is_deleted,
 		"name": self.name,
+		"RoomsEvents": list(map(dict, self.roomsevents_collection)),
 		"RoomsOptions": list(map(dict, self.roomsoptions_collection)),
 		"Curtains": list(map(dict, self.curtains_collection))
 	}.items()
@@ -83,28 +90,38 @@ def AreaOptions__iter__(self) -> dict:
 	}.items()
 
 
-
-def CurtainsEvents__iter__(self) -> dict:
-	print(dir(self))
-	print(getattr(self, "Options.id"))
+def Events__iter__(self) -> dict:
 	yield from {
 		"id": self.id,
 		"is_activated": self.is_activated,
-		"is_deleted": self.is_deleted,
 		"percentage": self.percentage,
 		"time": self.time,
-		"Option.id": getattr(self, "Options.id")
-		# "Option": dict(self.options) if(self.options is not None) else None
+		"Option": dict(self.options) if(self.options is not None) else None
 	}.items()
 
 
-Options.__iter__ = Options__iter__
+def AreaEvents__iter__(self) -> dict:
+	yield from {
+		"id": self.id,
+		"is_deleted": self.is_deleted,
+		"Event": dict(self.events) if(self.events is not None) else None
+	}.items()
+
+
+
 Homes.__iter__ = Homes__iter__
-HomesOptions.__iter__ = AreaOptions__iter__
 Rooms.__iter__ = Rooms__iter__
-RoomsOptions.__iter__ = AreaOptions__iter__
 Curtains.__iter__ = Curtains__iter__
-CurtainsEvents.__iter__ = CurtainsEvents__iter__
+
+
+Events.__iter__ = Events__iter__
+HomesEvents.__iter__ = AreaEvents__iter__
+RoomsEvents.__iter__ = AreaEvents__iter__
+CurtainsEvents.__iter__ = AreaEvents__iter__
+
+Options.__iter__ = Options__iter__
+HomesOptions.__iter__ = AreaOptions__iter__
+RoomsOptions.__iter__ = AreaOptions__iter__
 CurtainsOptions.__iter__ = AreaOptions__iter__
 
 

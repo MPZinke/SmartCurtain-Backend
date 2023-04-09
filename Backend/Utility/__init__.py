@@ -14,7 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Utility import Generic
+from Utility.Generic import Generic
 
 
 from datetime import datetime, timedelta
