@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/opt/homebrew/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "MPZinke"
 
@@ -22,16 +22,17 @@ from warnings import warn as Warn
 
 
 from SmartCurtain import Option
+from Utility import Generic
 from Utility.ZThread import ZThreadSingle
 from Utility import Logger
 
 
 Curtain = TypeVar("Curtain")
-CurtainEvent = TypeVar("CurtainEvent")
+AreaEvent = TypeVar("AreaEvent")
 Option = TypeVar("Option")
 
 
-class CurtainEvent:
+class AreaEvent():
 	def __init__(self, Curtain: Optional[Curtain]=None, *, id: int, Option: Optional[object], is_activated: bool,
 	  is_deleted: bool, percentage: int, time: datetime
 	):
@@ -51,9 +52,9 @@ class CurtainEvent:
 
 
 	@staticmethod
-	def from_dictionary(curtain_event_data: dict) -> CurtainEvent:
+	def from_dictionary(curtain_event_data: dict, type) -> AreaEvent:
 		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
-		return CurtainEvent(**{**curtain_event_data, "Option": option})
+		return AreaEvent[type](**{**curtain_event_data, "Option": option})
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -87,7 +88,7 @@ class CurtainEvent:
 			return self._is_activated
 
 		if(not isinstance(new_is_activated, bool)):
-			message = f"'CurtainEvent::is_activated' must be of type 'bool' not '{type(new_is_activated).__name__}'"
+			message = f"'AreaEvent[{self.__args__[0]}]::is_activated' must be of type 'bool' not '{type(new_is_activated).__name__}'"
 			raise Exception(message)
 
 		self._is_activated = new_is_activated
@@ -98,7 +99,7 @@ class CurtainEvent:
 			return self._is_deleted
 
 		if(not isinstance(new_is_deleted, bool)):
-			raise Exception(f"'CurtainEvent::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
 
 		self._is_deleted = new_is_deleted
 
@@ -108,7 +109,7 @@ class CurtainEvent:
 			return self._percentage
 
 		if(not isinstance(new_percentage, int)):
-			raise Exception(f"'CurtainEvent::percentage' must be of type 'int' not '{type(new_percentage).__name__}'")
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::percentage' must be of type 'int' not '{type(new_percentage).__name__}'")
 
 		self._percentage = new_percentage
 
@@ -118,7 +119,7 @@ class CurtainEvent:
 			return self._Option
 
 		if(not isinstance(new_Option, Option)):
-			raise Exception(f"'CurtainEvent::Option' must be of type 'Option' not '{type(new_Option).__name__}'")
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::Option' must be of type 'Option' not '{type(new_Option).__name__}'")
 
 		self._Option = new_Option
 
@@ -128,7 +129,7 @@ class CurtainEvent:
 			return self._time
 
 		if(not isinstance(new_time, datetime)):
-			raise Exception(f"'CurtainEvent::time' must be of type 'datetime' not '{type(new_time).__name__}'")
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::time' must be of type 'datetime' not '{type(new_time).__name__}'")
 
 		self._time = new_time
 
@@ -141,7 +142,7 @@ class CurtainEvent:
 
 		from SmartCurtain import Curtain
 		if(not isinstance(new_Curtain, Curtain)):
-			raise Exception(f"'Curtain::Curtain' must be of type 'Curtain' not '{type(new_Curtain).__name__}'")
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::Curtain' must be of type 'Curtain' not '{type(new_Curtain).__name__}'")
 
 		self._Curtain = new_Curtain
 

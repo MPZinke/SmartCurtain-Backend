@@ -413,6 +413,9 @@ CREATE TRIGGER "InsertCurtainsEventTrigger"
   FOR EACH ROW EXECUTE PROCEDURE insert_CurtainsEvent();
 
 
+-- ———————————————————————————————————————————— EVENTS::UPDATE INTEGRITY ———————————————————————————————————————————— --
+
+
 -- ———————————————————————————————————————————— EVENTS::DELETE INTEGRITY ———————————————————————————————————————————— --
 
 DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
