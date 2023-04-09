@@ -27,19 +27,21 @@ from Utility.ZThread import ZThreadSingle
 from Utility import Logger
 
 
-Curtain = TypeVar("Curtain")
+Area = TypeVar("Area")
 AreaEvent = TypeVar("AreaEvent")
 Option = TypeVar("Option")
 
 
-class AreaEvent():
-	def __init__(self, Curtain: Optional[Curtain]=None, *, id: int, Option: Optional[object], is_activated: bool,
-	  is_deleted: bool, percentage: int, time: datetime
+class AreaEvent(Generic):
+	def __init__(self, area: Optional[Area]=None, *, id: int, Option: Optional[object], is_activated: bool,
+	  is_deleted: bool, percentage: int, time: datetime, **kwargs: dict
 	):
 		# STRUCTURE #
-		self._Curtain = Curtain
+		setattr(self, f"_{self.__args__[0].__name__}", area)
+		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
 		# DATABASE #
 		self._id: int = id
+		setattr(self, f"_Event.id", kwargs["Event.id"])
 		self._is_activated: bool = is_activated
 		self._is_deleted: bool = is_deleted
 		self._percentage: int = percentage
@@ -51,10 +53,10 @@ class AreaEvent():
 			self._publish_thread.start()
 
 
-	@staticmethod
-	def from_dictionary(curtain_event_data: dict, type) -> AreaEvent:
+	@Generic.staticmethod
+	def from_dictionary(__args__: set, curtain_event_data: dict) -> AreaEvent:
 		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
-		return AreaEvent[type](**{**curtain_event_data, "Option": option})
+		return AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -77,6 +79,18 @@ class AreaEvent():
 
 	def __str__(self) -> str:
 		return json.dumps(dict(self), default=str, indent=4)
+
+
+	def get_or_set__args__(self, new__args__: Optional[Area]=None) -> Optional[Area]:
+		__args___name = self.__args__[0].__name__
+		if(new__args__ is None):
+			return getattr(self, f"_{__args___name}")
+
+		if(not isinstance(new__args__, self.__args__[0])):
+			value_type_str = type(new__args__).__name__
+			raise Exception(f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'");
+
+		setattr(self, f"_{__args___name}", new__args__)
 
 
 	def id(self):
@@ -136,7 +150,7 @@ class AreaEvent():
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
-	def Curtain(self, new_Curtain: Optional[Curtain]=None) -> Optional[Curtain]:
+	def Curtain(self, new_Curtain: Optional[Area]=None) -> Optional[Area]:
 		if(new_Curtain is None):
 			return self._Curtain
 

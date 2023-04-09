@@ -20,6 +20,7 @@ from typing import Optional, TypeVar
 
 
 from SmartCurtain import Option
+from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
 from SmartCurtain import Curtain
 
@@ -30,7 +31,7 @@ Room = TypeVar("Room")
 
 class Room:
 	def __init__(self, Home: Optional[Home]=None, *, id: int, is_deleted: bool, name: str,
-	  RoomOptions: list[AreaOption[Room]], Curtains: list[Curtain]
+	  RoomEvents: list[AreaEvent[Home]], RoomOptions: list[AreaOption[Room]], Curtains: list[Curtain]
 	):
 		# STRUCTURE #
 		self._Home = Home
@@ -38,22 +39,34 @@ class Room:
 		self._id: int = id
 		self._is_deleted: bool = is_deleted
 		self._name: str = name
+		self._RoomEvents: list[AreaEvent[Room]] = RoomEvents.copy()
 		self._RoomOptions: list[AreaOption[Room]] = RoomOptions.copy()
 		self._Curtains: list[Curtain] = Curtains.copy()
 
+		[room_event.Room(self) for room_event in self._RoomEvents]
 		[room_option.Room(self) for room_option in self._RoomOptions]
 		[curtain.Room(self) for curtain in self._Curtains]
 
 
 	@staticmethod
 	def from_dictionary(room_data: dict) -> Room:
-		curtains: list[Curtain] = [Curtain.from_dictionary(curtain_data) for curtain_data in room_data["Curtains"]]
+		events: list[AreaEvent[Home]] = []
+		for event_data in room_data["RoomsEvents"]:
+			# Flatten the tables
+			event = event_data["Event"]
+			event_data = {"id": event_data["id"], "is_deleted": event_data["is_deleted"], "Event.id": event["id"], 
+			  "is_activated": event["is_activated"], "percentage": event["percentage"], "time": event["time"],
+			  "Option": Option(**event["Option"]) if(event["Option"] is not None) else None
+			}
+			events.append(AreaEvent.from_dictionary[Home](**event_data))
 
 		options: list = []
 		for option_data in room_data["RoomsOptions"]:
 			options.append(AreaOption[Room](**{**option_data, "Option": Option(**option_data["Option"])}))
 
-		return Room(id=room_data["id"], is_deleted=room_data["is_deleted"], name=room_data["name"],
+		curtains: list[Curtain] = [Curtain.from_dictionary(curtain_data) for curtain_data in room_data["Curtains"]]
+
+		return Room(id=room_data["id"], is_deleted=room_data["is_deleted"], name=room_data["name"], RoomEvents=events,
 		  RoomOptions=options, Curtains=curtains)
 
 

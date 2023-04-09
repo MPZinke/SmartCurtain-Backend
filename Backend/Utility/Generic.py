@@ -22,6 +22,10 @@ class Generic:
 		return type(cls.__name__, (cls,), {"__args__": __args__})
 
 
+	def staticmethod(function: callable) -> object:
+		return Generic(function)
+
+
 	# ———— WRAPPER ———— #
 
 	def __init__(self, function: callable):
@@ -49,7 +53,18 @@ def test():
 			print(f"Test[{self.__args__[0].__name__}]{a, b}")
 
 
-	Test[int](1, 2)
+		def my_method(self, a, b):
+			print(f"""called `Test[{self.__args__[0].__name__}]::my_method({a}, {b})`""")
+
+
+		@Generic.staticmethod
+		def my_staticmethod(__args__, a, b):
+			print(f"""called `Test::my_staticmethod[{__args__[0].__name__}]({a}, {b})`""")
+
+
+	test = Test[int](1, 2)
+	test.my_method(1, 2)
+	Test.my_staticmethod[int](1, 2)
 
 
 	@Generic

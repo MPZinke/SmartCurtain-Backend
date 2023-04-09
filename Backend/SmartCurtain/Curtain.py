@@ -23,9 +23,9 @@ import requests
 from typing import List, Optional, TypeVar, Union
 
 
-from SmartCurtain import Option
+from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
-from SmartCurtain import CurtainEvent
+from SmartCurtain import Option
 
 
 Curtain = TypeVar("Curtain")
@@ -34,7 +34,7 @@ Room = TypeVar("Room")
 
 class Curtain:
 	def __init__(self, Room: Optional[Room]=None, *, id: int, buffer_time: int, direction: Optional[bool],
-	  is_deleted: bool, length: Optional[int], name: str, CurtainEvents: list[CurtainEvent],
+	  is_deleted: bool, length: Optional[int], name: str, CurtainEvents: list[AreaEvent[Curtain]],
 	  CurtainOptions: list[AreaOption[Curtain]]
 	):
 		# STRUCTURE #
@@ -46,7 +46,7 @@ class Curtain:
 		self._is_deleted: bool = is_deleted
 		self._length: Optional[int] = length
 		self._name: str = name
-		self._CurtainEvents: list[CurtainEvent] = CurtainEvents.copy()
+		self._CurtainEvents: list[AreaEvent[Curtain]] = CurtainEvents.copy()
 		self._CurtainOptions: list[AreaOption[Curtain]] = CurtainOptions.copy()
 		# TEMP STATE #
 		self._is_moving: bool = False
@@ -58,7 +58,15 @@ class Curtain:
 
 	@staticmethod
 	def from_dictionary(curtain_data: dict) -> Curtain:
-		events: list[CurtainEvents] = [CurtainEvent.from_dictionary(event) for event in curtain_data["CurtainsEvents"]]
+		events: list[AreaEvent[Home]] = []
+		for event_data in curtain_data["CurtainsEvents"]:
+			# Flatten the tables
+			event = event_data["Event"]
+			event_data = {"id": event_data["id"], "is_deleted": event_data["is_deleted"], "Event.id": event["id"], 
+			  "is_activated": event["is_activated"], "percentage": event["percentage"], "time": event["time"],
+			  "Option": Option(**event["Option"]) if(event["Option"] is not None) else None
+			}
+			events.append(AreaEvent.from_dictionary[Curtain](event_data))
 
 		options: list[CurtainOptions] = []
 		for option_data in curtain_data["CurtainsOptions"]:
@@ -73,7 +81,7 @@ class Curtain:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __getitem__(self, curtain_event_id: int) -> Optional[CurtainEvent]:
+	def __getitem__(self, curtain_event_id: int) -> Optional[AreaEvent[Curtain]]:
 		return next((event for event in self._CurtainEvents if(event.id() == curtain_event_id)), None)
 
 
@@ -166,7 +174,7 @@ class Curtain:
 
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
-	def CurtainEvent(self, *, id: Optional[int]=None, time: Optional[datetime]=None) -> Optional[CurtainEvent]:
+	def CurtainEvent(self, *, id: Optional[int]=None, time: Optional[datetime]=None) -> Optional[AreaEvent[Curtain]]:
 		if(id is not None):
 			if((event := next((event for event in self._CurtainEvents if(event.id() == id)), None)) is not None):
 				return event
@@ -180,8 +188,8 @@ class Curtain:
 
 	def CurtainEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
 	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
-	) -> list[CurtainEvent]:
-		known_events: list[CurtainEvent] = self._CurtainEvents.copy()
+	) -> list[AreaEvent[Curtain]]:
+		known_events: list[AreaEvent[Curtain]] = self._CurtainEvents.copy()
 
 		if(Option_id is not None):
 			known_events = [event for event in known_events if(event.Option().id() == Option_id)]

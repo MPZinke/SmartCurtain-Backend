@@ -21,6 +21,7 @@ from typing import Optional, TypeVar
 
 from SmartCurtain import Option
 from SmartCurtain import AreaOption
+from SmartCurtain import AreaEvent
 from SmartCurtain import Curtain
 from SmartCurtain import Room
 from SmartCurtain.DB import DBFunctions
@@ -30,13 +31,17 @@ Home = TypeVar("Home")
 
 
 class Home:
-	def __init__(self, *, id: int, is_deleted: bool, name: str, HomeOptions: list[AreaOption[Home]], Rooms: list[Room]):
+	def __init__(self, *, id: int, is_deleted: bool, name: str, HomeEvents: list[AreaEvent[Home]],
+	  HomeOptions: list[AreaOption[Home]], Rooms: list[Room]
+	):
 		self._id: int = id
 		self._is_deleted: bool = is_deleted
 		self._name: str = name
+		self._HomeEvents: list[AreaEvent[Home]] = HomeEvents.copy()
 		self._HomeOptions: list[AreaOption[Home]] = HomeOptions.copy()
 		self._Rooms: list[Room] = Rooms.copy()
 
+		[home_event.Home(self) for home_event in self._HomeEvents]
 		[home_option.Home(self) for home_option in self._HomeOptions]
 		[room.Home(self) for room in self._Rooms]
 
@@ -53,13 +58,23 @@ class Home:
 
 	@staticmethod
 	def from_dictionary(home_data: dict) -> Home:
-		rooms: list[Room] = [Room.from_dictionary(room_data) for room_data in home_data["Rooms"]]
+		events: list[AreaEvent[Home]] = []
+		for event_data in home_data["HomesEvents"]:
+			# Flatten the tables
+			event = event_data["Event"]
+			event_data = {"id": event_data["id"], "is_deleted": event_data["is_deleted"], "Event.id": event["id"], 
+			  "is_activated": event["is_activated"], "percentage": event["percentage"], "time": event["time"],
+			  "Option": Option(**event["Option"]) if(event["Option"] is not None) else None
+			}
+			events.append(AreaEvent.from_dictionary[Home](**event_data))
 
-		options: list = []
+		options: list[AreaOption[Home]] = []
 		for option_data in home_data["HomesOptions"]:
 			options.append(AreaOption[Home](**{**option_data, "Option": Option(**option_data["Option"])}))
 
-		return Home(id=home_data["id"], is_deleted=home_data["is_deleted"], name=home_data["name"],
+		rooms: list[Room] = [Room.from_dictionary(room_data) for room_data in home_data["Rooms"]]
+
+		return Home(id=home_data["id"], is_deleted=home_data["is_deleted"], name=home_data["name"], HomeEvents=events,
 		  HomeOptions=options, Rooms=rooms
 		)
 

@@ -14,9 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from SmartCurtain.Option import Option;
-from SmartCurtain.AreaOption import AreaOption;
-from SmartCurtain.CurtainEvent import CurtainEvent;
-from SmartCurtain.Curtain import Curtain;
-from SmartCurtain.Room import Room;
-from SmartCurtain.Home import Home;
+from SmartCurtain.Option import Option
+from SmartCurtain.AreaEvent import AreaEvent
+from SmartCurtain.AreaOption import AreaOption
+from SmartCurtain.Curtain import Curtain
+from SmartCurtain.Room import Room
+from SmartCurtain.Home import Home
