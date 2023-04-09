@@ -16,13 +16,13 @@ __author__ = "MPZinke"
 
 class Generic:
 	def __class_getitem__(cls, __args__):
-		return type(cls.__name__, (cls,), {"__args__": (__args__,)})
+		if(not isinstance(__args__, tuple)):
+			__args__ = (__args__,)
+
+		return type(cls.__name__, (cls,), {"__args__": __args__})
 
 
-	@staticmethod
-	def function(function: callable) -> object:
-		return Generic(function)
-
+	# ———— WRAPPER ———— #
 
 	def __init__(self, function: callable):
 		self._function = function
@@ -33,19 +33,23 @@ class Generic:
 
 
 	def __getitem__(self, __args__) -> callable:
+		if(not isinstance(__args__, tuple)):
+			__args__ = (__args__,)
+
 		self.__args__ = __args__
 		return self
 
 
 
-@Generic.function
-def my_function(__args__):
-	print(__args__)
+@Generic
+def my_function(__args__, *args, **kwargs):
+	print(f"my_function[{__args__[0].__name__}]")
+	print(args, kwargs)
 
 
 def test():
-	print(my_function[str])
-	my_function[str]()
+	print(my_function[str, int])
+	my_function[str](1, 2, key="word")
 
 
 if(__name__ == "__main__"):
