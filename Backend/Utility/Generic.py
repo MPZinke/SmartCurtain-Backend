@@ -41,15 +41,25 @@ class Generic:
 
 
 
-@Generic
-def my_function(__args__, *args, **kwargs):
-	print(f"my_function[{__args__[0].__name__}]")
-	print(args, kwargs)
 
 
 def test():
-	print(my_function[str, int])
-	my_function[str](1, 2, key="word")
+	class Test(Generic):
+		def __init__(self, a, b):
+			print(f"Test[{self.__args__[0].__name__}]{a, b}")
+
+
+	Test[int](1, 2)
+
+
+	@Generic
+	def my_function(__args__, *args, **kwargs):
+		args_string = ", ".join([str(arg) for arg in args])
+		kwargs_string = ",".join([f"{key}={value}" for key, value in kwargs.items()])
+		print(f"""called `my_function[{__args__[0].__name__}]({args_string}, {kwargs_string})`""")
+
+
+	my_function[str]("a", "b", key="word")
 
 
 if(__name__ == "__main__"):
