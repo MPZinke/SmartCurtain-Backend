@@ -1,7 +1,7 @@
 
 -- 	Created by: MPZinke
 -- 	on 2020.12.19
--- 
+--
 -- 	DESCRIPTION: Main DB script for creating Curtain DB.
 -- 	BUGS:
 -- 	FUTURE:
@@ -251,9 +251,8 @@ BEGIN
 	-- Determine if an event exists
 	SELECT "id" INTO NEW."Events.id"
 	FROM "Events"
-	WHERE "time" = NEW."time"
-	  AND "percentage" = NEW."percentage"
-	  AND "Options.id" = NEW."Options.id";
+	WHERE "time" < NEW."time" + INTERVAL '5 SECONDS'
+	  AND NEW."time" - INTERVAL '5 SECONDS' < "time";
 
 	-- If event does not exist, create it
 	IF NEW."Events.id" IS NULL
@@ -262,11 +261,15 @@ BEGIN
 		(NEW."Options.id", NEW."percentage", NEW."time")
 		RETURNING "id" INTO NEW."Events.id";
 	END IF;
-	
+
+	UPDATE "HomesEvents"
+	SET "is_deleted" = TRUE
+	WHERE "HomesEvents"."Events.id" = NEW."Events.id";
+
 	UPDATE "RoomsEvents"
 	SET "is_deleted" = TRUE
 	WHERE "RoomsEvents"."Events.id" = NEW."Events.id";
-	
+
 	UPDATE "CurtainsEvents"
 	SET "is_deleted" = TRUE
 	WHERE "CurtainsEvents"."Events.id" = NEW."Events.id";
@@ -308,9 +311,8 @@ BEGIN
 	-- Determine if an event exists
 	SELECT "id" INTO NEW."Events.id"
 	FROM "Events"
-	WHERE "time" = NEW."time"
-	  AND "percentage" = NEW."percentage"
-	  AND "Options.id" = NEW."Options.id";
+	WHERE "time" < NEW."time" + INTERVAL '5 SECONDS'
+	  AND NEW."time" - INTERVAL '5 SECONDS' < "time";
 
 	-- If event does not exist, create it
 	IF NEW."Events.id" IS NULL
@@ -326,8 +328,13 @@ BEGIN
 	  AND "Events.id" = NEW."Events.id";
 	IF "HomesEventsCount" > 0
 	THEN
+		SELECT setval('roomsevents_id_seq', NEW."id" - 1, true);
 		RAISE 'A Home Event already exists for %', NEW."time";
 	END IF;
+
+	UPDATE "HomesEvents"
+	SET "is_deleted" = TRUE
+	WHERE "HomesEvents"."Events.id" = NEW."Events.id";
 
 	UPDATE "CurtainsEvents"
 	SET "is_deleted" = TRUE
@@ -387,6 +394,7 @@ BEGIN
 	  AND "Events.id" = NEW."Events.id";
 	IF "HomesEventsCount" > 0
 	THEN
+		SELECT setval('curtainsevents_id_seq', NEW."id" - 1, true);
 		RAISE 'A Home Event already exists for %', NEW."time";
 	END IF;
 
@@ -396,6 +404,7 @@ BEGIN
 	  AND "Events.id" = NEW."Events.id";
 	IF "RoomsEventsCount" > 0
 	THEN
+		SELECT setval('curtainsevents_id_seq', NEW."id" - 1, true);
 		RAISE 'A Room Event already exists for %', NEW."time";
 	END IF;
 
