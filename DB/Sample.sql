@@ -99,7 +99,3 @@ FROM
 ) AS "Temp"("Curtains.name", "Options.name", "is_on", "data", "notes")
 JOIN "Options" ON "Temp"."Options.name" = "Options"."name"
 JOIN "Curtains" ON "Temp"."Curtains.name" = "Curtains"."name";
-
-
-INSERT INTO "CurtainsEvents" ("Curtains.id", "percentage") VALUES
-(1, 0);

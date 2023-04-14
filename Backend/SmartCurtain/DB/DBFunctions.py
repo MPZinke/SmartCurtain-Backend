@@ -1,187 +1,28 @@
 
 
 from datetime import datetime
-import os
-from sqlalchemy import create_engine, func, select, update, Boolean, Column, DateTime, ForeignKey, Integer, MetaData, Table
-from sqlalchemy.orm import Session, relationship
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.sql import text
+from sqlalchemy import select, update
+from sqlalchemy.orm import Session
 from typing import Optional
 
 
-DB_USER: str = os.getenv("SMARTCURTAIN_DB_USER");
-DB_HOST: str = os.getenv("SMARTCURTAIN_DB_HOST");
-DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD");
-
-
-# ————————————————————————————————————————————————— OBJECT  CREATION ————————————————————————————————————————————————— #
-
-# FROM: https://docs.sqlalchemy.org/en/20/orm/extensions/automap.html
-ENGINE = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/SmartCurtain", future=True)
-BASE = automap_base()
-METADATA = MetaData()
-
-Table('HomesEventsView', BASE.metadata,
-	Column('id', Integer, primary_key=True),
-	Column("Events.id", Integer, ForeignKey("Events.id"), nullable=False),
-	Column("Homes.id", Integer, ForeignKey("Homes.id"), nullable=False),
-	Column("Options.id", Boolean, ForeignKey("Options.id"), nullable=False),
-	Column("is_deleted", Boolean),
-	Column("is_activated", Boolean),
-	Column("percentage", Integer),
-	Column("time", DateTime),
-	autoload_with=ENGINE
+from SmartCurtain.DB import (
+	ENGINE,
+	Homes,
+	Rooms,
+	Curtains,
+	Events,
+	HomesEvents,
+	RoomsEvents,
+	CurtainsEvents,
+	Options,
+	HomesOptions,
+	RoomsOptions,
+	CurtainsOptions,
+	HomesEventsView,
+	RoomsEventsView,
+	CurtainsEventsView,
 )
-
-Table('RoomsEventsView', BASE.metadata,
-	Column('id', Integer, primary_key=True),
-	Column("Events.id", Integer, ForeignKey("Events.id"), nullable=False),
-	Column("Rooms.id", Integer, ForeignKey("Rooms.id"), nullable=False),
-	Column("Options.id", Boolean, ForeignKey("Options.id"), nullable=False),
-	Column("is_deleted", Boolean),
-	Column("is_activated", Boolean),
-	Column("percentage", Integer),
-	Column("time", DateTime),
-	autoload_with=ENGINE
-)
-
-Table('CurtainsEventsView', BASE.metadata,
-	Column('id', Integer, primary_key=True),
-	Column("Events.id", Integer, ForeignKey("Events.id"), nullable=False),
-	Column("Curtains.id", Integer, ForeignKey("Curtains.id"), nullable=False),
-	Column("Options.id", Boolean, ForeignKey("Options.id"), nullable=False),
-	Column("is_deleted", Boolean),
-	Column("is_activated", Boolean),
-	Column("percentage", Integer),
-	Column("time", DateTime),
-	autoload_with=ENGINE
-)
-
-BASE.prepare(autoload_with=ENGINE)
-
-
-Homes = BASE.classes.Homes
-Rooms = BASE.classes.Rooms
-Curtains = BASE.classes.Curtains
-
-Options = BASE.classes.Options
-HomesOptions = BASE.classes.HomesOptions
-RoomsOptions = BASE.classes.RoomsOptions
-CurtainsOptions = BASE.classes.CurtainsOptions
-
-Events = BASE.classes.Events
-HomesEvents = BASE.classes.HomesEvents
-RoomsEvents = BASE.classes.RoomsEvents
-CurtainsEvents = BASE.classes.CurtainsEvents
-
-HomesEventsView = BASE.classes.HomesEventsView
-RoomsEventsView = BASE.classes.RoomsEventsView
-CurtainsEventsView = BASE.classes.CurtainsEventsView
-
-
-def Homes__iter__(self) -> dict:
-	print(dir(self))
-	yield from {
-		"id": self.id,
-		"is_deleted": self.is_deleted,
-		"name": self.name,
-		"HomesEvents": list(map(dict, self.homeseventsview_collection)),
-		"HomesOptions": list(map(dict, self.homesoptions_collection)),
-		"Rooms": list(map(dict, self.rooms_collection))
-	}.items()
-
-
-def Rooms__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"is_deleted": self.is_deleted,
-		"name": self.name,
-		"RoomsEvents": list(map(dict, self.roomseventsview_collection)),
-		"RoomsOptions": list(map(dict, self.roomsoptions_collection)),
-		"Curtains": list(map(dict, self.curtains_collection))
-	}.items()
-
-
-def Curtains__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"buffer_time": self.buffer_time,
-		"direction": self.direction,
-		"is_deleted": self.is_deleted,
-		"length": self.length,
-		"name": self.name,
-		"CurtainsEvents": list(map(dict, self.curtainseventsview_collection)),
-		"CurtainsOptions": list(map(dict, self.curtainsoptions_collection))
-	}.items()
-
-
-def Options__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"description": self.description,
-		"is_deleted": self.is_deleted,
-		"name": self.name
-	}.items()
-
-
-def AreaOptions__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"Option": dict(self.options),
-		"data": self.data,
-		"is_on": self.is_on,
-		"notes": self.notes
-	}.items()
-
-
-def Events__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"is_activated": self.is_activated,
-		"percentage": self.percentage,
-		"time": self.time,
-		"Option": dict(self.options) if(self.options is not None) else None
-	}.items()
-
-
-def AreaEvents__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"is_deleted": self.is_deleted,
-		"Event": dict(self.events) if(self.events is not None) else None
-	}.items()
-
-
-def AreaEventsView__iter__(self) -> dict:
-	yield from {
-		"id": self.id,
-		"is_deleted": self.is_deleted,
-		"Option": dict(self.options) if(self.options is not None) else None,
-		"is_deleted": self.is_deleted,
-		"is_activated": self.is_activated,
-		"percentage": self.percentage,
-		"time": self.time
-	}.items()
-
-
-Homes.__iter__ = Homes__iter__
-Rooms.__iter__ = Rooms__iter__
-Curtains.__iter__ = Curtains__iter__
-
-
-Events.__iter__ = Events__iter__
-HomesEvents.__iter__ = AreaEvents__iter__
-RoomsEvents.__iter__ = AreaEvents__iter__
-CurtainsEvents.__iter__ = AreaEvents__iter__
-
-Options.__iter__ = Options__iter__
-HomesOptions.__iter__ = AreaOptions__iter__
-RoomsOptions.__iter__ = AreaOptions__iter__
-CurtainsOptions.__iter__ = AreaOptions__iter__
-
-HomesEventsView.__iter__ = AreaEventsView__iter__
-RoomsEventsView.__iter__ = AreaEventsView__iter__
-CurtainsEventsView.__iter__ = AreaEventsView__iter__
 
 
 def SELECT_Homes() -> list:
@@ -247,36 +88,42 @@ def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_dele
 		session.commit()
 
 
-def INSERT_Event(Area: str, *, percentage: int, time: Optional[datetime]=None, **kwargs: dict):
-	assert(Area in ["Curtains", "Rooms", "Homes"]), f"Area arg must be 'Curtains', 'Rooms', 'Homes', not '{Area}'"
-
-	allowed_kwargs = [f"{Area}.id", "Options.id"]
-	if(any(key not in allowed_kwargs for key in kwargs)):
-		raise Exception(f"""{", ".join([key for key in kwargs if(key not in allowed_kwargs)])} are not allowed""")
-
-	if(time is None):
-		time = datetime.now()
+def INSERT_HomesEvents(*, percentage: int, **kwargs: dict) -> HomesEventsView:
+	return INSERT_Events("Homes", percentage=percentage, **kwargs)
 
 
-def INSERT_HomeEvent():
-	test = HomesEventsView(**{
-			"Homes.id": 1,
-			"percentage": 1,
-		}
-	)
+def INSERT_RoomsEvents(*, percentage: int, **kwargs: dict) -> RoomsEventsView:
+	return INSERT_Events("Rooms", percentage=percentage, **kwargs)
+
+
+def INSERT_CurtainsEvents(*, percentage: int, **kwargs: dict) -> CurtainsEventsView:
+	return INSERT_Events("Curtains", percentage=percentage, **kwargs)
+
+
+def INSERT_Events(area: str, *, percentage: int, **kwargs: dict) -> HomesEventsView|RoomsEventsView|CurtainsEventsView:
+	View = {"Homes": HomesEventsView, "Rooms": RoomsEventsView, "Curtains": CurtainsEventsView}[area]
+	
+	allowed_args = [f"{area}.id", "Options.id", "time"]
+	if(any(key not in allowed_args for key in kwargs)):
+		raise Exception(f"""Bad key(s) {", ".join([key for key in kwargs if(key not in allowed_args)])}""")
+
+	event_args = {f"{area}.id": kwargs[f"{area}.id"], "percentage": percentage}
+	event_args.update({key: value for key, value in kwargs.items() if(key != f"{area}.id")})
+
+	event = View(**event_args)
 	with Session(ENGINE) as session:
-		session.add(test)
+		session.add(event)
 		session.commit()
+		session.refresh(event)
+
+		return dict(event)
 
 
 def test():
-	# INSERT_HomeEvent()
 	import json
-	# print(json.dumps(SELECT_HomesEventsView(), default=str, indent=4))
-	# INSERT_Event()
+	print(json.dumps(INSERT_RoomsEvents(percentage=0, time="2020-01-01 00:00:00", **{"Rooms.id": 1}), default=str, indent=4))
+	print(json.dumps(INSERT_HomesEvents(percentage=0, time="2020-01-01 00:00:00", **{"Homes.id": 1}), default=str, indent=4))
 	print(json.dumps(SELECT_Homes(), default=str, indent=4))
-	# print(json.dumps(SELECT_Homes_WHERE_Current(), default=str, indent=4))
-	# UPDATE_CurtainsEvents(1, is_activated=True, is_deleted=True)
 
 
 if(__name__ == "__main__"):

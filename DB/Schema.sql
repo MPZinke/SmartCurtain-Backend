@@ -324,17 +324,16 @@ BEGIN
 
 	SELECT COUNT("HomesEvents"."id") INTO "HomesEventsCount"
 	FROM "HomesEvents"
-	WHERE "Homes.id" = (SELECT "Homes.id" FROM "Rooms" WHERE "id" = NEW."id")
+	WHERE "Homes.id" = (SELECT "Homes.id" FROM "Rooms" WHERE "id" = NEW."Rooms.id")
 	  AND "Events.id" = NEW."Events.id";
 	IF "HomesEventsCount" > 0
 	THEN
-		SELECT setval('roomsevents_id_seq', NEW."id" - 1, true);
 		RAISE 'A Home Event already exists for %', NEW."time";
 	END IF;
 
-	UPDATE "HomesEvents"
+	UPDATE "RoomsEvents"
 	SET "is_deleted" = TRUE
-	WHERE "HomesEvents"."Events.id" = NEW."Events.id";
+	WHERE "RoomsEvents"."Events.id" = NEW."Events.id";
 
 	UPDATE "CurtainsEvents"
 	SET "is_deleted" = TRUE
@@ -390,23 +389,32 @@ BEGIN
 
 	SELECT COUNT("HomesEvents"."id") INTO "HomesEventsCount"
 	FROM "HomesEvents"
-	WHERE "Homes.id" = (SELECT "Homes.id" FROM "Rooms" WHERE "id" = NEW."id")
+	WHERE "Homes.id" = 
+		(
+			SELECT "Homes.id" FROM
+			(
+				SELECT "Rooms.id" FROM "Curtains" WHERE "id" = NEW."Curtains.id"
+			) AS "HomeQuery"
+			WHERE "HomeQuery"."id" = NEW."Rooms.id"
+		)
 	  AND "Events.id" = NEW."Events.id";
 	IF "HomesEventsCount" > 0
 	THEN
-		SELECT setval('curtainsevents_id_seq', NEW."id" - 1, true);
 		RAISE 'A Home Event already exists for %', NEW."time";
 	END IF;
 
 	SELECT COUNT("RoomsEvents"."id") INTO "RoomsEventsCount"
 	FROM "RoomsEvents"
-	WHERE "Rooms.id" = (SELECT "Rooms.id" FROM "Rooms" WHERE "id" = NEW."id")
+	WHERE "Rooms.id" = (SELECT "Rooms.id" FROM "Curtains" WHERE "id" = NEW."Curtains.id")
 	  AND "Events.id" = NEW."Events.id";
 	IF "RoomsEventsCount" > 0
 	THEN
-		SELECT setval('curtainsevents_id_seq', NEW."id" - 1, true);
 		RAISE 'A Room Event already exists for %', NEW."time";
 	END IF;
+
+	UPDATE "CurtainsEvents"
+	SET "is_deleted" = TRUE
+	WHERE "CurtainsEvents"."Events.id" = NEW."Events.id";
 
 	INSERT INTO "CurtainsEvents"("Curtains.id", "Events.id") VALUES
 	(NEW."Curtains.id", NEW."Events.id") RETURNING "id" INTO NEW."id";
