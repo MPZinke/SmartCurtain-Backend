@@ -44,9 +44,6 @@ class Generic:
 		return self
 
 
-
-
-
 def test():
 	class Test(Generic):
 		def __init__(self, a, b):
@@ -57,7 +54,7 @@ def test():
 			print(f"""called `Test[{self.__args__[0].__name__}]::my_method({a}, {b})`""")
 
 
-		@Generic.staticmethod
+		@Generic
 		def my_staticmethod(__args__, a, b):
 			print(f"""called `Test::my_staticmethod[{__args__[0].__name__}]({a}, {b})`""")
 

@@ -21,6 +21,7 @@ from typing import Optional, TypeVar
 from warnings import warn as Warn
 
 
+from SmartCurtain import DB
 from SmartCurtain import Option
 from Utility import Generic
 from Utility.ZThread import ZThreadSingle
@@ -41,16 +42,15 @@ class AreaEvent(Generic):
 		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
 		# DATABASE #
 		self._id: int = id
-		setattr(self, f"_Event.id", kwargs["Event.id"])
 		self._is_activated: bool = is_activated
 		self._is_deleted: bool = is_deleted
-		self._percentage: int = percentage
 		self._Option: Optional[object] = Option
+		self._percentage: int = percentage
 		self._time: datetime = time
 		# THREAD #
-		if(not self._is_activated and not self._is_deleted and datetime.now() < self._time):
-			self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
-			self._publish_thread.start()
+		# if(not self._is_activated and not self._is_deleted and datetime.now() < self._time):
+		self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
+		self._publish_thread.start()
 
 
 	@Generic.staticmethod
@@ -148,26 +148,13 @@ class AreaEvent(Generic):
 		self._time = new_time
 
 
-	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
-
-	def Curtain(self, new_Curtain: Optional[Area]=None) -> Optional[Area]:
-		if(new_Curtain is None):
-			return self._Curtain
-
-		from SmartCurtain import Curtain
-		if(not isinstance(new_Curtain, Curtain)):
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::Curtain' must be of type 'Curtain' not '{type(new_Curtain).__name__}'")
-
-		self._Curtain = new_Curtain
-
-
 	# ——————————————————————————————————————————————————— PUBLISH  ——————————————————————————————————————————————————— #
 
 	def publish(self) -> None:
 		print("Beep Boop")
 		payload = {"type": "move", "event": {"id": self._id, "percentage": self._percentage}}
 		self._Curtain.publish(json.dumps(payload))
-		UPDATE_CurtainsEvents(self._id, is_activated=True)
+		DB.DBFunctions.UPDATE_Events[self.__args__[0]](self._id, is_activated=True)
 
 
 	def sleep_time(self):

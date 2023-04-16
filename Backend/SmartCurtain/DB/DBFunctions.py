@@ -11,7 +11,6 @@ from SmartCurtain.DB import (
 	Homes,
 	Rooms,
 	Curtains,
-	Events,
 	HomesEvents,
 	RoomsEvents,
 	CurtainsEvents,
@@ -19,10 +18,8 @@ from SmartCurtain.DB import (
 	HomesOptions,
 	RoomsOptions,
 	CurtainsOptions,
-	HomesEventsView,
-	RoomsEventsView,
-	CurtainsEventsView,
 )
+from Utility import Generic
 
 
 def SELECT_Homes() -> list:
@@ -62,16 +59,17 @@ def SELECT_Homes_WHERE_Current() -> list:
 		return Homes.query.join(CurtainsEvents).filter(is_activated=False, is_deleted=False)
 
 
-def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_deleted: Optional[bool]=None,
+@Generic
+def UPDATE_Events(__args__: type, id: int, *, is_activated: Optional[bool]=None, is_deleted: Optional[bool]=None,
   percentage: Optional[int]=None, time: Optional[datetime]=None, **kwargs: dict
 ):
-	if(any(key != "Option" for key in kwargs)):
-		raise Exception(f"""{", ".join([key for key in kwargs if(key != "Option")])} are not allowed""")
+	Event = {"Homes": HomesEvents, "Rooms": RoomsEvents, "Curtains": CurtainsEvents}[__args__[0].__name__]
+
+	if(1 < len(kwargs) or (len(kwargs) == 1 and next(kwargs) != "Option.id")):
+		raise Exception(f"""Bad key(s) {", ".join([key for key in kwargs if(key != "Options.id")])}""")
 
 	with Session(ENGINE) as session:
-		statement = update(CurtainsEvents).where(CurtainsEvents.id == id)
-		# if((curtain_event := session.scalar(select(CurtainsEvents))) is None):
-		# 	raise Exception(f"Could not find CurtainsEvents by id {id}")
+		statement = update(Event).where(Event.id == id)
 
 		if(is_activated is not None):
 			statement = statement.values(is_activated=is_activated)
@@ -81,36 +79,39 @@ def UPDATE_CurtainsEvents(id: int, *, is_activated: Optional[bool]=None, is_dele
 			statement = statement.values(percentage=percentage)
 		if(time is not None):
 			statement = statement.values(time=time)
-		if("Option" in kwargs):
-			statement = statement.values(**{"Options.id": kwargs["Option"]["id"]})
+		if("Options.id" in kwargs):
+			statement = statement.values(**{"Options.id": kwargs["Options.id"]})
 
 		session.execute(statement)
 		session.commit()
 
 
-def INSERT_HomesEvents(*, percentage: int, **kwargs: dict) -> HomesEventsView:
-	return INSERT_Events("Homes", percentage=percentage, **kwargs)
+def INSERT_HomesEvents(*, percentage: int, **kwargs: dict) -> HomesEvents:
+	return INSERT_Events[Homes](percentage=percentage, **kwargs)
 
 
-def INSERT_RoomsEvents(*, percentage: int, **kwargs: dict) -> RoomsEventsView:
-	return INSERT_Events("Rooms", percentage=percentage, **kwargs)
+def INSERT_RoomsEvents(*, percentage: int, **kwargs: dict) -> RoomsEvents:
+	return INSERT_Events[Rooms](percentage=percentage, **kwargs)
 
 
-def INSERT_CurtainsEvents(*, percentage: int, **kwargs: dict) -> CurtainsEventsView:
-	return INSERT_Events("Curtains", percentage=percentage, **kwargs)
+def INSERT_CurtainsEvents(*, percentage: int, **kwargs: dict) -> CurtainsEvents:
+	return INSERT_Events[Curtains](percentage=percentage, **kwargs)
 
 
-def INSERT_Events(area: str, *, percentage: int, **kwargs: dict) -> HomesEventsView|RoomsEventsView|CurtainsEventsView:
-	View = {"Homes": HomesEventsView, "Rooms": RoomsEventsView, "Curtains": CurtainsEventsView}[area]
-	
-	allowed_args = [f"{area}.id", "Options.id", "time"]
+@Generic
+def INSERT_Events(__args__, *, percentage: int, time: Optional[datetime|str]=None, **kwargs: dict) \
+  -> HomesEvents|RoomsEvents|CurtainsEvents:
+	area: str = __args__[0].__name__
+	Event = {"Homes": HomesEvents, "Rooms": RoomsEvents, "Curtains": CurtainsEvents}[area]
+
+	allowed_args = [f"{area}.id", "Options.id"]
 	if(any(key not in allowed_args for key in kwargs)):
 		raise Exception(f"""Bad key(s) {", ".join([key for key in kwargs if(key not in allowed_args)])}""")
 
-	event_args = {f"{area}.id": kwargs[f"{area}.id"], "percentage": percentage}
-	event_args.update({key: value for key, value in kwargs.items() if(key != f"{area}.id")})
+	event_args = {f"{area}.id": kwargs[f"{area}.id"], "Options.id": kwargs["Options.id"], "percentage": percentage,
+	"time": (time or datetime.now())}
 
-	event = View(**event_args)
+	event = Event(**event_args)
 	with Session(ENGINE) as session:
 		session.add(event)
 		session.commit()
@@ -121,8 +122,8 @@ def INSERT_Events(area: str, *, percentage: int, **kwargs: dict) -> HomesEventsV
 
 def test():
 	import json
-	print(json.dumps(INSERT_RoomsEvents(percentage=0, time="2020-01-01 00:00:00", **{"Rooms.id": 1}), default=str, indent=4))
-	print(json.dumps(INSERT_HomesEvents(percentage=0, time="2020-01-01 00:00:00", **{"Homes.id": 1}), default=str, indent=4))
+	print(json.dumps(INSERT_Events[Rooms](percentage=0, time="2020-01-01 00:00:10", **{"Rooms.id": 1}), default=str, indent=4))
+	print(json.dumps(INSERT_Events[Homes](percentage=0, time="2020-01-01 00:00:10", **{"Homes.id": 1}), default=str, indent=4))
 	print(json.dumps(SELECT_Homes(), default=str, indent=4))
 
 

@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS "Homes"
 );
 
 
+CREATE UNIQUE INDEX ON "Homes"(REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
+  WHERE "is_deleted" = FALSE;
+
+
 CREATE UNIQUE INDEX ON "Homes"("name")
   WHERE "is_deleted" = FALSE;
 
@@ -333,7 +337,7 @@ BEGIN
 	)
 	  AND "time" < NEW."time" + INTERVAL '5 SECONDS'
 	  AND NEW."time" - INTERVAL '5 SECONDS' < "time"
-	  AND "HomesEvents"."is_deleted" = FALSE;
+	  AND "CurtainsEvents"."is_deleted" = FALSE;
 
 	-- If HomesEvents exists for this time and have the Rooms HomeID and is not deleted, raise Exception
 	SELECT COUNT(*) INTO "ExistingEventsCount"
@@ -351,8 +355,8 @@ BEGIN
 
 	-- If RoomsEvents exists for this time and is not deleted, return OLD RoomsEvent ID
 	SELECT * INTO "ExistingRoomsEvent"
-	FROM "HomesEvents"
-	WHERE "HomesEvents"."id" = NEW."Homes.id"
+	FROM "RoomsEvents"
+	WHERE "RoomsEvents"."Rooms.id" = NEW."Rooms.id"
 	  AND "time" < NEW."time" + INTERVAL '5 SECONDS'
 	  AND NEW."time" - INTERVAL '5 SECONDS' < "time"
 	  AND "is_deleted" = FALSE;
