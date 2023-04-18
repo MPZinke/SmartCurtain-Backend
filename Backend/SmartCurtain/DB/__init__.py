@@ -110,7 +110,6 @@ def Rooms__iter__(self) -> dict:
 def Curtains__iter__(self) -> dict:
 	yield from {
 		"id": self.id,
-		"buffer_time": self.buffer_time,
 		"direction": self.direction,
 		"is_deleted": self.is_deleted,
 		"length": self.length,

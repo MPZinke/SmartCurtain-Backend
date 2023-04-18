@@ -53,7 +53,7 @@ class AreaEvent(Generic):
 		self._publish_thread.start()
 
 
-	@Generic.staticmethod
+	@Generic
 	def from_dictionary(__args__: set, curtain_event_data: dict) -> AreaEvent:
 		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
 		return AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
@@ -81,17 +81,7 @@ class AreaEvent(Generic):
 		return json.dumps(dict(self), default=str, indent=4)
 
 
-	def get_or_set__args__(self, new__args__: Optional[Area]=None) -> Optional[Area]:
-		__args___name = self.__args__[0].__name__
-		if(new__args__ is None):
-			return getattr(self, f"_{__args___name}")
-
-		if(not isinstance(new__args__, self.__args__[0])):
-			value_type_str = type(new__args__).__name__
-			raise Exception(f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'");
-
-		setattr(self, f"_{__args___name}", new__args__)
-
+	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
 	def id(self):
 		return self._id

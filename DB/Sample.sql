@@ -8,7 +8,6 @@
 
 
 INSERT INTO "Options" ("name", "description") VALUES
-('Default', 'The default option for events'),
 ('Voice Assistant', 'Google API connection'),
 ('Auto Calibrate', 'Curtain calibrates length if it moves full span of rod'),
 ('Auto Correct', 'Curtain corrects its position if unexpected reaches an end point'),

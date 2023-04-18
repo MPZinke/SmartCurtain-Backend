@@ -119,18 +119,22 @@ class Room:
 		self._name = new_name
 
 
-	def RoomOption(self, Option_id: int) -> Optional[AreaOption[Room]]:
-		return next((option for option in self._RoomOptions if(option.Option().id() == Option_id)), None)
-
-
-	def RoomOptions(self) -> list[AreaOption[Room]]:
-		return self._RoomOptions.copy()
-
-
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
 	def Curtains(self):
 		return self._Curtains.copy()
+
+
+	def RoomOption(self, identifier: int|str) -> Optional[AreaOption]:
+		room_option = next((option for option in self._RoomOptions if(option == identifier)), None)
+		if(room_option is not None):
+			return room_option
+
+		return self._Home.HomeOption(identifier)
+
+
+	def RoomOptions(self) -> list[AreaOption[Room]]:
+		return self._RoomOptions.copy()
 
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #

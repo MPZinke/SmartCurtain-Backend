@@ -39,6 +39,13 @@ class AreaOption(Generic):
 		self._notes: bool = notes
 
 
+	def __eq__(self, right: int|str) -> bool:
+		return self._Option == right
+
+
+	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+
 	def __iter__(self) -> dict:
 		yield from {
 			"id": self._id,
@@ -56,6 +63,8 @@ class AreaOption(Generic):
 	def __str__(self) -> str:
 		return json.dumps(dict(self), default=str);
 
+
+	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
 	def id(self):
 		return self._id

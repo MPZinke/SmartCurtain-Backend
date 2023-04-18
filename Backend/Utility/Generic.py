@@ -14,6 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from typing import Any, Optional
+
+
 class Generic:
 	def __class_getitem__(cls, __args__):
 		if(not isinstance(__args__, tuple)):
@@ -22,8 +25,17 @@ class Generic:
 		return type(cls.__name__, (cls,), {"__args__": __args__})
 
 
-	def staticmethod(function: callable) -> object:
-		return Generic(function)
+	def get_or_set__args__(self, new__args__: Optional[Any]=None) -> Optional[Any]:
+		__args___name = self.__args__[0].__name__
+		if(new__args__ is None):
+			return getattr(self, f"_{__args___name}")
+
+		if(not isinstance(new__args__, self.__args__[0])):
+			value_type_str = type(new__args__).__name__
+			message = f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'"
+			raise Exception(message);
+
+		setattr(self, f"_{__args___name}", new__args__)
 
 
 	# ———— WRAPPER ———— #

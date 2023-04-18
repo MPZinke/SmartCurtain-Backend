@@ -33,7 +33,7 @@ Room = TypeVar("Room")
 
 
 class Curtain:
-	def __init__(self, Room: Optional[Room]=None, *, id: int, buffer_time: int, direction: Optional[bool],
+	def __init__(self, Room: Optional[Room]=None, *, id: int, direction: Optional[bool],
 	  is_deleted: bool, length: Optional[int], name: str, CurtainEvents: list[AreaEvent[Curtain]],
 	  CurtainOptions: list[AreaOption[Curtain]]
 	):
@@ -41,7 +41,6 @@ class Curtain:
 		self._Room = Room
 		# DATABASE #
 		self._id: int = id
-		self._buffer_time: int = buffer_time
 		self._direction: Optional[bool] = direction
 		self._is_deleted: bool = is_deleted
 		self._length: Optional[int] = length
@@ -49,6 +48,7 @@ class Curtain:
 		self._CurtainEvents: list[AreaEvent[Curtain]] = CurtainEvents.copy()
 		self._CurtainOptions: list[AreaOption[Curtain]] = CurtainOptions.copy()
 		# TEMP STATE #
+		self._is_connected: bool = False
 		self._is_moving: bool = False
 		self._percentage: int = 0
 
@@ -72,9 +72,9 @@ class Curtain:
 		for option_data in curtain_data["CurtainsOptions"]:
 			options.append(AreaOption[Curtain](**{**option_data, "Option": Option(**option_data["Option"])}))
 
-		return Curtain(id=curtain_data["id"], buffer_time=curtain_data["buffer_time"],
-		   direction=curtain_data["direction"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
-		   name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
+		return Curtain(id=curtain_data["id"], direction=curtain_data["direction"],
+		  is_deleted=curtain_data["is_deleted"], length=curtain_data["length"], name=curtain_data["name"],
+		  CurtainEvents=events, CurtainOptions=options
 		)
 
 
@@ -89,7 +89,6 @@ class Curtain:
 		yield from {
 			# DATABASE #
 			"id": self._id,
-			"buffer_time": self._buffer_time,
 			"direction": self._direction,
 			"is_deleted": self._is_deleted,
 			"length": self._length,
@@ -97,6 +96,7 @@ class Curtain:
 			"CurtainEvents": list(map(dict, self._CurtainEvents)),
 			"CurtainOptions": list(map(dict, self._CurtainOptions)),
 			# TEMP STATE #
+			"is_connected": self._is_connected,
 			"is_moving": self._is_moving,
 			"percentage": self._percentage
 		}.items()
@@ -110,18 +110,28 @@ class Curtain:
 		return json.dumps(dict(self), default=str, indent=4)
 
 
+	def node_dict(self) -> dict:
+		node_dict = {
+			"id": self._id,
+			"Room.id": self._Room.id(),
+			"Home.id": self._Room.Home().id()
+		}
+
+		if(self._direction is not None):
+			node_dict["direction"] = self._direction
+		if(self._length is not None):
+			node_dict["length"] = self._length
+
+		if((option := self.CurtainOption("Auto Calibrate")) is not None):
+			node_dict["Auto Calibrate"] = option.is_on()
+		if((option := self.CurtainOption("Auto Correct")) is not None):
+			node_dict["Auto Correct"] = option.is_on()
+
+
+	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
+
 	def id(self):
 		return self._id
-
-
-	def buffer_time(self, new_buffer_time: Optional[int]=None) -> Optional[int]:
-		if(new_buffer_time is None):
-			return self._buffer_time
-
-		if(not isinstance(new_buffer_time, int)):
-			raise Exception(f"'Curtain::buffer_time' must be of type 'int' not '{type(new_buffer_time).__name__}'")
-
-		self._buffer_time = new_buffer_time
 
 
 	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
@@ -144,6 +154,16 @@ class Curtain:
 		self._is_moving = new_is_moving
 
 
+	def is_connected(self, new_is_connected: Optional[bool]=None) -> Optional[bool]:
+		if(new_is_connected is None):
+			return self._is_connected
+
+		if(not isinstance(new_is_connected, bool)):
+			raise Exception(f"'Curtain::is_connected' must be of type 'bool' not '{type(new_is_connected).__name__}'")
+
+		self._is_connected = new_is_connected
+
+
 	def length(self, new_length: Optional[int]=None) -> Optional[int]:
 		if(new_length is None):
 			return self._length
@@ -164,27 +184,7 @@ class Curtain:
 		self._percentage = new_percentage
 
 
-	def CurtainOption(self, Option_id: int) -> Optional[AreaOption[Curtain]]:
-		return next((option for option in self._CurtainOptions if(option.Option().id() == Option_id)), None)
-
-
-	def CurtainOptions(self) -> list[AreaOption[Curtain]]:
-		return self._CurtainOptions.copy()
-
-
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
-
-	def CurtainEvent(self, *, id: Optional[int]=None, time: Optional[datetime]=None) -> Optional[AreaEvent[Curtain]]:
-		if(id is not None):
-			if((event := next((event for event in self._CurtainEvents if(event.id() == id)), None)) is not None):
-				return event
-
-		if(time is not None):
-			if((event := next((event for event in self._CurtainEvents if(event.time() == time)), None)) is not None):
-				return event
-
-		return None
-
 
 	def CurtainEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
 	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
@@ -201,6 +201,18 @@ class Curtain:
 			known_events = [event for event in known_events if(event.percentage() == percentage)]
 
 		return known_events
+
+
+	def CurtainOption(self, identifier: int|str) -> Optional[AreaOption]:
+		curtain_option = next((option for option in self._CurtainOptions if(option == identifier)), None)
+		if(curtain_option is not None):
+			return curtain_option
+
+		return self._Room.RoomOption(identifier)
+
+
+	def CurtainOptions(self) -> list[AreaOption[Curtain]]:
+		return self._CurtainOptions.copy()
 
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #

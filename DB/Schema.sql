@@ -52,7 +52,6 @@ DROP TABLE IF EXISTS "Curtains" CASCADE;
 CREATE TABLE IF NOT EXISTS "Curtains"
 (
 	"id" SERIAL NOT NULL PRIMARY KEY,
-	"buffer_time" INT NOT NULL DEFAULT 0,  -- seconds
 	"direction" BOOLEAN DEFAULT NULL,  -- NULL if curtain should use hardcoded values otherwise valued
 	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
 	"length" INT DEFAULT NULL,  -- NULL if curtain should use hardcoded values otherwise valued

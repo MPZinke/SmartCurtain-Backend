@@ -25,6 +25,18 @@ class Option:
 		self._name: str = name
 
 
+	def __eq__(self, right: int|str) -> bool:
+		if(isinstance(right, str)):
+			return self._name == right
+		elif(isinstance(right, int)):
+			return self._id == right
+
+		raise NotImplemented
+
+	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+
+
 	def __iter__(self) -> dict:
 		yield from {
 			"id": self._id,
@@ -41,6 +53,8 @@ class Option:
 	def __str__(self) -> str:
 		return json.dumps(dict(self), default=str)
 
+
+	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
 	def id(self):
 		return self._id

@@ -132,14 +132,18 @@ class Home:
 		return next((option for option in self._HomeOptions if(option.Option().id() == Option_id)), None)
 
 
-	def HomeOptions(self) -> list[AreaOption[Home]]:
-		return self._HomeOptions.copy()
-
-
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
 	def Rooms(self):
 		return self._Rooms.copy()
+
+
+	def HomeOption(self, identifier: int|str) -> Optional[AreaOption]:
+		return next((option for option in self._HomeOptions if(option == identifier)), None)
+
+
+	def HomeOptions(self) -> list[AreaOption[Home]]:
+		return self._HomeOptions.copy()
 
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #

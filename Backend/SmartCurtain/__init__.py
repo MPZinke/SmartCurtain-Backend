@@ -56,13 +56,32 @@ class SmartCurtain(MQTTClient, ZWidget):
 
 	def on_connect(self, client, userdata, flags, result_code) -> None:
 		print(f"Connected with result code {str(result_code)}")
-		self.subscribe("SmartCurtain")
-		self.publish("SmartCurtain/all", """{"type": "status"}""")
+		self.subscribe("SmartCurtain/hub/update")
+		self.publish("SmartCurtain/all/status", "")
 
 
 	def on_message(self, client, userdata, message) -> None:
-		curtain_info: dict = json.loads(message.payload)
-		print(curtain_info)
+		try:
+			node_dict: dict = json.loads(message.payload)
+		except:
+			node_dict = {"id": 0}
+
+		print(node_dict)
+		if((curtain := self.Curtain(node_dict.get("id"))) is None):
+			return  # ignore invalid calls
+
+		curtain.is_connected(True)
+		if("is_moving" in node_dict):
+			curtain.is_moving(node_dict["is_moving"])
+		if("Auto Calibrate" in node_dict and "length" in node_dict and curtain.CurtainOption("Auto Calibrate").is_on()):
+			curtain.length(node_dict["length"])
+		if("percentage" in node_dict):
+			curtain.percentage(node_dict["percentage"])
+
+		curtain_dict = curtain.node_dict()
+		if(any((key in curtain_dict and curtain_dict[key] != node_dict[key]) for key in node_dict)):
+			print("Values do not match")
+			self.publish(f"""SmartCurtain/-/-/{curtain.id()}/update""", json.dumps(curtain_dict))
 
 
 	# ——————————————————————————————————————————————— GETTERS/SETTERS  ——————————————————————————————————————————————— #
