@@ -68,7 +68,7 @@ class Curtain:
 			}
 			events.append(AreaEvent.from_dictionary[Curtain](event_data))
 
-		options: list[CurtainOptions] = []
+		options: list[AreaOption[Curtain]] = []
 		for option_data in curtain_data["CurtainsOptions"]:
 			options.append(AreaOption[Curtain](**{**option_data, "Option": Option(**option_data["Option"])}))
 
@@ -111,19 +111,20 @@ class Curtain:
 
 
 	def node_dict(self) -> dict:
+		# Structure
 		node_dict = {
 			"id": self._id,
 			"Room.id": self._Room.id(),
 			"Home.id": self._Room.Home().id()
 		}
 
+		# Hardware overriding values
 		if(self._direction is not None):
 			node_dict["direction"] = self._direction
 		if(self._length is not None):
 			node_dict["length"] = self._length
 
-		if((option := self.CurtainOption("Auto Calibrate")) is not None):
-			node_dict["Auto Calibrate"] = option.is_on()
+		# Movement overriding values
 		if((option := self.CurtainOption("Auto Correct")) is not None):
 			node_dict["Auto Correct"] = option.is_on()
 
