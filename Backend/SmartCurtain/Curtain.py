@@ -119,8 +119,6 @@ class Curtain:
 		}
 
 		# Hardware overriding values
-		if(self._direction is not None):
-			node_dict["direction"] = self._direction
 		if(self._length is not None):
 			node_dict["length"] = self._length
 
