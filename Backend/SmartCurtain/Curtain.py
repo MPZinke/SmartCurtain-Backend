@@ -33,15 +33,13 @@ Room = TypeVar("Room")
 
 
 class Curtain:
-	def __init__(self, Room: Optional[Room]=None, *, id: int, direction: Optional[bool],
-	  is_deleted: bool, length: Optional[int], name: str, CurtainEvents: list[AreaEvent[Curtain]],
-	  CurtainOptions: list[AreaOption[Curtain]]
+	def __init__(self, Room: Optional[Room]=None, *, id: int, is_deleted: bool, length: Optional[int], name: str,
+	  CurtainEvents: list[AreaEvent[Curtain]], CurtainOptions: list[AreaOption[Curtain]]
 	):
 		# STRUCTURE #
 		self._Room = Room
 		# DATABASE #
 		self._id: int = id
-		self._direction: Optional[bool] = direction
 		self._is_deleted: bool = is_deleted
 		self._length: Optional[int] = length
 		self._name: str = name
@@ -72,9 +70,8 @@ class Curtain:
 		for option_data in curtain_data["CurtainsOptions"]:
 			options.append(AreaOption[Curtain](**{**option_data, "Option": Option(**option_data["Option"])}))
 
-		return Curtain(id=curtain_data["id"], direction=curtain_data["direction"],
-		  is_deleted=curtain_data["is_deleted"], length=curtain_data["length"], name=curtain_data["name"],
-		  CurtainEvents=events, CurtainOptions=options
+		return Curtain(id=curtain_data["id"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
+		  name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
 		)
 
 
@@ -89,7 +86,6 @@ class Curtain:
 		yield from {
 			# DATABASE #
 			"id": self._id,
-			"direction": self._direction,
 			"is_deleted": self._is_deleted,
 			"length": self._length,
 			"name": self._name,
