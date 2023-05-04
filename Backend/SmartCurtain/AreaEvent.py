@@ -24,7 +24,7 @@ from warnings import warn as Warn
 from SmartCurtain import DB
 from SmartCurtain import Option
 from Utility import Generic
-from Utility.ZThread import ZThreadSingle
+from Utility.Thread import SingleRunThread
 from Utility import Logger
 
 
@@ -49,7 +49,7 @@ class AreaEvent(Generic):
 		self._time: datetime = time
 		# THREAD #
 		# if(not self._is_activated and not self._is_deleted and datetime.now() < self._time):
-		self._publish_thread = ZThreadSingle(f"Event Thread #{self._id}", self.publish, self.sleep_time)
+		self._publish_thread = SingleRunThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
 		self._publish_thread.start()
 
 
@@ -143,7 +143,7 @@ class AreaEvent(Generic):
 	def publish(self) -> None:
 		print("Beep Boop")
 		payload = {"type": "move", "event": {"id": self._id, "percentage": self._percentage}}
-		self._Curtain.publish(json.dumps(payload))
+		getattr(self, f"_{self.__args__[0].__name__}").publish(json.dumps(payload))
 		DB.DBFunctions.UPDATE_Events[self.__args__[0]](self._id, is_activated=True)
 
 

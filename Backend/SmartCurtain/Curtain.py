@@ -56,14 +56,9 @@ class Curtain:
 
 	@staticmethod
 	def from_dictionary(curtain_data: dict) -> Curtain:
-		events: list[AreaEvent[Home]] = []
+		events: list[AreaEvent[Curtain]] = []
 		for event_data in curtain_data["CurtainsEvents"]:
-			# Flatten the tables
-			event = event_data["Event"]
-			event_data = {"id": event_data["id"], "is_deleted": event_data["is_deleted"], "Event.id": event["id"], 
-			  "is_activated": event["is_activated"], "percentage": event["percentage"], "time": event["time"],
-			  "Option": Option(**event["Option"]) if(event["Option"] is not None) else None
-			}
+			event_data["Option"] = Option(**event_data["Option"]) if(event_data["Option"] is not None) else None
 			events.append(AreaEvent.from_dictionary[Curtain](event_data))
 
 		options: list[AreaOption[Curtain]] = []
@@ -227,10 +222,10 @@ class Curtain:
 
 	def path(self) -> str:
 		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
-		return f"{self._Room.path()}/{path_name}"
+		return f"SmartCurtain/-/-/{path_name}"
 
 
-	def publish(self, payload: str) -> None:
+	def publish(self, command: str, payload: str) -> None:
 		client = MQTTClient()
 		client.connect("localhost", 1883, 60)
-		client.publish(self.path(), payload)
+		client.publish(f"SmartCurtain/-/-/{self._id}/{command}", payload)

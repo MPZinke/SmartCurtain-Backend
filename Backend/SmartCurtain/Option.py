@@ -14,11 +14,17 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Optional
+from typing import Optional, TypeVar
+
+
+from SmartCurtain.DB import DBFunctions
+
+
+Option = TypeVar("Option")
 
 
 class Option:
-	def __init__(self, id: int, description: str, is_deleted: bool, name: str):
+	def __init__(self, *, id: int, description: str, is_deleted: bool, name: str):
 		self._id: int = id
 		self._description: str = description
 		self._is_deleted: bool = is_deleted
@@ -32,6 +38,12 @@ class Option:
 			return self._id == right
 
 		raise NotImplemented
+
+
+	@staticmethod
+	def all() -> list[Option]:
+		return [Option(**option_data) for option_data in DBFunctions.SELECT_Options()]
+
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #

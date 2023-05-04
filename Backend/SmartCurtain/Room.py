@@ -50,15 +50,10 @@ class Room:
 
 	@staticmethod
 	def from_dictionary(room_data: dict) -> Room:
-		events: list[AreaEvent[Home]] = []
+		events: list[AreaEvent[Room]] = []
 		for event_data in room_data["RoomsEvents"]:
-			# Flatten the tables
-			event = event_data["Event"]
-			event_data = {"id": event_data["id"], "is_deleted": event_data["is_deleted"], "Event.id": event["id"], 
-			  "is_activated": event["is_activated"], "percentage": event["percentage"], "time": event["time"],
-			  "Option": Option(**event["Option"]) if(event["Option"] is not None) else None
-			}
-			events.append(AreaEvent.from_dictionary[Home](**event_data))
+			event_data["Option"] = Option(**event_data["Option"]) if(event_data["Option"] is not None) else None
+			events.append(AreaEvent.from_dictionary[Room](event_data))
 
 		options: list = []
 		for option_data in room_data["RoomsOptions"]:

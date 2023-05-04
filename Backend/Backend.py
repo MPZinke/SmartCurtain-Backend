@@ -15,7 +15,8 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Manager import Manager
+# from Manager import Manager
+from MQTT import MQTTClient
 from Server import Server
 from SmartCurtain import SmartCurtain
 
@@ -26,14 +27,15 @@ class Backend:
 	"""
 	def __init__(self):
 		self._SmartCurtain = SmartCurtain()
+		self._MQTTClient = MQTTClient(self._SmartCurtain)
 		# self._Manager = Manager(self._SmartCurtain)
 		# self._Server = Server(self._SmartCurtain)
 
 
 	def start(self):
 		# self._Manager.start()
+		self._MQTTClient.start()
 		# self._Server.start()
-		self._SmartCurtain.start()
 
 
 
