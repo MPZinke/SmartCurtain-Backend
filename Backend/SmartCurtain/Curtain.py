@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta
 import json
 import os
-from paho.mqtt.client import Client as MQTTClient
+from paho import mqtt
 import re
 import requests
 from typing import List, Optional, TypeVar, Union
@@ -51,6 +51,7 @@ class Curtain:
 		self._percentage: int = 0
 
 		[curtain_event.Curtain(self) for curtain_event in self._CurtainEvents]
+		[curtain_event.start() for curtain_event in self._CurtainEvents]
 		[curtain_option.Curtain(self) for curtain_option in self._CurtainOptions]
 
 
@@ -220,12 +221,7 @@ class Curtain:
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
 
-	def path(self) -> str:
-		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
-		return f"SmartCurtain/-/-/{path_name}"
-
-
 	def publish(self, command: str, payload: str) -> None:
-		client = MQTTClient()
+		client = mqtt.client.Client()
 		client.connect("localhost", 1883, 60)
 		client.publish(f"SmartCurtain/-/-/{self._id}/{command}", payload)

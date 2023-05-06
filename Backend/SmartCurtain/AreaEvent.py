@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta
 import json
 from requests import post
-from typing import Optional, TypeVar
+from typing import Any, Optional, TypeVar
 from warnings import warn as Warn
 
 
@@ -28,7 +28,7 @@ from Utility.Thread import SingleRunThread
 from Utility import Logger
 
 
-Area = TypeVar("Area")
+Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
 AreaEvent = TypeVar("AreaEvent")
 Option = TypeVar("Option")
 
@@ -38,6 +38,7 @@ class AreaEvent(Generic):
 	  is_deleted: bool, percentage: int, time: datetime, **kwargs: dict
 	):
 		# STRUCTURE #
+		self._Area = area
 		setattr(self, f"_{self.__args__[0].__name__}", area)
 		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
 		# DATABASE #
@@ -50,13 +51,20 @@ class AreaEvent(Generic):
 		# THREAD #
 		# if(not self._is_activated and not self._is_deleted and datetime.now() < self._time):
 		self._publish_thread = SingleRunThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
-		self._publish_thread.start()
 
 
 	@Generic
 	def from_dictionary(__args__: set, curtain_event_data: dict) -> AreaEvent:
 		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
 		return AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
+
+
+	def start(self) -> None:
+		self._publish_thread.start()
+
+
+	def __del__(self) -> None:
+		self._publish_thread.kill()
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -79,6 +87,20 @@ class AreaEvent(Generic):
 
 	def __str__(self) -> str:
 		return json.dumps(dict(self), default=str, indent=4)
+
+
+	def get_or_set__args__(self, new_Area: Optional[Any]=None) -> Optional[Any]:
+		__args___name = self.__args__[0].__name__
+		if(new_Area is None):
+			return getattr(self, f"_{__args___name}")
+
+		if(not isinstance(new_Area, self.__args__[0])):
+			value_type_str = type(new_Area).__name__
+			message = f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'"
+			raise Exception(message);
+
+		self._Area = new_Area
+		setattr(self, f"_{__args___name}", new_Area)
 
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
@@ -142,12 +164,13 @@ class AreaEvent(Generic):
 
 	def publish(self) -> None:
 		print("Beep Boop")
-		payload = {"type": "move", "event": {"id": self._id, "percentage": self._percentage}}
-		getattr(self, f"_{self.__args__[0].__name__}").publish(json.dumps(payload))
-		DB.DBFunctions.UPDATE_Events[self.__args__[0]](self._id, is_activated=True)
+		payload = {"percentage": self._percentage}
+		self._Area.publish("move", json.dumps(payload))
+		DB.DBFunctions.UPDATE_Events[type(self._Area)](self._id, is_activated=True)
 
 
 	def sleep_time(self):
+		print(self)
 		if((now := datetime.now()) > self._time + timedelta(seconds=1)):
 			Warn(f"Event {self._id} is scheduled at a time in the past")
 

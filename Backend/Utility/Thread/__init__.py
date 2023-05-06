@@ -14,5 +14,6 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from Utility.Thread.BaseThread import BaseThread
 from Utility.Thread.LoopingThread import LoopingThread
 from Utility.Thread.SingleRunThread import SingleRunThread

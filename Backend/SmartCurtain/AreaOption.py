@@ -21,13 +21,15 @@ from typing import Any, Generic, Optional, TypeVar, get_args
 from Utility import Generic
 
 
-Area = TypeVar("Area")
+Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
+AreaOption = TypeVar("AreaOption")
 
 
 class AreaOption(Generic):
 	def __init__(self, area: Optional[Area]=None, *, id: int, Option: object, data: Optional[dict|list], is_on: bool,
 	  notes: str
 	):
+		self._Area: Area = area
 		# STRUCTURE #
 		setattr(self, f"_{self.__args__[0].__name__}", area)
 		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
@@ -70,16 +72,18 @@ class AreaOption(Generic):
 		return self._id
 
 
-	def get_or_set__args__(self, new__args__: Optional[Area]=None) -> Optional[Area]:
+	def get_or_set__args__(self, new_Area: Optional[Area]=None) -> Optional[Area]:
 		__args___name = self.__args__[0].__name__
-		if(new__args__ is None):
+		if(new_Area is None):
 			return getattr(self, f"_{__args___name}")
 
-		if(not isinstance(new__args__, self.__args__[0])):
-			value_type_str = type(new__args__).__name__
-			raise Exception(f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'");
+		if(not isinstance(new_Area, self.__args__[0])):
+			value_type_str = type(new_Area).__name__
+			message = f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'"
+			raise Exception(message);
 
-		setattr(self, f"_{__args___name}", new__args__)
+		self._Area = new_Area
+		setattr(self, f"_{__args___name}", new_Area)
 
 
 	def Option(self):

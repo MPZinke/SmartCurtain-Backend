@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 
 
 import json
+from paho import mqtt
 import re
 from typing import Optional, TypeVar
 
@@ -44,6 +45,7 @@ class Room:
 		self._Curtains: list[Curtain] = Curtains.copy()
 
 		[room_event.Room(self) for room_event in self._RoomEvents]
+		[room_event.start() for room_event in self._RoomEvents]
 		[room_option.Room(self) for room_option in self._RoomOptions]
 		[curtain.Room(self) for curtain in self._Curtains]
 
@@ -147,6 +149,7 @@ class Room:
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
 
-	def path(self) -> str:
-		path_name = re.sub(r"[^_\-a-zA-Z0-9]", "", self._name)
-		return f"{self._Home.path()}/{path_name}"
+	def publish(self, command: str, payload: str) -> None:
+		client = mqtt.client.Client()
+		client.connect("localhost", 1883, 60)
+		client.publish(f"SmartCurtain/-/{self._id}/{command}", payload)

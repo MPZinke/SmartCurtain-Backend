@@ -16,23 +16,14 @@ __author__ = "MPZinke"
 
 
 from typing import Optional
-import threading
-import warnings
 
 
-from Utility import warning_message;
+from Utility.Thread import BaseThread
 
 
-class LoopingThread(threading.Thread):
+class LoopingThread(BaseThread):
 	def __init__(self, name: str, *, action: callable, time: callable):
-		threading.Thread.__init__(self, name=name, target=self)
-
-		self.action: callable = action;  # operations special to child object
-		self._condition: threading.Condition = threading.Condition();  # allows for sleep/wake feature
-		self._is_active: bool = True;  # used by thread_loop() for maintaining while loop
-		self.time: callable = time;  # function pointer to determine/return the amount of time it should sleep
-
-		warnings.formatwarning = warning_message;
+		BaseThread.__init__(self, name, action=self, time=time)
 
 
 	def __call__(self):
@@ -45,44 +36,8 @@ class LoopingThread(threading.Thread):
 			print(error)
 
 
-	def __del__(self) -> None:
-		if(self.is_alive()):
-			self.kill()
-
-
-	def kill(self) -> None:
-		"""
-		SUMMARY: Ends a thread.
-		DETAILS: Releases loop, wakes sleeping condition, joins thread with rest of program.
-		"""
-		self._is_active = False;
-		with self._condition:
-			self._condition.notify();
-
-
-	def sleep(self, seconds: Optional[int]=None) -> None:
-		"""
-		SUMMARY: Sleeps thread loop for amount of time.
-		PARAMS:  Takes a numeric amount of time defaulted to None.
-		NOTES: Sleeps for default amount of time if specified, otherwise indefinitely.
-		"""
-		with self._condition:
-			if(seconds is None):
-				warnings.warn(f"Thread: {self.name} has been indefinitely put to sleep");
-
-			self._condition.wait(seconds)
-
-
-	def wake(self) -> None:
-		"""
-		SUMMARY: Wakes thread (condition from sleep).
-		"""
-		with self._condition:
-			self._condition.notify();
-
-
 def test():
-	thread = Thread("Test", action=lambda: print("Test"), time=lambda: 2)
+	thread = LoopingThread("Test", action=lambda: print("Test"), time=lambda: 2)
 	thread.start()
 
 

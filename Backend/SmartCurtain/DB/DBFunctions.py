@@ -63,7 +63,7 @@ def SELECT_Homes_WHERE_Current() -> list:
 def UPDATE_Events(__args__: type, id: int, *, is_activated: Optional[bool]=None, is_deleted: Optional[bool]=None,
   percentage: Optional[int]=None, time: Optional[datetime]=None, **kwargs: dict
 ):
-	Event = {"Homes": HomesEvents, "Rooms": RoomsEvents, "Curtains": CurtainsEvents}[__args__[0].__name__]
+	Event = {"Home": HomesEvents, "Room": RoomsEvents, "Curtain": CurtainsEvents}[__args__[0].__name__]
 
 	if(1 < len(kwargs) or (len(kwargs) == 1 and next(kwargs) != "Option.id")):
 		raise Exception(f"""Bad key(s) {", ".join([key for key in kwargs if(key != "Options.id")])}""")
