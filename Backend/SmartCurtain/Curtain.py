@@ -118,6 +118,8 @@ class Curtain:
 		if((option := self.CurtainOption("Auto Correct")) is not None):
 			node_dict["Auto Correct"] = option.is_on()
 
+		return node_dict
+
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 

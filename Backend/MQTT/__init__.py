@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+import json
 from paho.mqtt.client import Client
 import threading
 
@@ -53,29 +54,41 @@ class MQTTClient(Client):
 
 	def on_connect(self, client, userdata, flags, result_code) -> None:
 		print(f"Connected with result code {str(result_code)}")
+		self.subscribe("SmartCurtain/hub/error")
 		self.subscribe("SmartCurtain/hub/update")
 		self.publish("SmartCurtain/all/status", "")
 
 
 	def on_message(self, client, userdata, message) -> None:
+		# Status: The request for something's (a curtain's) status
+		# Updates: Specify the data to update.
+		# HUB ——status--> Curtain ——update--> Hub [——update--> Curtain]
+		#	IE. Hub: "What is your status?", Curtain: "Let me update you"[, Hub: "Let me tweak that"]
+		# Curtain ——update--> Hub [——update--> Curtain]
+		#	IE. Curtain: "This is what you should show for me"[, Hub: "Let me tweak that"]
+		# The Hub can however override on home, room, length, and other DB defined values.
+		# However, the Hub will not override is_moving or percentage
 		try:
-			node_dict: dict = json.loads(message.payload)
-		except:
-			node_dict = {"id": 0}
+			print(type := message.topic.split("/")[-1], end=": ")
+			print(request := json.loads(message.payload))
 
-		print(node_dict)
-		if((curtain := self.Curtain(node_dict.get("id"))) is None):
-			return  # ignore invalid calls
+			if(type == "error"):
+				print(f"Error received: {message.payload}")
 
-		curtain.is_connected(True)
-		if("is_moving" in node_dict):
-			curtain.is_moving(node_dict["is_moving"])
-		if("Auto Calibrate" in node_dict and "length" in node_dict and curtain.CurtainOption("Auto Calibrate").is_on()):
-			curtain.length(node_dict["length"])
-		if("percentage" in node_dict):
-			curtain.percentage(node_dict["percentage"])
+			elif(type == "update"):
+				curtain = self._SmartCurtain["-"]["-"][request["id"]]
 
-		curtain_dict = curtain.node_dict()
-		if(any((key in curtain_dict and curtain_dict[key] != node_dict[key]) for key in node_dict)):
-			print("Values do not match")
-			self.publish(f"""SmartCurtain/-/-/{curtain.id()}/update""", json.dumps(curtain_dict))
+				# Values that are updated by curtain
+				if(request["is_moving"] != curtain.is_moving()):
+					curtain.is_moving(request["is_moving"])
+				if(request["percentage"] != curtain.percentage()):
+					curtain.percentage(request["percentage"])
+
+				# Values for Curtain that can be updated
+				curtain_dict = curtain.node_dict()
+				if(any(curtain_dict[key] != request[key] for key in ["Home.id", "Room.id", "Auto Correct"])
+				  or ("length" in curtain_dict and curtain_dict["length"] < request["length"])):
+					self.publish(f"""SmartCurtain/-/-/{request["id"]}/update""", json.dumps(curtain_dict))
+
+		except Exception as error:
+			print(error)

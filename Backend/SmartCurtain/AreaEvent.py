@@ -49,7 +49,6 @@ class AreaEvent(Generic):
 		self._percentage: int = percentage
 		self._time: datetime = time
 		# THREAD #
-		# if(not self._is_activated and not self._is_deleted and datetime.now() < self._time):
 		self._publish_thread = SingleRunThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
 
 
@@ -170,7 +169,6 @@ class AreaEvent(Generic):
 
 
 	def sleep_time(self):
-		print(self)
 		if((now := datetime.now()) > self._time + timedelta(seconds=1)):
 			Warn(f"Event {self._id} is scheduled at a time in the past")
 

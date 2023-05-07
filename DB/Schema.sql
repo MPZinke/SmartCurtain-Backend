@@ -79,7 +79,7 @@ DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
 CREATE FUNCTION update_Homes_deletion() RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE "HomesEvents" SET "is_deleted" = TRUE WHERE "Homes.id" = NEW."id";
-	-- UPDATE "HomesOptions" SET "is_deleted" = TRUE WHERE "Homes.id" = NEW."id";
+	UPDATE "HomesOptions" SET "is_deleted" = TRUE WHERE "Homes.id" = NEW."id";
 	UPDATE "Rooms" SET "is_deleted" = TRUE WHERE "Homes.id" = NEW."id";
 	RETURN NEW;
 END;
@@ -99,7 +99,7 @@ DROP FUNCTION IF EXISTS update_Rooms_deletion() CASCADE;
 CREATE FUNCTION update_Rooms_deletion() RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE "RoomsEvents" SET "is_deleted" = TRUE WHERE "Rooms.id" = NEW."id";
-	-- UPDATE "RoomsOptions" SET "is_deleted" = TRUE WHERE "Rooms.id" = NEW."id";
+	UPDATE "RoomsOptions" SET "is_deleted" = TRUE WHERE "Rooms.id" = NEW."id";
 	UPDATE "Curtains" SET "is_deleted" = TRUE WHERE "Rooms.id" = NEW."id";
 	RETURN NEW;
 END;
@@ -119,7 +119,7 @@ DROP FUNCTION IF EXISTS update_Curtains_deletion() CASCADE;
 CREATE FUNCTION update_Curtains_deletion() RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE "CurtainsEvents" SET "is_deleted" = TRUE WHERE "Curtains.id" = NEW."id";
-	-- UPDATE "CurtainsOptions" SET "is_deleted" = TRUE WHERE "Curtains.id" = NEW."id";
+	UPDATE "CurtainsOptions" SET "is_deleted" = TRUE WHERE "Curtains.id" = NEW."id";
 	RETURN NEW;
 END;
 $$ LANGUAGE 'plpgsql' SECURITY DEFINER;
@@ -156,10 +156,14 @@ CREATE TABLE IF NOT EXISTS "HomesOptions"
 	"Options.id" INT NOT NULL,
 	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
 	"data" JSON DEFAULT NULL,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
 	"is_on" BOOLEAN NOT NULL,
-	"notes" VARCHAR(256) NOT NULL DEFAULT '',
-	UNIQUE ("Homes.id", "Options.id")
+	"notes" VARCHAR(256) NOT NULL DEFAULT ''
 );
+
+
+CREATE UNIQUE INDEX ON "HomesOptions"("Homes.id", "Options.id")
+  WHERE "is_deleted" = FALSE;
 
 
 DROP TABLE IF EXISTS "RoomsOptions" CASCADE;
@@ -171,10 +175,14 @@ CREATE TABLE IF NOT EXISTS "RoomsOptions"
 	"Options.id" INT NOT NULL,
 	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
 	"data" JSON DEFAULT NULL,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
 	"is_on" BOOLEAN NOT NULL,
-	"notes" VARCHAR(256) NOT NULL DEFAULT '',
-	UNIQUE ("Rooms.id", "Options.id")
+	"notes" VARCHAR(256) NOT NULL DEFAULT ''
 );
+
+
+CREATE UNIQUE INDEX ON "RoomsOptions"("Rooms.id", "Options.id")
+  WHERE "is_deleted" = FALSE;
 
 
 DROP TABLE IF EXISTS "CurtainsOptions" CASCADE;
@@ -186,14 +194,37 @@ CREATE TABLE IF NOT EXISTS "CurtainsOptions"
 	"Options.id" INT NOT NULL,
 	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
 	"data" JSON DEFAULT NULL,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
 	"is_on" BOOLEAN NOT NULL,
-	"notes" VARCHAR(256) NOT NULL DEFAULT '',
-	UNIQUE ("Curtains.id", "Options.id")
+	"notes" VARCHAR(256) NOT NULL DEFAULT ''
 );
+
+
+CREATE UNIQUE INDEX ON "CurtainsOptions"("Curtains.id", "Options.id")
+  WHERE "is_deleted" = FALSE;
 
 
 -- ——————————————————————————————————————————— OPTIONS::DELETE INTEGRITY  ——————————————————————————————————————————— --
 
+
+DROP FUNCTION IF EXISTS update_Options_deletion() CASCADE;
+CREATE FUNCTION update_Options_deletion() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "HomesOptions" SET "is_deleted" = TRUE WHERE "Options.id" = NEW."id";
+	UPDATE "RoomsOptions" SET "is_deleted" = TRUE WHERE "Options.id" = NEW."id";
+	UPDATE "CurtainsOptions" SET "is_deleted" = TRUE WHERE "Options.id" = NEW."id";
+	RETURN NEW;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+
+
+-- Delete CurtainsEvents & CurtainsOptions when Curtain is deleted.
+DROP TRIGGER IF EXISTS "DeleteOptionsTrigger" ON "Options";
+CREATE TRIGGER "DeleteOptionsTrigger"
+  AFTER UPDATE ON "Options"
+  FOR EACH ROW
+  WHEN (NEW."is_deleted" = TRUE)
+  EXECUTE PROCEDURE update_Options_deletion();
 
 
 -- ————————————————————————————————————————————————————— EVENTS ————————————————————————————————————————————————————— --

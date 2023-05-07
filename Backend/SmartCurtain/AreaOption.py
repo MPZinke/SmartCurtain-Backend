@@ -26,8 +26,8 @@ AreaOption = TypeVar("AreaOption")
 
 
 class AreaOption(Generic):
-	def __init__(self, area: Optional[Area]=None, *, id: int, Option: object, data: Optional[dict|list], is_on: bool,
-	  notes: str
+	def __init__(self, area: Optional[Area]=None, *, id: int, Option: object, data: Optional[dict|list],
+	  is_deleted: bool, is_on: bool, notes: str
 	):
 		self._Area: Area = area
 		# STRUCTURE #
@@ -37,6 +37,7 @@ class AreaOption(Generic):
 		self._id: int = id
 		self._Option: object = Option
 		self._data: Optional[dict|list] = data
+		self._is_deleted: bool = is_deleted
 		self._is_on: bool = is_on
 		self._notes: bool = notes
 

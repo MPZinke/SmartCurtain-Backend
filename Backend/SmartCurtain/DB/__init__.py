@@ -30,39 +30,6 @@ DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD");
 ENGINE = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/SmartCurtain", future=True)
 BASE = automap_base()
 
-# FROM: https://stackoverflow.com/a/61939524
-# Table('HomesEventsView', BASE.metadata,
-# 	Column('id', Integer, primary_key=True),
-# 	Column("Homes.id", Integer, ForeignKey("Homes.id"), nullable=False),
-# 	Column("is_activated", Boolean),
-# 	Column("is_deleted", Boolean),
-# 	Column("Options.id", Boolean, ForeignKey("Options.id"), nullable=False),
-# 	Column("percentage", Integer),
-# 	Column("time", DateTime),
-# 	autoload_with=ENGINE
-# )
-
-# Table('RoomsEventsView', BASE.metadata,
-# 	Column('id', Integer, primary_key=True),
-# 	Column("Rooms.id", Integer, ForeignKey("Rooms.id"), nullable=False),
-# 	Column("is_activated", Boolean),
-# 	Column("is_deleted", Boolean),
-# 	Column("Options.id", Boolean, ForeignKey("Options.id"), nullable=False),
-# 	Column("percentage", Integer),
-# 	Column("time", DateTime),
-# 	autoload_with=ENGINE
-# )
-
-# Table('CurtainsEventsView', BASE.metadata,
-# 	Column('id', Integer, primary_key=True),
-# 	Column("Curtains.id", Integer, ForeignKey("Curtains.id"), nullable=False),
-# 	Column("is_activated", Boolean),
-# 	Column("is_deleted", Boolean),
-# 	Column("Options.id", Boolean, ForeignKey("Options.id"), nullable=False),
-# 	Column("percentage", Integer),
-# 	Column("time", DateTime),
-# 	autoload_with=ENGINE
-# )
 
 BASE.prepare(autoload_with=ENGINE)
 
@@ -79,10 +46,6 @@ CurtainsOptions = BASE.classes.CurtainsOptions
 HomesEvents = BASE.classes.HomesEvents
 RoomsEvents = BASE.classes.RoomsEvents
 CurtainsEvents = BASE.classes.CurtainsEvents
-
-# HomesEventsView = BASE.classes.HomesEventsView
-# RoomsEventsView = BASE.classes.RoomsEventsView
-# CurtainsEventsView = BASE.classes.CurtainsEventsView
 
 
 def Homes__iter__(self) -> dict:
@@ -132,6 +95,7 @@ def AreaOptions__iter__(self) -> dict:
 		"id": self.id,
 		"Option": dict(self.options),
 		"data": self.data,
+		"is_deleted": self.is_deleted,
 		"is_on": self.is_on,
 		"notes": self.notes
 	}.items()
@@ -160,8 +124,3 @@ Options.__iter__ = Options__iter__
 HomesOptions.__iter__ = AreaOptions__iter__
 RoomsOptions.__iter__ = AreaOptions__iter__
 CurtainsOptions.__iter__ = AreaOptions__iter__
-
-# HomesEventsView.__iter__ = AreaEventsView__iter__
-# RoomsEventsView.__iter__ = AreaEventsView__iter__
-# CurtainsEventsView.__iter__ = AreaEventsView__iter__
-

@@ -47,6 +47,11 @@ class SmartCurtain:
 
 
 	def __getitem__(self, Home_id: int) -> Optional[Home]:
+		if(Home_id == "-"):
+			room_dict = {room.id(): room for home in self._Homes for room in home.Rooms()}
+			curtain_dict = {curtain.id(): curtain for room in room_dict.values() for curtain in room.Curtains()}
+			return {**room_dict, "-": curtain_dict}
+
 		return next((home for home in self._Homes if(home.id() == Home_id)), None)
 
 
