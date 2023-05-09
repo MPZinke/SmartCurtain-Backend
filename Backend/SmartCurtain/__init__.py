@@ -28,7 +28,7 @@ from SmartCurtain.Home import Home
 
 class SmartCurtain:
 	def __init__(self):
-		self._Homes: list[Home] = Home.all()
+		self._Homes: list[Home] = Home.current()
 		self._Options: list[Option] = Option.all()
 
 

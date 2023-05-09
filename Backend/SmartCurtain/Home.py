@@ -59,6 +59,11 @@ class Home:
 
 
 	@staticmethod
+	def current() -> list[Home]:
+		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes_WHERE_Current()]
+
+
+	@staticmethod
 	def from_dictionary(home_data: dict) -> Home:
 		events: list[AreaEvent[Home]] = []
 		for event_data in home_data["HomesEvents"]:

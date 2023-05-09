@@ -69,6 +69,10 @@ class AreaEvent(Generic):
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
+	def __eq__(self, right) -> bool:
+		return self._id == right.id()
+
+
 	def __iter__(self) -> dict:
 		yield from {
 			"id": self._id,
@@ -166,6 +170,8 @@ class AreaEvent(Generic):
 		payload = {"percentage": self._percentage}
 		self._Area.publish("move", json.dumps(payload))
 		DB.DBFunctions.UPDATE_Events[type(self._Area)](self._id, is_activated=True)
+		area_event_list: list[AreaEvent[type(self._Area)]] = getattr(self._Area, f"_{self.__args__[0].__name__}Events")
+		area_event_list.remove(self)
 
 
 	def sleep_time(self):
