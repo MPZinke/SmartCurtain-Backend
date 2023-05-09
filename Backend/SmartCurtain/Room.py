@@ -70,6 +70,10 @@ class Room:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
+	def __delete__(self, event: RoomEvent) -> None:
+		self._RoomEvents.remove(event)
+
+
 	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
 		return next((room for room in self._Curtains if(room.id() == Curtain_id)), None)
 

@@ -84,6 +84,10 @@ class Home:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
+	def __delete__(self, event: AreaEvent[Home]) -> None:
+		self._HomeEvents.remove(event)
+
+
 	def __getitem__(self, Room_id: int) -> Optional[Room]:
 		return next((room for room in self._Rooms if(room.id() == Room_id)), None)
 

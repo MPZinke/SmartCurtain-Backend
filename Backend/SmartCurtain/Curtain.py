@@ -75,6 +75,10 @@ class Curtain:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
+	def __delete__(self, event: AreaEvent[Curtain]) -> None:
+		self._CurtainEvents.remove(event)
+
+
 	def __getitem__(self, curtain_event_id: int) -> Optional[AreaEvent[Curtain]]:
 		return next((event for event in self._CurtainEvents if(event.id() == curtain_event_id)), None)
 

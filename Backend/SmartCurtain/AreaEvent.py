@@ -166,12 +166,12 @@ class AreaEvent(Generic):
 	# ——————————————————————————————————————————————————— PUBLISH  ——————————————————————————————————————————————————— #
 
 	def publish(self) -> None:
-		print("Beep Boop")
-		payload = {"percentage": self._percentage}
-		self._Area.publish("move", json.dumps(payload))
+		print(payload := f"""{{"percentage": {self._percentage}}}""")
+		self._Area.publish("move", payload)
+
 		DB.DBFunctions.UPDATE_Events[type(self._Area)](self._id, is_activated=True)
-		area_event_list: list[AreaEvent[type(self._Area)]] = getattr(self._Area, f"_{self.__args__[0].__name__}Events")
-		area_event_list.remove(self)
+
+		del self._Area[self]
 
 
 	def sleep_time(self):
