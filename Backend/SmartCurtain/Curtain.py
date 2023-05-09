@@ -25,6 +25,7 @@ from typing import List, Optional, TypeVar, Union
 
 from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
+from SmartCurtain import DB
 from SmartCurtain import Option
 
 
@@ -194,6 +195,15 @@ class Curtain:
 			known_events = [event for event in known_events if(event.percentage() == percentage)]
 
 		return known_events
+
+
+	def new_CurtainEvent(self, *, percentage: int) -> AreaEvent[Curtain]:
+		new_event_dict: dict = DB.DBFunctions.INSERT_Events[Curtain](percentage=percentage, **{"Curtains.id": self._id})
+		new_event = AreaEvent[Curtain](self, **new_event_dict)
+		self._CurtainEvents.append(new_event)
+		new_event.start()
+
+		return new_event
 
 
 	def CurtainOption(self, identifier: int|str) -> Optional[AreaOption]:

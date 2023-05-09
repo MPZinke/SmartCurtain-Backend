@@ -116,7 +116,8 @@ def INSERT_CurtainsEvents(*, percentage: int, **kwargs: dict) -> CurtainsEvents:
 @Generic
 def INSERT_Events(__args__, *, percentage: int, time: Optional[datetime|str]=None, **kwargs: dict) \
   -> HomesEvents|RoomsEvents|CurtainsEvents:
-	Event = {"Home": HomesEvents, "Room": RoomsEvents, "Curtain": CurtainsEvents}[__args__[0].__name__]
+	area = __args__[0].__name__
+	Event = {"Home": HomesEvents, "Room": RoomsEvents, "Curtain": CurtainsEvents}[area]
 
 	allowed_args = [f"{area}s.id", "Options.id"]
 	if(any(key not in allowed_args for key in kwargs)):

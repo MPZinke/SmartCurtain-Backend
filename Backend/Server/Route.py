@@ -68,12 +68,12 @@ class Route:
 			DETAILS: Checks the authentication & authorizaton. Makes a call to the correct method function.
 			RETURNS: The value(s) returned from calling the correct method function.
 			"""
-			if(self._is_secure):
-				if("Authorization" not in request.headers):
-					raise Unauthorized();
+			# if(self._is_secure):
+			# 	if("Authorization" not in request.headers):
+			# 		raise Unauthorized();
 
-				if(self.unauthorized()):
-					raise Forbidden();
+			# 	if(self.unauthorized()):
+			# 		raise Forbidden();
 
 			return self._callbacks[request.method](self._SmartCurtain, *args, **kwargs);
 
@@ -94,7 +94,7 @@ class Route:
 		if(request.headers.get("Authorization") == f"Bearer {token}"):
 			return AUTHORIZED;
 
-		if(self._SmartCurtain.Curtain(ip_address=request.remote_addr) is None):
+		if(self._SmartCurtain is None):
 			return UNAUTHORIZED;
 
 		return AUTHORIZED;
