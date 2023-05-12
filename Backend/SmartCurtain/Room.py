@@ -70,7 +70,7 @@ class Room:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __delete__(self, event: RoomEvent) -> None:
+	def __delitem__(self, event: RoomEvent) -> None:
 		self._RoomEvents.remove(event)
 
 

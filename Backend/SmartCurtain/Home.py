@@ -84,7 +84,7 @@ class Home:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __delete__(self, event: AreaEvent[Home]) -> None:
+	def __delitem__(self, event: AreaEvent[Home]) -> None:
 		self._HomeEvents.remove(event)
 
 

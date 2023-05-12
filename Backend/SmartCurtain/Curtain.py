@@ -75,7 +75,7 @@ class Curtain:
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __delete__(self, event: AreaEvent[Curtain]) -> None:
+	def __delitem__(self, event: AreaEvent[Curtain]) -> None:
 		self._CurtainEvents.remove(event)
 
 
@@ -201,15 +201,6 @@ class Curtain:
 		return known_events
 
 
-	def new_CurtainEvent(self, *, percentage: int) -> AreaEvent[Curtain]:
-		new_event_dict: dict = DB.DBFunctions.INSERT_Events[Curtain](percentage=percentage, **{"Curtains.id": self._id})
-		new_event = AreaEvent[Curtain](self, **new_event_dict)
-		self._CurtainEvents.append(new_event)
-		new_event.start()
-
-		return new_event
-
-
 	def CurtainOption(self, identifier: int|str) -> Optional[AreaOption]:
 		curtain_option = next((option for option in self._CurtainOptions if(option == identifier)), None)
 		if(curtain_option is not None):
@@ -241,3 +232,12 @@ class Curtain:
 		client = mqtt.client.Client()
 		client.connect("localhost", 1883, 60)
 		client.publish(f"SmartCurtain/-/-/{self._id}/{command}", payload)
+
+
+	def new_CurtainEvent(self, *, percentage: int) -> AreaEvent[Curtain]:
+		new_event_dict: dict = DB.DBFunctions.INSERT_Events[Curtain](percentage=percentage, **{"Curtains.id": self._id})
+		new_event = AreaEvent[Curtain](self, **new_event_dict)
+		self._CurtainEvents.append(new_event)
+		new_event.start()
+
+		return new_event

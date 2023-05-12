@@ -53,6 +53,11 @@ class AreaEvent(Generic):
 
 
 	@Generic
+	def new(__args__: set, area: Area, *,) -> AreaEvent:
+		pass
+
+
+	@Generic
 	def from_dictionary(__args__: set, curtain_event_data: dict) -> AreaEvent:
 		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
 		return AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})

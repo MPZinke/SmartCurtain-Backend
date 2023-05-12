@@ -14,12 +14,12 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import threading
 import traceback
-from typing import List
-from werkzeug.exceptions import HTTPException
+from typing import Any, Dict, List
+from werkzeug.exceptions import Forbidden, HTTPException, Unauthorized
 
 
 from Server import Route
@@ -28,45 +28,40 @@ from SmartCurtain import SmartCurtain
 
 class Server:
 	def __init__(self, smart_curtain: SmartCurtain):
-		self._thread = threading.Thread(name="Server", target=self)
-
 		self._SmartCurtain: SmartCurtain = smart_curtain
 
+		self._thread = threading.Thread(name="Server", target=self)
 		self._app = Flask(__name__)
 
 		self._cors = CORS(self._app)
 		self._app.config['CORS_HEADERS'] = 'Content-Type'
 		self._app.register_error_handler(Exception, self.handle_error)
 
-		self._routes: List[Route] = []
-
 		self.route("/", secure=False)
-		self.route("/api", secure=False)
-		self.route("/api/v1.0", secure=False)
-		self.route("/api/v1.0/curtains", secure=False)
-		self.route("/api/v1.0/curtains/all")
+		self.route("/homes")
+		self.route("/homes/<int:home_id>")
+		self.route("/homes/<int:home_id>/rooms")
+		self.route("/homes/<int:home_id>/curtains")
+		self.route("/homes/rooms/<int:room_id>")
+		self.route("/homes/rooms/<int:room_id>/curtains")
+		self.route("/homes/rooms/curtains/<int:curtain_id>")
 
-		self.route("/api/v1.0/curtains/<int:curtain_id>", "GET", "PATCH")
-		self.route("/api/v1.0/curtains/<int:curtain_id>/events")
-		self.route("/api/v1.0/curtains/<int:curtain_id>/events/all")
-		self.route("/api/v1.0/curtains/<int:curtain_id>/events/new", "POST")
-		# self.route("/api/v1.0/curtains/<int:curtain_id>/events/<string:event_time>", "GET", "PATCH", "DELETE")
+		self.route("/rooms")
+		self.route("/curtains")
+		self.route("/curtains/<int:curtain_id>")
 
-		self.route("/api/v1.0/curtains/<string:curtain_name>", "GET", "PATCH")
-		self.route("/api/v1.0/curtains/<string:curtain_name>/events")
-		self.route("/api/v1.0/curtains/<string:curtain_name>/events/all")
-		self.route("/api/v1.0/curtains/<string:curtain_name>/events/new", "POST")
-		# self.route("/api/v1.0/curtains/<string:curtain_name>/events/<string:event_time>", "GET", "PATCH", "DELETE")
+		self.route("/events")
+		self.route("/events/<int:event_id>")
 
-		self.route("/api/v1.0/events")
-		self.route("/api/v1.0/events/all")
-		self.route("/api/v1.0/events/<int:event_id>", "GET", "PATCH", "DELETE")
-		self.route("/api/v1.0/events/new", "POST")
+		# self.route("/events")
+		# self.route("/events/all")
+		# self.route("/events/<int:event_id>", "GET", "PATCH", "DELETE")
+		# self.route("/events/new", "POST")
 
-		self.route("/api/v1.0/options")
-		self.route("/api/v1.0/options/all")
-		self.route("/api/v1.0/options/<int:option_id>")
-		self.route("/api/v1.0/options/<string:option_name>")
+		# self.route("/options")
+		# self.route("/options/all")
+		# self.route("/options/<int:option_id>")
+		# self.route("/options/<string:option_name>")
 
 	# ———————————————————————————————————————————————————— THREAD ———————————————————————————————————————————————————— #
 
@@ -104,11 +99,51 @@ class Server:
 		return jsonify(error=str(error), traceback=exception_traceback), 500
 
 
-	def route(self, endpoint: str, *methods: list, secure: bool=True) -> None:
-		"""
-		SUGAR:  Makes a cleaner version to add a Route to the Flask server.
-		PARAMS: Takes the endpoint to route, the request methods to accept, whether the route requires authorization.
-		"""
-		route = Route(self._app, self._SmartCurtain, endpoint, *methods, secure=secure)
-		route.add_to_server()
-		self._routes.append(route)
+	def _validate_HTTP_methods(self, methods: Dict[str, callable]) -> None:
+		http_methods = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"]
+
+		# Ensure all methods are correct HTTP methods.
+		if((bad_methods := "', '".join([method for method in methods if(method.upper() not in http_methods)])) != ""):
+			raise Exception(f"Method(s) '{bad_methods}' not an HTTP method for URL '{url}'")
+
+		if(len(methods) == 0):  # Ensure at least 1 method supplied
+			raise Exception(f"At least one HTTP method must be supplied for URL '{url}")
+
+
+	def _validate_method_callbacks(self, methods: Dict[str, callable], url: str) -> None
+		for method, function in methods.items():  # Ensure all methods have a callback
+			if(not hasattr(function, '__call__')):
+				message = f"Method '{method}' arg must be of type 'callable', not '{type(function)}' for URL '{url}'"
+				raise Exception(message)
+
+		url_params = re.findall(r"<(?:int|string):([_a-zA-Z][_a-zA-Z0-9]*)>", url)
+		for method, function in methods.items():
+			function_args = func.__code__.co_varnames
+			if((missing_params := "', '".join([param for param in url_params if(param not in function_args)])) != ""):
+				raise Exception(f"""Method '{method}' callback is missing arg(s) '{missing_params}'""")
+
+
+	def route(self, url: str, GET: callable=None, *, secure: bool=True, **methods: Dict[str, callable]) -> None:
+		def method_function(*args: list[Any], **kwargs: Dict[str, Any]) -> Any:
+			if(secure):
+				if("Authorization" not in request.headers):
+					raise Unauthorized();
+
+				if(self.unauthorized()):
+					raise Forbidden();
+
+			return {method.upper(): function for method, function in methods.items()}[request.method](*args, **kwargs)
+
+		if(GET is not None):  # Use the GET argument
+			if("GET" in [key.upper() for key in methods]):  # Ensure 'GET' is not doubly supplied
+				raise Exception(f"Ambiguous supplying of argument 'GET' and keyword argument 'GET' for URL '{url}'")
+
+			methods["GET"] = GET
+
+		Server._validate_HTTP_methods(methods)
+		Server._validate_method_callbacks(methods, url)
+
+		# Set URLs for both urls that do and do not end with '/', with the exception of the root URL
+		# Get the url without and with the ending '/', then remove the blank urls (ie if the root url is provided)
+		urls = set(url for url in [url.rstrip("/"), (f"{url}/" if(url[-1] != "/") else url)] if(url))
+		[self._app.add_url_rule(url, url, method_function, methods=list(methods)) for url in urls]
