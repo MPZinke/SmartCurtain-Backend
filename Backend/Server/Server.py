@@ -14,15 +14,17 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+import flask
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import re
 import threading
 import traceback
 from typing import Any, Dict, List
 from werkzeug.exceptions import Forbidden, HTTPException, Unauthorized
 
 
-from Server import Route
+from Server import Routes
 from SmartCurtain import SmartCurtain
 
 
@@ -36,22 +38,20 @@ class Server:
 		self._cors = CORS(self._app)
 		self._app.config['CORS_HEADERS'] = 'Content-Type'
 		self._app.register_error_handler(Exception, self.handle_error)
+		self._app.after_request(Server.after_request)
 
-		self.route("/", secure=False)
-		self.route("/homes")
-		self.route("/homes/<int:home_id>")
-		self.route("/homes/<int:home_id>/rooms")
-		self.route("/homes/<int:home_id>/curtains")
-		self.route("/homes/rooms/<int:room_id>")
-		self.route("/homes/rooms/<int:room_id>/curtains")
-		self.route("/homes/rooms/curtains/<int:curtain_id>")
+		self.route("/", Routes.GET, secure=False)
+		self.route("/homes", Routes.homes.GET, secure=False)
+		# self.route("/homes/<int:home_id>")
+		# self.route("/homes/<int:home_id>/rooms")
+		# self.route("/homes/<int:home_id>/curtains")
+		# self.route("/rooms/<int:room_id>")
+		# self.route("/rooms/<int:room_id>/curtains")
+		# self.route("/curtains")
+		# self.route("/curtains/<int:curtain_id>")
 
-		self.route("/rooms")
-		self.route("/curtains")
-		self.route("/curtains/<int:curtain_id>")
-
-		self.route("/events")
-		self.route("/events/<int:event_id>")
+		# self.route("/events")
+		# self.route("/events/<int:event_id>")
 
 		# self.route("/events")
 		# self.route("/events/all")
@@ -77,6 +77,8 @@ class Server:
 		self._thread.start()
 
 
+	# ——————————————————————————————————————————————— REQUEST HANDLING ——————————————————————————————————————————————— #
+
 	def debug(self, flag=True) -> None:
 		self._app.debug = flag
 
@@ -98,8 +100,18 @@ class Server:
 
 		return jsonify(error=str(error), traceback=exception_traceback), 500
 
+	@staticmethod
+	def after_request(response):
+		"""
+		FROM: https://stackoverflow.com/a/30717205
+		"""
+		response.headers["Content-Type"] = "application/json"
+		response.headers["SmartCurtain-Version"] = "5.0.0"
+		return response
 
-	def _validate_HTTP_methods(self, methods: Dict[str, callable]) -> None:
+
+	@staticmethod
+	def _validate_HTTP_methods(methods: Dict[str, callable]) -> None:
 		http_methods = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"]
 
 		# Ensure all methods are correct HTTP methods.
@@ -110,7 +122,8 @@ class Server:
 			raise Exception(f"At least one HTTP method must be supplied for URL '{url}")
 
 
-	def _validate_method_callbacks(self, methods: Dict[str, callable], url: str) -> None
+	@staticmethod
+	def _validate_method_callbacks(methods: Dict[str, callable], url: str) -> None:
 		for method, function in methods.items():  # Ensure all methods have a callback
 			if(not hasattr(function, '__call__')):
 				message = f"Method '{method}' arg must be of type 'callable', not '{type(function)}' for URL '{url}'"
@@ -118,12 +131,13 @@ class Server:
 
 		url_params = re.findall(r"<(?:int|string):([_a-zA-Z][_a-zA-Z0-9]*)>", url)
 		for method, function in methods.items():
-			function_args = func.__code__.co_varnames
+			function_args = function.__code__.co_varnames
 			if((missing_params := "', '".join([param for param in url_params if(param not in function_args)])) != ""):
 				raise Exception(f"""Method '{method}' callback is missing arg(s) '{missing_params}'""")
 
 
 	def route(self, url: str, GET: callable=None, *, secure: bool=True, **methods: Dict[str, callable]) -> None:
+		methods = {method.upper(): function for method, function in methods.items()}
 		def method_function(*args: list[Any], **kwargs: Dict[str, Any]) -> Any:
 			if(secure):
 				if("Authorization" not in request.headers):
@@ -132,7 +146,7 @@ class Server:
 				if(self.unauthorized()):
 					raise Forbidden();
 
-			return {method.upper(): function for method, function in methods.items()}[request.method](*args, **kwargs)
+			return methods[request.method](self._SmartCurtain, *args, **kwargs)
 
 		if(GET is not None):  # Use the GET argument
 			if("GET" in [key.upper() for key in methods]):  # Ensure 'GET' is not doubly supplied

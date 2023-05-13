@@ -52,9 +52,9 @@ class AreaEvent(Generic):
 		self._publish_thread = SingleRunThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
 
 
-	@Generic
-	def new(__args__: set, area: Area, *,) -> AreaEvent:
-		pass
+	# @Generic
+	# def new(__args__: set, area: Area, *,) -> AreaEvent:
+	# 	pass
 
 
 	@Generic

@@ -5,7 +5,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 #                                                                                                                      #
 #   created by: MPZinke                                                                                                #
-#   on 2020.12.29                                                                                                      #
+#   on 2023.05.12                                                                                                      #
 #                                                                                                                      #
 #   DESCRIPTION:                                                                                                       #
 #   BUGS:                                                                                                              #
@@ -14,5 +14,11 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Server import Routes;
-from Server.Server import Server;
+import json
+
+
+from SmartCurtain import SmartCurtain
+
+
+def GET(smart_curtain: SmartCurtain):
+	return json.dumps({home.id(): home.name() for home in smart_curtain.Homes()}, indent=4)

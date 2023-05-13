@@ -55,6 +55,10 @@ class SmartCurtain:
 		return next((home for home in self._Homes if(home.id() == Home_id)), None)
 
 
+	def Homes(self) -> list[Home]:
+		return self._Homes.copy()
+
+
 	def Room(self, Room_id: int) -> Optional[Room]:
 		for home in self._Homes:
 			if((room := home[Room_id]) is not None):
