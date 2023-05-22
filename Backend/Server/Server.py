@@ -42,7 +42,7 @@ class Server:
 
 		self.route("/", Routes.GET, secure=False)
 		self.route("/homes", Routes.homes.GET, secure=False)
-		# self.route("/homes/<int:home_id>")
+		self.route("/homes/<int:homes_id>", Routes.homes.GET_homes_id, secure=False)
 		# self.route("/homes/<int:home_id>/rooms")
 		# self.route("/homes/<int:home_id>/curtains")
 		# self.route("/rooms/<int:room_id>")
@@ -52,11 +52,6 @@ class Server:
 
 		# self.route("/events")
 		# self.route("/events/<int:event_id>")
-
-		# self.route("/events")
-		# self.route("/events/all")
-		# self.route("/events/<int:event_id>", "GET", "PATCH", "DELETE")
-		# self.route("/events/new", "POST")
 
 		# self.route("/options")
 		# self.route("/options/all")
