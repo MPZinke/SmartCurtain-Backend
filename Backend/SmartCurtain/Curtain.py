@@ -172,6 +172,16 @@ class Curtain:
 		self._length = new_length
 
 
+	def name(self, new_name: Optional[int]=None) -> Optional[int]:
+		if(new_name is None):
+			return self._name
+
+		if(not isinstance(new_name, int)):
+			raise Exception(f"'Curtain::name' must be of type 'int' not '{type(new_name).__name__}'")
+
+		self._name = new_name
+
+
 	def percentage(self, new_percentage: Optional[int]=None) -> Optional[int]:
 		if(new_percentage is None):
 			return self._percentage

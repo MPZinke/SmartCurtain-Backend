@@ -18,6 +18,8 @@ import json
 
 
 from Server.Routes import homes
+from Server.Routes import rooms
+from Server.Routes import curtains
 from SmartCurtain import SmartCurtain
 
 

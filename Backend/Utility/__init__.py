@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 
 
 from Utility.Generic import Generic
+from Utility.LookupStruct import LookupStruct
 
 
 from datetime import datetime, timedelta

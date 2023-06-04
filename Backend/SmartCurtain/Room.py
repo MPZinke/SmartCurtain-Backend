@@ -126,6 +126,23 @@ class Room:
 		return self._Curtains.copy()
 
 
+	def RoomEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
+	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
+	) -> list[AreaEvent[Room]]:
+		known_events: list[AreaEvent[Room]] = self._RoomEvents.copy()
+
+		if(Option_id is not None):
+			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
+		if(is_activated is not None):
+			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
+		if(is_deleted is not None):
+			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
+		if(percentage is not None):
+			known_events = [event for event in known_events if(event.percentage() == percentage)]
+
+		return known_events
+
+
 	def RoomOption(self, identifier: int|str) -> Optional[AreaOption]:
 		room_option = next((option for option in self._RoomOptions if(option == identifier)), None)
 		if(room_option is not None):

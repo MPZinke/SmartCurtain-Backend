@@ -18,6 +18,7 @@ import flask
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import re
+import sys
 import threading
 import traceback
 from typing import Any, Dict, List
@@ -41,14 +42,21 @@ class Server:
 		self._app.after_request(Server.after_request)
 
 		self.route("/", Routes.GET, secure=False)
+
 		self.route("/homes", Routes.homes.GET, secure=False)
-		self.route("/homes/<int:homes_id>", Routes.homes.GET_homes_id, secure=False)
-		# self.route("/homes/<int:home_id>/rooms")
-		# self.route("/homes/<int:home_id>/curtains")
-		# self.route("/rooms/<int:room_id>")
-		# self.route("/rooms/<int:room_id>/curtains")
-		# self.route("/curtains")
-		# self.route("/curtains/<int:curtain_id>")
+		self.route("/homes/<int:home_id>", Routes.homes.GET_home_id, secure=False)
+		self.route("/homes/<int:home_id>/rooms", Routes.homes.GET_home_id_rooms, secure=False)
+		self.route("/homes/<int:home_id>/curtains", Routes.homes.GET_home_id_curtains, secure=False)
+		self.route("/homes/<int:home_id>/events", Routes.homes.GET_home_id_events, secure=False)
+
+		self.route("/rooms", Routes.rooms.GET, secure=False)
+		self.route("/rooms/<int:room_id>", Routes.rooms.GET_room_id, secure=False)
+		self.route("/rooms/<int:room_id>/curtains", Routes.rooms.GET_room_id_curtains, secure=False)
+		self.route("/rooms/<int:room_id>/events", Routes.rooms.GET_room_id_events, secure=False)
+
+		self.route("/curtains", Routes.curtains.GET, secure=False)
+		self.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, secure=False)
+		self.route("/curtains/<int:curtain_id>/events", Routes.curtains.GET_curtain_id_events, secure=False)
 
 		# self.route("/events")
 		# self.route("/events/<int:event_id>")
@@ -93,6 +101,7 @@ class Server:
 		except:
 			exception_traceback = "Unknown traceback"
 
+		print(str(error), exception_traceback, file=sys.stderr)
 		return jsonify(error=str(error), traceback=exception_traceback), 500
 
 	@staticmethod

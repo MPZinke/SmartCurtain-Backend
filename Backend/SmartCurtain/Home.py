@@ -27,6 +27,8 @@ from SmartCurtain import Curtain
 from SmartCurtain import Room
 from SmartCurtain.DB import DBFunctions
 
+from Utility import LookupStruct
+
 
 Home = TypeVar("Home")
 
@@ -88,8 +90,13 @@ class Home:
 		self._HomeEvents.remove(event)
 
 
-	def __getitem__(self, Room_id: int) -> Optional[Room]:
-		return next((room for room in self._Rooms if(room.id() == Room_id)), None)
+	def __getitem__(self, Room_id: int|str) -> Optional[Room]|LookupStruct[Curtain]:
+		"""
+		RETURNS: If an int is supplied, the home with a matching ID is returned or none. If "-" is supplied, a
+		         dictionary of the rooms and curtains is returned.
+		         IE `{<curtain ids: curtains>}`
+		"""
+		return LookupStruct[Room, Curtain](self._Rooms)[Room_id]
 
 
 	def __iter__(self) -> dict:
@@ -134,14 +141,27 @@ class Home:
 		self._name = new_name
 
 
-	def HomeOption(self, Option_id: int) -> Optional[AreaOption[Home]]:
-		return next((option for option in self._HomeOptions if(option.Option().id() == Option_id)), None)
-
-
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
 	def Rooms(self):
 		return self._Rooms.copy()
+
+
+	def HomeEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
+	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
+	) -> list[AreaEvent[Home]]:
+		known_events: list[AreaEvent[Home]] = self._HomeEvents.copy()
+
+		if(Option_id is not None):
+			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
+		if(is_activated is not None):
+			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
+		if(is_deleted is not None):
+			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
+		if(percentage is not None):
+			known_events = [event for event in known_events if(event.percentage() == percentage)]
+
+		return known_events
 
 
 	def HomeOption(self, identifier: int|str) -> Optional[AreaOption]:

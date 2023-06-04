@@ -26,6 +26,9 @@ from SmartCurtain.Room import Room
 from SmartCurtain.Home import Home
 
 
+from Utility import LookupStruct
+
+
 class SmartCurtain:
 	def __init__(self):
 		self._Homes: list[Home] = Home.current()
@@ -46,13 +49,11 @@ class SmartCurtain:
 
 
 
-	def __getitem__(self, Home_id: int) -> Optional[Home]:
-		if(Home_id == "-"):
-			room_dict = {room.id(): room for home in self._Homes for room in home.Rooms()}
-			curtain_dict = {curtain.id(): curtain for room in room_dict.values() for curtain in room.Curtains()}
-			return {**room_dict, "-": curtain_dict}
-
-		return next((home for home in self._Homes if(home.id() == Home_id)), None)
+	def __getitem__(self, Home_id: int|str) -> Optional[Home]|LookupStruct[Room, Curtain]:
+		"""
+		RETURNS: If an int is supplied, the home with a matching ID is returned or none. If "-" is supplied, a...
+		"""
+		return LookupStruct[Home, Room, Curtain](self._Homes)[Home_id]
 
 
 	def Homes(self) -> list[Home]:
