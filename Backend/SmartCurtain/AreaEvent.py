@@ -17,10 +17,11 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta
 import json
 from requests import post
-from typing import Any, Optional, TypeVar
+from typing import Optional, TypeVar
 from warnings import warn as Warn
 
 
+from SmartCurtain import Area
 from SmartCurtain import DB
 from SmartCurtain import Option
 from Utility import Generic
@@ -28,7 +29,6 @@ from Utility.Thread import SingleRunThread
 from Utility import Logger
 
 
-Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
 AreaEvent = TypeVar("AreaEvent")
 Option = TypeVar("Option")
 
@@ -50,11 +50,6 @@ class AreaEvent(Generic):
 		self._time: datetime = time
 		# THREAD #
 		self._publish_thread = SingleRunThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
-
-
-	# @Generic
-	# def new(__args__: set, area: Area, *,) -> AreaEvent:
-	# 	pass
 
 
 	@Generic
@@ -97,7 +92,7 @@ class AreaEvent(Generic):
 		return json.dumps(dict(self), default=str, indent=4)
 
 
-	def get_or_set__args__(self, new_Area: Optional[Any]=None) -> Optional[Any]:
+	def get_or_set__args__(self, new_Area: Optional[Area]=None) -> Optional[Area]:
 		__args___name = self.__args__[0].__name__
 		if(new_Area is None):
 			return getattr(self, f"_{__args___name}")
@@ -112,6 +107,10 @@ class AreaEvent(Generic):
 
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
+
+	def Area(self, new_Area: Optional[Area]=None) -> Optional[Area]:
+		return self.get_or_set__args__(new_Area)
+
 
 	def id(self):
 		return self._id

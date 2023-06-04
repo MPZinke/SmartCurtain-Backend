@@ -21,6 +21,7 @@ from typing import Optional, TypeVar
 
 
 from SmartCurtain import Option
+from SmartCurtain import Area
 from SmartCurtain import AreaOption
 from SmartCurtain import AreaEvent
 from SmartCurtain import Curtain
@@ -33,20 +34,15 @@ from Utility import LookupStruct
 Home = TypeVar("Home")
 
 
-class Home:
+class Home(Area):
 	def __init__(self, *, id: int, is_deleted: bool, name: str, HomeEvents: list[AreaEvent[Home]],
 	  HomeOptions: list[AreaOption[Home]], Rooms: list[Room]
 	):
-		self._id: int = id
-		self._is_deleted: bool = is_deleted
-		self._name: str = name
-		self._HomeEvents: list[AreaEvent[Home]] = HomeEvents.copy()
-		self._HomeOptions: list[AreaOption[Home]] = HomeOptions.copy()
+		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=HomeEvents, AreaOptions=HomeOptions)
+
+		# STRUCTURE #
 		self._Rooms: list[Room] = Rooms.copy()
 
-		[home_event.Home(self) for home_event in self._HomeEvents]
-		[home_event.start() for home_event in self._HomeEvents]
-		[home_option.Home(self) for home_option in self._HomeOptions]
 		[room.Home(self) for room in self._Rooms]
 
 
@@ -87,7 +83,7 @@ class Home:
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __delitem__(self, event: AreaEvent[Home]) -> None:
-		self._HomeEvents.remove(event)
+		self._AreaEvents.remove(event)
 
 
 	def __getitem__(self, Room_id: int|str) -> Optional[Room]|LookupStruct[Curtain]:
@@ -104,41 +100,10 @@ class Home:
 			"id": self._id,
 			"is_deleted": self._is_deleted,
 			"name": self._name,
-			"HomeOptions": list(map(dict, self._HomeOptions)),
+			"HomeEvents": list(map(dict, self._AreaEvents)),
+			"HomeOptions": list(map(dict, self._AreaOptions)),
 			"Rooms": list(map(dict, self._Rooms))
 		}.items()
-
-
-	def __repr__(self) -> str:
-		return str(self)
-
-
-	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str, indent=4)
-
-
-	def id(self):
-		return self._id
-
-
-	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
-		if(new_is_deleted is None):
-			return self._is_deleted
-
-		if(not isinstance(new_is_deleted, bool)):
-			raise Exception(f"'Home::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
-
-		self._is_deleted = new_is_deleted
-
-
-	def name(self, new_name: Optional[str]=None) -> Optional[str]:
-		if(new_name is None):
-			return self._name
-
-		if(not isinstance(new_name, str)):
-			raise Exception(f"'Home::name' must be of type 'str' not '{type(new_is_deleted).__name__}'")
-
-		self._name = new_name
 
 
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
@@ -150,26 +115,17 @@ class Home:
 	def HomeEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
 	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
 	) -> list[AreaEvent[Home]]:
-		known_events: list[AreaEvent[Home]] = self._HomeEvents.copy()
-
-		if(Option_id is not None):
-			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
-		if(is_activated is not None):
-			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
-		if(is_deleted is not None):
-			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
-		if(percentage is not None):
-			known_events = [event for event in known_events if(event.percentage() == percentage)]
-
-		return known_events
+		return self.AreaEvents(Option_id=Option_id, is_activated=is_activated, is_deleted=is_deleted,
+		  percentage=percentage
+		)
 
 
-	def HomeOption(self, identifier: int|str) -> Optional[AreaOption]:
-		return next((option for option in self._HomeOptions if(option == identifier)), None)
+	def HomeOption(self, identifier: int|str) -> Optional[AreaOption[Home]]:
+		return self.AreaOption(identifier)
 
 
 	def HomeOptions(self) -> list[AreaOption[Home]]:
-		return self._HomeOptions.copy()
+		return self._AreaOptions.copy()
 
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #

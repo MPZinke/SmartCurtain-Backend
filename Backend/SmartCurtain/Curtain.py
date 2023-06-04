@@ -23,6 +23,7 @@ import requests
 from typing import List, Optional, TypeVar, Union
 
 
+from SmartCurtain import Area
 from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
 from SmartCurtain import DB
@@ -33,27 +34,21 @@ Curtain = TypeVar("Curtain")
 Room = TypeVar("Room")
 
 
-class Curtain:
+class Curtain(Area):
 	def __init__(self, Room: Optional[Room]=None, *, id: int, is_deleted: bool, length: Optional[int], name: str,
 	  CurtainEvents: list[AreaEvent[Curtain]], CurtainOptions: list[AreaOption[Curtain]]
 	):
+		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=CurtainEvents,
+		  AreaOptions=CurtainOptions
+		)
 		# STRUCTURE #
 		self._Room = Room
 		# DATABASE #
-		self._id: int = id
-		self._is_deleted: bool = is_deleted
 		self._length: Optional[int] = length
-		self._name: str = name
-		self._CurtainEvents: list[AreaEvent[Curtain]] = CurtainEvents.copy()
-		self._CurtainOptions: list[AreaOption[Curtain]] = CurtainOptions.copy()
 		# TEMP STATE #
 		self._is_connected: bool = False
 		self._is_moving: bool = False
 		self._percentage: int = 0
-
-		[curtain_event.Curtain(self) for curtain_event in self._CurtainEvents]
-		[curtain_event.start() for curtain_event in self._CurtainEvents]
-		[curtain_option.Curtain(self) for curtain_option in self._CurtainOptions]
 
 
 	@staticmethod
@@ -76,11 +71,11 @@ class Curtain:
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __delitem__(self, event: AreaEvent[Curtain]) -> None:
-		self._CurtainEvents.remove(event)
+		self._AreaEvents.remove(event)
 
 
 	def __getitem__(self, curtain_event_id: int) -> Optional[AreaEvent[Curtain]]:
-		return next((event for event in self._CurtainEvents if(event.id() == curtain_event_id)), None)
+		return next((event for event in self._AreaEvents if(event.id() == curtain_event_id)), None)
 
 
 	def __iter__(self) -> dict:
@@ -90,21 +85,13 @@ class Curtain:
 			"is_deleted": self._is_deleted,
 			"length": self._length,
 			"name": self._name,
-			"CurtainEvents": list(map(dict, self._CurtainEvents)),
-			"CurtainOptions": list(map(dict, self._CurtainOptions)),
+			"CurtainEvents": list(map(dict, self._AreaEvents)),
+			"CurtainOptions": list(map(dict, self._AreaOptions)),
 			# TEMP STATE #
 			"is_connected": self._is_connected,
 			"is_moving": self._is_moving,
 			"percentage": self._percentage
 		}.items()
-
-
-	def __repr__(self) -> str:
-		return str(self)
-
-
-	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str, indent=4)
 
 
 	def node_dict(self) -> dict:
@@ -127,20 +114,6 @@ class Curtain:
 
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
-
-	def id(self):
-		return self._id
-
-
-	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
-		if(new_is_deleted is None):
-			return self._is_deleted
-
-		if(not isinstance(new_is_deleted, int)):
-			raise Exception(f"'Curtain::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
-
-		self._is_deleted = new_is_deleted
-
 
 	def is_moving(self, new_is_moving: Optional[bool]=None) -> Optional[bool]:
 		if(new_is_moving is None):
@@ -172,16 +145,6 @@ class Curtain:
 		self._length = new_length
 
 
-	def name(self, new_name: Optional[int]=None) -> Optional[int]:
-		if(new_name is None):
-			return self._name
-
-		if(not isinstance(new_name, int)):
-			raise Exception(f"'Curtain::name' must be of type 'int' not '{type(new_name).__name__}'")
-
-		self._name = new_name
-
-
 	def percentage(self, new_percentage: Optional[int]=None) -> Optional[int]:
 		if(new_percentage is None):
 			return self._percentage
@@ -197,30 +160,20 @@ class Curtain:
 	def CurtainEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
 	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
 	) -> list[AreaEvent[Curtain]]:
-		known_events: list[AreaEvent[Curtain]] = self._CurtainEvents.copy()
-
-		if(Option_id is not None):
-			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
-		if(is_activated is not None):
-			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
-		if(is_deleted is not None):
-			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
-		if(percentage is not None):
-			known_events = [event for event in known_events if(event.percentage() == percentage)]
-
-		return known_events
+		return self.AreaEvents(Option_id=Option_id, is_activated=is_activated, is_deleted=is_deleted,
+		  percentage=percentage
+		)
 
 
 	def CurtainOption(self, identifier: int|str) -> Optional[AreaOption]:
-		curtain_option = next((option for option in self._CurtainOptions if(option == identifier)), None)
-		if(curtain_option is not None):
-			return curtain_option
+		if((room_option := self.AreaOption(identifier)) is not None):
+			return room_option
 
 		return self._Room.RoomOption(identifier)
 
 
 	def CurtainOptions(self) -> list[AreaOption[Curtain]]:
-		return self._CurtainOptions.copy()
+		return self._AreaOptions.copy()
 
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
@@ -247,7 +200,7 @@ class Curtain:
 	def new_CurtainEvent(self, *, percentage: int) -> AreaEvent[Curtain]:
 		new_event_dict: dict = DB.DBFunctions.INSERT_Events[Curtain](percentage=percentage, **{"Curtains.id": self._id})
 		new_event = AreaEvent[Curtain](self, **new_event_dict)
-		self._CurtainEvents.append(new_event)
+		self._AreaEvents.append(new_event)
 		new_event.start()
 
 		return new_event

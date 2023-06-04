@@ -21,6 +21,7 @@ from typing import Optional, TypeVar
 
 
 from SmartCurtain import Option
+from SmartCurtain import Area
 from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
 from SmartCurtain import Curtain
@@ -30,23 +31,15 @@ Home = TypeVar("Home")
 Room = TypeVar("Room")
 
 
-class Room:
+class Room(Area):
 	def __init__(self, Home: Optional[Home]=None, *, id: int, is_deleted: bool, name: str,
 	  RoomEvents: list[AreaEvent[Home]], RoomOptions: list[AreaOption[Room]], Curtains: list[Curtain]
 	):
+		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=RoomEvents, AreaOptions=RoomOptions)
 		# STRUCTURE #
 		self._Home = Home
-		# DATABASE #
-		self._id: int = id
-		self._is_deleted: bool = is_deleted
-		self._name: str = name
-		self._RoomEvents: list[AreaEvent[Room]] = RoomEvents.copy()
-		self._RoomOptions: list[AreaOption[Room]] = RoomOptions.copy()
 		self._Curtains: list[Curtain] = Curtains.copy()
 
-		[room_event.Room(self) for room_event in self._RoomEvents]
-		[room_event.start() for room_event in self._RoomEvents]
-		[room_option.Room(self) for room_option in self._RoomOptions]
 		[curtain.Room(self) for curtain in self._Curtains]
 
 
@@ -71,7 +64,7 @@ class Room:
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __delitem__(self, event: AreaEvent[Room]) -> None:
-		self._RoomEvents.remove(event)
+		self._AreaEvents.remove(event)
 
 
 	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
@@ -83,41 +76,10 @@ class Room:
 			"id": self._id,
 			"is_deleted": self._is_deleted,
 			"name": self._name,
-			"RoomOptions": list(map(dict, self._RoomOptions)),
+			"RoomEvents": list(map(dict, self._AreaEvents)),
+			"RoomOptions": list(map(dict, self._AreaOptions)),
 			"Curtains": list(map(dict, self._Curtains))
 		}.items()
-
-
-	def __repr__(self) -> str:
-		return str(self)
-
-
-	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str, indent=4)
-
-
-	def id(self):
-		return self._id
-
-
-	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
-		if(new_is_deleted is None):
-			return self._is_deleted
-
-		if(not isinstance(new_is_deleted, bool)):
-			raise Exception(f"'Room::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
-
-		self._is_deleted = new_is_deleted
-
-
-	def name(self, new_name: Optional[str]=None) -> Optional[str]:
-		if(new_name is None):
-			return self._name
-
-		if(not isinstance(new_name, str)):
-			raise Exception(f"'Room::name' must be of type '{str.__name__}' not '{type(new_name).__name__}'")
-
-		self._name = new_name
 
 
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
@@ -129,30 +91,20 @@ class Room:
 	def RoomEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
 	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
 	) -> list[AreaEvent[Room]]:
-		known_events: list[AreaEvent[Room]] = self._RoomEvents.copy()
-
-		if(Option_id is not None):
-			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
-		if(is_activated is not None):
-			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
-		if(is_deleted is not None):
-			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
-		if(percentage is not None):
-			known_events = [event for event in known_events if(event.percentage() == percentage)]
-
-		return known_events
+		return self.AreaEvents(Option_id=Option_id, is_activated=is_activated, is_deleted=is_deleted,
+		  percentage=percentage
+		)
 
 
 	def RoomOption(self, identifier: int|str) -> Optional[AreaOption]:
-		room_option = next((option for option in self._RoomOptions if(option == identifier)), None)
-		if(room_option is not None):
+		if((room_option := self.AreaOption(identifier)) is not None):
 			return room_option
 
 		return self._Home.HomeOption(identifier)
 
 
 	def RoomOptions(self) -> list[AreaOption[Room]]:
-		return self._RoomOptions.copy()
+		return self._AreaOptions.copy()
 
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #

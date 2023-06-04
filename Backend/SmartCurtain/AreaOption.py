@@ -87,6 +87,10 @@ class AreaOption(Generic):
 		setattr(self, f"_{__args___name}", new_Area)
 
 
+	def Area(self, new_Area: Optional[Area]=None) -> Optional[Area]:
+		return self.get_or_set__args__(new_Area)
+
+
 	def Option(self):
 		return self._Option
 

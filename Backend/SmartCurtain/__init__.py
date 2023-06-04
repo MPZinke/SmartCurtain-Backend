@@ -19,6 +19,7 @@ from typing import Optional
 
 
 from SmartCurtain.Option import Option
+from SmartCurtain.Area import Area
 from SmartCurtain.AreaEvent import AreaEvent
 from SmartCurtain.AreaOption import AreaOption
 from SmartCurtain.Curtain import Curtain
