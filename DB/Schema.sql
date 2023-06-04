@@ -10,9 +10,6 @@
 SET client_min_messages TO WARNING;
 
 
-CREATE EXTENSION btree_gist;
-
-
 -- ————————————————————————————————————————————————————— AREAS  ————————————————————————————————————————————————————— --
 -- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
 
@@ -25,14 +22,6 @@ CREATE TABLE IF NOT EXISTS "Homes"
 );
 
 
-CREATE UNIQUE INDEX ON "Homes"(REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
-  WHERE "is_deleted" = FALSE;
-
-
-CREATE UNIQUE INDEX ON "Homes"("name")
-  WHERE "is_deleted" = FALSE;
-
-
 DROP TABLE IF EXISTS "Rooms" CASCADE;
 CREATE TABLE IF NOT EXISTS "Rooms"
 (
@@ -42,10 +31,6 @@ CREATE TABLE IF NOT EXISTS "Rooms"
 	"Homes.id" INT NOT NULL,
 	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id")
 );
-
-
-CREATE UNIQUE INDEX ON "Rooms"("Homes.id", REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
-  WHERE "is_deleted" = FALSE;
 
 
 DROP TABLE IF EXISTS "Curtains" CASCADE;
@@ -61,19 +46,136 @@ CREATE TABLE IF NOT EXISTS "Curtains"
 );
 
 
-CREATE UNIQUE INDEX ON "Curtains"("Rooms.id", REGEXP_REPLACE("name", '[^_\-a-zA-Z0-9]', ''))
+-- ———————————————————————————————————————————————————— OPTIONS  ———————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+
+DROP TABLE IF EXISTS "Options" CASCADE;
+CREATE TABLE IF NOT EXISTS "Options"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"description" VARCHAR(256) NOT NULL DEFAULT '',
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"name" VARCHAR(32) NOT NULL UNIQUE
+);
+
+
+DROP TABLE IF EXISTS "HomesOptions" CASCADE;
+CREATE TABLE IF NOT EXISTS "HomesOptions"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Homes.id" INT NOT NULL,
+	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id"),
+	"Options.id" INT NOT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"data" JSON DEFAULT NULL,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"is_on" BOOLEAN NOT NULL,
+	"notes" VARCHAR(256) NOT NULL DEFAULT ''
+);
+
+
+DROP TABLE IF EXISTS "RoomsOptions" CASCADE;
+CREATE TABLE IF NOT EXISTS "RoomsOptions"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Rooms.id" INT NOT NULL,
+	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id"),
+	"Options.id" INT NOT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"data" JSON DEFAULT NULL,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"is_on" BOOLEAN NOT NULL,
+	"notes" VARCHAR(256) NOT NULL DEFAULT ''
+);
+
+
+DROP TABLE IF EXISTS "CurtainsOptions" CASCADE;
+CREATE TABLE IF NOT EXISTS "CurtainsOptions"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Curtains.id" INT NOT NULL,
+	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
+	"Options.id" INT NOT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"data" JSON DEFAULT NULL,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"is_on" BOOLEAN NOT NULL,
+	"notes" VARCHAR(256) NOT NULL DEFAULT ''
+);
+
+
+-- ————————————————————————————————————————————————————— EVENTS ————————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+
+DROP TABLE IF EXISTS "HomesEvents" CASCADE;
+CREATE TABLE IF NOT EXISTS "HomesEvents"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Homes.id" INT NOT NULL,
+	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id"),
+	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"Options.id" INT DEFAULT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"percentage" INT NOT NULL,
+	CHECK("percentage" >= 0),
+	CHECK("percentage" <= 100),
+	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+DROP TABLE IF EXISTS "RoomsEvents" CASCADE;
+CREATE TABLE IF NOT EXISTS "RoomsEvents"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Rooms.id" INT NOT NULL,
+	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id"),
+	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"Options.id" INT DEFAULT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"percentage" INT NOT NULL,
+	CHECK("percentage" >= 0),
+	CHECK("percentage" <= 100),
+	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+DROP TABLE IF EXISTS "CurtainsEvents" CASCADE;
+CREATE TABLE IF NOT EXISTS "CurtainsEvents"
+(
+	"id" SERIAL NOT NULL PRIMARY KEY,
+	"Curtains.id" INT NOT NULL,
+	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
+	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
+	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"Options.id" INT DEFAULT NULL,
+	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
+	"percentage" INT NOT NULL,
+	CHECK("percentage" >= 0),
+	CHECK("percentage" <= 100),
+	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ——————————————————————————————————————————————————— INTEGRITY  ——————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+
+-- ———————————————————————————————————————————————— INTEGRITY::AREAS ———————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+
+CREATE UNIQUE INDEX ON "Homes"("name")
   WHERE "is_deleted" = FALSE;
 
 
-DROP FUNCTION IF EXISTS update_old_CurtainsEvents() CASCADE;
-CREATE FUNCTION update_old_CurtainsEvents() RETURNS TRIGGER AS $$
-BEGIN
-	UPDATE "CurtainsEvents" SET "is_deleted" = TRUE WHERE "time" < CURRENT_TIMESTAMP;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
+CREATE UNIQUE INDEX ON "Rooms"("Homes.id", "name")
+  WHERE "is_deleted" = FALSE;
 
 
--- ———————————————————————————————————————————— AREAS::DELETE  INTEGRITY ———————————————————————————————————————————— --
+CREATE UNIQUE INDEX ON "Curtains"("Rooms.id", "name")
+  WHERE "is_deleted" = FALSE;
+
 
 DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
 CREATE FUNCTION update_Homes_deletion() RETURNS TRIGGER AS $$
@@ -134,77 +236,21 @@ CREATE TRIGGER "DeleteCurtainsTrigger"
   EXECUTE PROCEDURE update_Curtains_deletion();
 
 
--- ———————————————————————————————————————————————————— OPTIONS  ———————————————————————————————————————————————————— --
+-- ——————————————————————————————————————————————— INTEGRITY::OPTIONS ——————————————————————————————————————————————— --
 -- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
-
-DROP TABLE IF EXISTS "Options" CASCADE;
-CREATE TABLE IF NOT EXISTS "Options"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"description" VARCHAR(256) NOT NULL DEFAULT '',
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"name" VARCHAR(32) NOT NULL UNIQUE
-);
-
-
-DROP TABLE IF EXISTS "HomesOptions" CASCADE;
-CREATE TABLE IF NOT EXISTS "HomesOptions"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Homes.id" INT NOT NULL,
-	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id"),
-	"Options.id" INT NOT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"data" JSON DEFAULT NULL,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_on" BOOLEAN NOT NULL,
-	"notes" VARCHAR(256) NOT NULL DEFAULT ''
-);
-
 
 CREATE UNIQUE INDEX ON "HomesOptions"("Homes.id", "Options.id")
   WHERE "is_deleted" = FALSE;
 
-
-DROP TABLE IF EXISTS "RoomsOptions" CASCADE;
-CREATE TABLE IF NOT EXISTS "RoomsOptions"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Rooms.id" INT NOT NULL,
-	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id"),
-	"Options.id" INT NOT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"data" JSON DEFAULT NULL,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_on" BOOLEAN NOT NULL,
-	"notes" VARCHAR(256) NOT NULL DEFAULT ''
-);
 
 
 CREATE UNIQUE INDEX ON "RoomsOptions"("Rooms.id", "Options.id")
   WHERE "is_deleted" = FALSE;
 
 
-DROP TABLE IF EXISTS "CurtainsOptions" CASCADE;
-CREATE TABLE IF NOT EXISTS "CurtainsOptions"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Curtains.id" INT NOT NULL,
-	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
-	"Options.id" INT NOT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"data" JSON DEFAULT NULL,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_on" BOOLEAN NOT NULL,
-	"notes" VARCHAR(256) NOT NULL DEFAULT ''
-);
-
 
 CREATE UNIQUE INDEX ON "CurtainsOptions"("Curtains.id", "Options.id")
   WHERE "is_deleted" = FALSE;
-
-
--- ——————————————————————————————————————————— OPTIONS::DELETE INTEGRITY  ——————————————————————————————————————————— --
 
 
 DROP FUNCTION IF EXISTS update_Options_deletion() CASCADE;
@@ -227,58 +273,10 @@ CREATE TRIGGER "DeleteOptionsTrigger"
   EXECUTE PROCEDURE update_Options_deletion();
 
 
--- ————————————————————————————————————————————————————— EVENTS ————————————————————————————————————————————————————— --
+-- ——————————————————————————————————————————————— INTEGRITY::EVENTS  ——————————————————————————————————————————————— --
 -- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
 
-DROP TABLE IF EXISTS "HomesEvents" CASCADE;
-CREATE TABLE IF NOT EXISTS "HomesEvents"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Homes.id" INT NOT NULL,
-	FOREIGN KEY ("Homes.id") REFERENCES "Homes"("id"),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"Options.id" INT DEFAULT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"percentage" INT NOT NULL,
-	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
-DROP TABLE IF EXISTS "RoomsEvents" CASCADE;
-CREATE TABLE IF NOT EXISTS "RoomsEvents"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Rooms.id" INT NOT NULL,
-	FOREIGN KEY ("Rooms.id") REFERENCES "Rooms"("id"),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"Options.id" INT DEFAULT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"percentage" INT NOT NULL,
-	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
-DROP TABLE IF EXISTS "CurtainsEvents" CASCADE;
-CREATE TABLE IF NOT EXISTS "CurtainsEvents"
-(
-	"id" SERIAL NOT NULL PRIMARY KEY,
-	"Curtains.id" INT NOT NULL,
-	FOREIGN KEY ("Curtains.id") REFERENCES "Curtains"("id"),
-	"is_activated" BOOLEAN NOT NULL DEFAULT FALSE,
-	"is_deleted" BOOLEAN NOT NULL DEFAULT FALSE,
-	"Options.id" INT DEFAULT NULL,
-	FOREIGN KEY ("Options.id") REFERENCES "Options"("id"),
-	"percentage" INT NOT NULL,
-	CHECK("percentage" >= 0),
-	"time" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ———————————————————————————————————————————— EVENTS::INSERT INTEGRITY ———————————————————————————————————————————— --
+-- ——————————————————————————————————————————— INTEGRITY::EVENTS::INSERT  ——————————————————————————————————————————— --
 
 -- ———— HomesEvents ———— --
 DROP FUNCTION IF EXISTS insert_HomesEvent() CASCADE;
@@ -483,10 +481,10 @@ CREATE TRIGGER "InsertCurtainsEventTrigger"
   FOR EACH ROW EXECUTE PROCEDURE insert_CurtainsEvent();
 
 
--- ———————————————————————————————————————————— EVENTS::UPDATE INTEGRITY ———————————————————————————————————————————— --
+-- ——————————————————————————————————————————— INTEGRITY::EVENTS::UPDATE  ——————————————————————————————————————————— --
 
 
--- ———————————————————————————————————————————— EVENTS::DELETE INTEGRITY ———————————————————————————————————————————— --
+-- ——————————————————————————————————————————— INTEGRITY::EVENTS::DELETE  ——————————————————————————————————————————— --
 
 DROP FUNCTION IF EXISTS update_Homes_deletion() CASCADE;
 CREATE FUNCTION update_Homes_deletion() RETURNS TRIGGER AS $$
@@ -541,3 +539,15 @@ CREATE TRIGGER "DeleteCurtainsTrigger"
   FOR EACH ROW
   WHEN (NEW."is_deleted" = TRUE)
   EXECUTE PROCEDURE update_Curtains_deletion();
+
+
+-- ————————————————————————————————————————————————————— OTHER  ————————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+-- —————————————————————————————————————————————————————————————————————————————————————————————————————————————————— --
+
+DROP FUNCTION IF EXISTS update_old_CurtainsEvents() CASCADE;
+CREATE FUNCTION update_old_CurtainsEvents() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "CurtainsEvents" SET "is_deleted" = TRUE WHERE "time" < CURRENT_TIMESTAMP;
+END;
+$$ LANGUAGE 'plpgsql' SECURITY DEFINER;

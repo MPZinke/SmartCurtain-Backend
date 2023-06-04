@@ -38,7 +38,7 @@ def GET_room_id(smart_curtain: SmartCurtain, room_id: int):
 
 	room_dict = dict(room)
 	room_dict["Curtains"] = {curtain["id"]: curtain["name"] for curtain in room_dict["Curtains"]}
-	return json.dumps(room_dict, indent=4)
+	return json.dumps(room_dict, indent=4, default=str)
 
 
 def GET_room_id_curtains(smart_curtain: SmartCurtain, room_id: int):
@@ -48,7 +48,7 @@ def GET_room_id_curtains(smart_curtain: SmartCurtain, room_id: int):
 	if((room := smart_curtain["-"][room_id]) is None):
 		raise NotFound(f"No room with id '{room_id}' was found")
 
-	return json.dumps({curtain.id(): curtain.name() for curtain in room.Curtains()}, indent=4)
+	return json.dumps({curtain.id(): curtain.name() for curtain in room.Curtains()}, indent=4, default=str)
 
 
 def GET_room_id_events(smart_curtain: SmartCurtain, room_id: int):
@@ -58,7 +58,7 @@ def GET_room_id_events(smart_curtain: SmartCurtain, room_id: int):
 	if((room := smart_curtain["-"][room_id]) is None):
 		raise NotFound(f"No room with id '{room_id}' was found")
 
-	return json.dumps([dict(event) for event in room.RoomEvents()], indent=4)
+	return json.dumps([dict(event) for event in room.RoomEvents()], indent=4, default=str)
 
 
 def POST(smart_curtain: SmartCurtain):

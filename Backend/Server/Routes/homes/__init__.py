@@ -38,7 +38,7 @@ def GET_home_id(smart_curtain: SmartCurtain, home_id: int):
 
 	home_dict = dict(home)
 	home_dict["Rooms"] = {room["id"]: room["name"] for room in home_dict["Rooms"]}
-	return json.dumps(home_dict, indent=4)
+	return json.dumps(home_dict, indent=4, default=str)
 
 
 def GET_home_id_rooms(smart_curtain: SmartCurtain, home_id: int):
@@ -69,7 +69,7 @@ def GET_home_id_events(smart_curtain: SmartCurtain, home_id: int):
 	if((home := smart_curtain[home_id]) is None):
 		raise NotFound(f"No home with id '{home_id}' was found")
 
-	return json.dumps([dict(event) for event in home.HomeEvents()], indent=4)
+	return json.dumps([dict(event) for event in home.HomeEvents()], indent=4, default=str)
 
 
 def POST(smart_curtain: SmartCurtain):
