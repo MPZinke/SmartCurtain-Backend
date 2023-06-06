@@ -29,6 +29,15 @@ from Server import Routes
 from SmartCurtain import SmartCurtain
 
 
+def compare_function_params(func1: Dict[str, type], func2: Dict[str, type]) -> Dict[str, type]:
+	bad_function_params = {}
+	for param in set(list(func1) + list(func2)):
+		if(param != "return" and (param not in func1 or param not in func2 or func1[param] != func2[param])):
+			bad_function_params[param] = [func[param] if(param in func) else None for func in [func1, func2]]
+
+	return bad_function_params
+
+
 class Server:
 	def __init__(self, smart_curtain: SmartCurtain):
 		self._SmartCurtain: SmartCurtain = smart_curtain
@@ -45,6 +54,7 @@ class Server:
 
 		self.route("/homes", Routes.homes.GET, secure=False)
 		self.route("/homes/<int:home_id>", Routes.homes.GET_home_id, secure=False)
+		self.route("/homes/<int:home_id>/structure", Routes.homes.GET_home_id_structure, secure=False)
 		self.route("/homes/<int:home_id>/rooms", Routes.homes.GET_home_id_rooms, secure=False)
 		self.route("/homes/<int:home_id>/curtains", Routes.homes.GET_home_id_curtains, secure=False)
 		self.route("/homes/<int:home_id>/events", Routes.homes.GET_home_id_events, secure=False)
@@ -115,6 +125,12 @@ class Server:
 
 
 	@staticmethod
+	def _params_for_url(url: str) -> Dict[str, type]:
+		params = re.findall(r"<(int|string):([_a-zA-Z][_a-zA-Z0-9]*)>", url)
+		return {param: {"int": int, "string": str}[type] for type, param in params}
+
+
+	@staticmethod
 	def _validate_HTTP_methods(methods: Dict[str, callable]) -> None:
 		http_methods = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"]
 
@@ -128,16 +144,32 @@ class Server:
 
 	@staticmethod
 	def _validate_method_callbacks(methods: Dict[str, callable], url: str) -> None:
-		for method, function in methods.items():  # Ensure all methods have a callback
-			if(not hasattr(function, '__call__')):
-				message = f"Method '{method}' arg must be of type 'callable', not '{type(function)}' for URL '{url}'"
+		# Ensure all set methods have a callback
+		for http_method, callback in methods.items():
+			if(not hasattr(callback, '__call__')):
+				message = f"""'{http_method}' arg must be of type 'callable', not '{type(callback)}' for URL '{url}'"""
 				raise Exception(message)
 
-		url_params = re.findall(r"<(?:int|string):([_a-zA-Z][_a-zA-Z0-9]*)>", url)
-		for method, function in methods.items():
-			function_args = function.__code__.co_varnames
+		url_params = _params_for_url(url)
+		for http_method, callback in methods.items():
+			callback_params = callback.__annotations__
+			bad_params: Dict[str, list[Optional[type]]] = compare_function_params(callback_params, url)
+			# Allow only SmartCurtain as a non-specified param; all others will raise an exception.
+			if(len(bad_params) > 1 or bad_params.values()[0][0] != SmartCurtain):
+				message = f"""'{http_method}' callback '{callback.__name__}' is in compatable with url '{url}'. """
+				if(len(callback_missing_params := [param for param in bad_params if(param not in callback_params)])):
+					message += f"""'{"', '".join(callback_missing_params)}' missing from '{callback.__name__}'"""
+
+				if(len(url_missing_params := [param for param in bad_params if(param not in url_params)])):
+					message += f"""'{"', '".join(url_missing_params)}' missing from '{url.__name__}'"""
+
+				mismatched_types = [param for param, types in bad_params.items() if(types[0] != types[1])]
+				raise Exception(f"""'{http_method}' callback is missing arg(s) '{missing_params}' for url '{url}'""")
+
+
+
+
 			if((missing_params := "', '".join([param for param in url_params if(param not in function_args)])) != ""):
-				raise Exception(f"""Method '{method}' callback is missing arg(s) '{missing_params}'""")
 
 
 	def route(self, url: str, GET: callable=None, *, secure: bool=True, **methods: Dict[str, callable]) -> None:
