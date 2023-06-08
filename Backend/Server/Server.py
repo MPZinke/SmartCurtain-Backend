@@ -117,25 +117,11 @@ class Server:
 		return jsonify(error=str(error), traceback=exception_traceback), 500
 
 
-	def match_args(self, kwargs: Dict[str, Any], callback: callable) -> list[Any]:
-		callback_params: Dict[str, type] = callback.__annotations__
-
-		matched_args: list[Any] = []
-		for param in callback_params:
-			if(param == "return"):
-				continue
-
-			matched_args.append(self._SmartCurtain if(callback_params[param] == SmartCurtain) else kwargs[param])
-
-		return matched_args
-
-
 	def route(self, url: str, GET: callable=None, *, secure: bool=True, **methods: Dict[str, callable]) -> None:
 		"""
 		SUMMARY: 
 		PARAMS:  
 		DETAILS: 
-		RETURNS: 
 		"""
 		methods = {method.upper(): function for method, function in methods.items()}
 		def method_function(**kwargs: Dict[str, Any]) -> Any:
@@ -152,8 +138,11 @@ class Server:
 				if(self.unauthorized()):
 					raise Forbidden();
 
-			matched_args = self.match_args(kwargs, methods[request.method])
-			return methods[request.method](*matched_args)
+			# Add SmartCurtain object to method call.
+			if(SmartCurtain in (params := methods[request.method].__annotations__).values()):
+				kwargs[list(params.keys())[list(params.values()).index(SmartCurtain)]] = self._SmartCurtain
+
+			return methods[request.method](**kwargs)
 
 		if(GET is not None):  # Use the GET argument
 			if("GET" in [key.upper() for key in methods]):  # Ensure 'GET' is not doubly supplied
@@ -243,5 +232,5 @@ class Server:
 			callback_params = callback.__annotations__
 			bad_params: Dict[str, list[Optional[type]]] = Global.compare_function_params(callback_params, url_params)
 			# Allow only SmartCurtain as a non-specified param; all others will raise an exception.
-			if(1 < len(bad_params) or (0 < len(bad_params) and list(bad_params.values())[0][0] != SmartCurtain)):
+			if(len(bad_params) != 0 and list(bad_params.values()) != [SmartCurtain, None]):
 				Server._raise_exception_for_bad_params(bad_params)
