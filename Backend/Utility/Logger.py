@@ -21,7 +21,7 @@ import traceback;
 from typing import Union;
 
 
-from Global import LOG_DIR;
+# from Global import LOG_DIR;
 
 
 def log_error(error : Union[Exception, str]) -> bool:

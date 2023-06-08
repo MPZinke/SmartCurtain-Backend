@@ -23,7 +23,7 @@ from Server.Routes import curtains
 from SmartCurtain import SmartCurtain
 
 
-def GET(smart_curtain: SmartCurtain):
+def GET() -> str:
 	"""
 	`GET /`
 	"""

@@ -22,14 +22,14 @@ from werkzeug.exceptions import NotFound
 from SmartCurtain import SmartCurtain
 
 
-def GET(smart_curtain: SmartCurtain):
+def GET(smart_curtain: SmartCurtain) -> str:
 	"""
 	`GET /curtains`
 	"""
 	return json.dumps({curtain.id(): curtain.name() for curtain in smart_curtain["-"]["-"]}, indent=4)
 
 
-def GET_curtain_id(smart_curtain: SmartCurtain, curtain_id: int):
+def GET_curtain_id(smart_curtain: SmartCurtain, curtain_id: int) -> str:
 	"""
 	`GET /curtains/<int:curtain_id>`
 	"""
@@ -39,7 +39,7 @@ def GET_curtain_id(smart_curtain: SmartCurtain, curtain_id: int):
 	return json.dumps(dict(curtain), indent=4, default=str)
 
 
-def GET_curtain_id_events(smart_curtain: SmartCurtain, curtain_id: int):
+def GET_curtain_id_events(smart_curtain: SmartCurtain, curtain_id: int) -> str:
 	"""
 	`GET /curtains/<int:curtain_id>/events`
 	"""
