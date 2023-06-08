@@ -175,22 +175,25 @@ class Server:
 
 
 	@staticmethod
-	def _raise_exception_for_bad_params(bad_params: Dict[str, list[type]]):
+	def _raise_exception_for_bad_params(bad_params: Dict[str, list[type]], callback_name: str,
+	  callback_params: Dict[str, type], http_method: str, url: str, url_params: Dict[str, type]
+	) -> None:
 		"""
 		SUMMARY: 
 		PARAMS:  
 		DETAILS: 
 		RETURNS: 
 		"""
-		message = f"""'{http_method}' callback '{callback.__name__}' is in compatable with url '{url}'. """
+		message = f"""'{http_method}' callback '{callback_name}' is in compatable with url '{url}'. """
 		if(len(callback_missing_params := [param for param in bad_params if(param not in callback_params)])):
-			message += f"""'{"', '".join(callback_missing_params)}' missing from '{callback.__name__}'. """
+			message += f"""'{"', '".join(callback_missing_params)}' missing from '{callback_name}'. """
 
 		if(len(url_missing_params := [param for param in bad_params if(param not in url_params)])):
-			message += f"""'{"', '".join(url_missing_params)}' missing from '{url.__name__}'. """
+			message += f"""'{"', '".join(url_missing_params)}' missing from '{url}'. """
 
 		if(len(mismatched_types := [param for param, types in bad_params.items() if(types[0] != types[1])])):
-			message += f"""'{http_method}' callback is missing arg(s) '{missing_params}' for url '{url}'. """
+			mismatched_types_str = "', '".join(mismatched_types)
+			message += f"""'{http_method}' callback is missing arg(s) '{mismatched_types_str}' for url '{url}'. """
 
 		raise Exception(message)
 
@@ -232,5 +235,9 @@ class Server:
 			callback_params = callback.__annotations__
 			bad_params: Dict[str, list[Optional[type]]] = Global.compare_function_params(callback_params, url_params)
 			# Allow only SmartCurtain as a non-specified param; all others will raise an exception.
-			if(len(bad_params) != 0 and list(bad_params.values()) != [SmartCurtain, None]):
-				Server._raise_exception_for_bad_params(bad_params)
+			if(len(bad_params) != 0 and next(iter(bad_params.values()), [SmartCurtain, None]) != [SmartCurtain, None]):
+				print(list(bad_params.values()))
+				print([SmartCurtain, None])
+				Server._raise_exception_for_bad_params(bad_params, callback.__name__, callback_params, http_method, url,
+				  url_params
+				)
