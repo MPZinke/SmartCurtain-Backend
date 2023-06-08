@@ -49,5 +49,6 @@ def GET_curtain_id_events(smart_curtain: SmartCurtain, curtain_id: int) -> str:
 	return json.dumps([dict(event) for event in curtain.CurtainEvents()], indent=4, default=str)
 
 
-def POST(smart_curtain: SmartCurtain):
-	pass
+def POST(smart_curtain: SmartCurtain, curtain_id: int) -> str:
+	print(request.data)
+	return request.data

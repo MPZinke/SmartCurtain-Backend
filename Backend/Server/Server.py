@@ -57,7 +57,8 @@ class Server:
 		self.route("/rooms/<int:room_id>/events", Routes.rooms.GET_room_id_events, secure=False)
 
 		self.route("/curtains", Routes.curtains.GET, secure=False)
-		self.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, secure=False)
+		# self.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, secure=False)
+		self.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, POST=Routes.curtains.POST, secure=False)
 		self.route("/curtains/<int:curtain_id>/events", Routes.curtains.GET_curtain_id_events, secure=False)
 
 		# self.route("/events")
@@ -235,9 +236,7 @@ class Server:
 			callback_params = callback.__annotations__
 			bad_params: Dict[str, list[Optional[type]]] = Global.compare_function_params(callback_params, url_params)
 			# Allow only SmartCurtain as a non-specified param; all others will raise an exception.
-			if(len(bad_params) != 0 and next(iter(bad_params.values()), [SmartCurtain, None]) != [SmartCurtain, None]):
-				print(list(bad_params.values()))
-				print([SmartCurtain, None])
+			if(len(bad_params) != 0 and list(bad_params.values()) != [[SmartCurtain, None]]):
 				Server._raise_exception_for_bad_params(bad_params, callback.__name__, callback_params, http_method, url,
 				  url_params
 				)
