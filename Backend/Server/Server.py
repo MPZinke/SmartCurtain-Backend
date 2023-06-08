@@ -117,6 +117,19 @@ class Server:
 		return jsonify(error=str(error), traceback=exception_traceback), 500
 
 
+	def match_args(self, kwargs: Dict[str, Any], callback: callable) -> list[Any]:
+		callback_params: Dict[str, type] = callback.__annotations__
+
+		matched_args: list[Any] = []
+		for param in callback_params:
+			if(param == "return"):
+				continue
+
+			matched_args.append(self._SmartCurtain if(callback_params[param] == SmartCurtain) else kwargs[param])
+
+		return matched_args
+
+
 	def route(self, url: str, GET: callable=None, *, secure: bool=True, **methods: Dict[str, callable]) -> None:
 		"""
 		SUMMARY: 
@@ -125,7 +138,7 @@ class Server:
 		RETURNS: 
 		"""
 		methods = {method.upper(): function for method, function in methods.items()}
-		def method_function(*args: list[Any], **kwargs: Dict[str, Any]) -> Any:
+		def method_function(**kwargs: Dict[str, Any]) -> Any:
 			"""
 			SUMMARY: 
 			PARAMS:  
@@ -139,11 +152,8 @@ class Server:
 				if(self.unauthorized()):
 					raise Forbidden();
 
-			callback_params = methods[request.method].__annotations__
-			if(len(callback_params) and list(callback_params.values())[0] == SmartCurtain):
-				args = (self._SmartCurtain,) + args
-
-			return methods[request.method](*args, **kwargs)
+			matched_args = self.match_args(kwargs, methods[request.method])
+			return methods[request.method](*matched_args)
 
 		if(GET is not None):  # Use the GET argument
 			if("GET" in [key.upper() for key in methods]):  # Ensure 'GET' is not doubly supplied
