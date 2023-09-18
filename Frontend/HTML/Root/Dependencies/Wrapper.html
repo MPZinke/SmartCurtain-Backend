@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<link rel='stylesheet' href='{{ url_for("static", filename="CSS/style.css") }}'>
+		<link rel='icon' href='{{ url_for("static", filename="Images/Icon/CurtainBlank.png") }}'>
+		<!-- <link rel='stylesheet' href='{{ url_for("static", filename="Libraries/bootstrap-4.5.2/css/bootstrap.css") }}'> -->
+		<script type='text/javascript' src='{{ url_for("static", filename="Libraries/google-hosted-libraries/jquery.min.js") }}'></script>
+		<script type='text/javascript' src='{{ url_for("static", filename="Libraries/google-hosted-libraries/google_library-5.15.1.min.js") }}'></script>
+	</head>
+	<header class='header'>
+		<table style='width:100%;'>
+			<tr style='width:100%;'>
+				<td style='width:20%'>
+					<span style="font-size:30px;cursor:pointer;background-color:#262626;color:#FFFFFF;" 
+					  onclick="__WRAPPER__open_nav()" class="header">
+						&nbsp; &#9776;
+					</span>
+				</td>
+				<td style='width:60%;margin:auto'>
+					<form method='POST'>
+						<select id='__WRAPPER__curtain_select' name='__WRAPPER__curtain_select' class='select dark' 
+						  onchange='this.form.submit();'>
+							{% for curtain in header.Curtains() %}
+								<option {% if curtain == session["_CURTAIN_current"] %} selected {% endif %} value='{{ curtain }}'>
+									{{ header.Curtains()[curtain].name() }}
+								</option>
+							{% endfor %}
+						</select>
+					</form>
+				</td>
+				<td style='width:20%;'>
+				</td>
+			</tr>
+			<tr>
+				<td colspan='3' align='middle'>
+					<div id='current_light'>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div id='__WRAPPER__side_menu' class='__WRAPPER__side_menu'>
+			<a href='javascript:void(0)' class='close_side_menu' onclick='__WRAPPER__close_nav()' style='position:relative;left:75%;'>
+				&times;
+			</a>
+			<a href='/' onclick='__WRAPPER__close_nav()'>
+				Curtain {% if request.path == "/" %} <span>&bull;</span> {% endif %}
+			</a>
+			<a href='/new' onclick='__WRAPPER__close_nav()'>
+				Create {% if request.path == "/new" %} <span>&bull;</span> {% endif %}
+			</a>
+			<a href='/events' onclick='__WRAPPER__close_nav()'>
+				Events {% if request.path == "/events" %} <span>&bull;</span> {% endif %}
+			</a>
+			<a href='/edit' onclick='__WRAPPER__close_nav()'>
+				Edit {% if request.path == "/edit" %} <span>&bull;</span> {% endif %}
+			</a>
+		</div>
+		<div>
+			<table style='width:100%'>
+				<tr style='width:100%'>
+					<td id='__WRAPPER__current_light_td_left' 
+					  style='width: 
+					  {% if header.selected_curtain().is_activated() %} 0%;
+					  {% else %}
+						{{ ((100 - header.selected_curtain().current_position_percent_int()) / 2) | int }}%
+					  {% endif %}'></td>
+					<td id='__WRAPPER__current_light_td_middle'
+					  style='width: 
+					  {% if header.selected_curtain().is_activated() %} 100%; background-color:#33FF33;
+					  {% else %}
+						{{ header.selected_curtain().current_position_percent_int() }}%; background-color:#FFFFAA;
+					  {% endif %}'></td>
+					<td id='__WRAPPER__current_light_td_right'
+					  style='width: 
+					  {% if header.selected_curtain().is_activated() %} 0%;
+					  {% else %}
+						{{ ((100 - header.selected_curtain().current_position_percent_int()) / 2) | int }}%
+					  {% endif %}'>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</header>
+
+	<body class='dark'>
+		{% print(path) %}
+		{% block body %}
+		{% endblock %}
+	</body>
+</html>
+<script>
+	// Current known position
+	var __WRAPPER__current_known_position = {{ header.selected_curtain().current_position_percent_int() }};
+
+
+	function __WRAPPER__close_nav()
+	{
+		document.getElementById("__WRAPPER__side_menu").style.width = "0%";
+	}
+
+
+	function __WRAPPER__open_nav()
+	{
+		document.getElementById("__WRAPPER__side_menu").style.width = "85%";
+	}
+
+
+	// Set the header light bar amount and color.
+	// Takes an int amount of the current light, the Hex color of the bar.
+	function __WRAPPER__set_current_light(percentage, color="#FFFFAA")
+	{
+		$("#__WRAPPER__current_light_td_left").width(`${Math.floor((100 - percentage) / 2)}%`);
+		var middle = document.getElementById("__WRAPPER__current_light_td_middle");
+		middle.style["width"] = `${percentage}%`;
+		middle.style["background-color"] = color;
+		$("#__WRAPPER__current_light_td_right").width(`${Math.floor((100 - percentage) / 2)}%`);
+	}
+
+
+	function __WRAPPER__update_current_light()
+	{
+		$.ajax({
+			url: "/state/{{ header.selected_curtain().id() }}",
+			type: "POST",
+			dataType: "json",
+			data: {"current_position_percent__is_activated" : true},
+			success: function(response)
+			{
+				if("error" in response) return;
+				
+				__WRAPPER__current_known_position = response["current_position_percent_int"];
+
+				if(response["is_activated"]) __WRAPPER__set_current_light(100, "#33FF33");
+				else __WRAPPER__set_current_light(response["current_position_percent_int"]);
+			},
+			error: function(response)
+			{
+				console.log("error");
+			}
+		});
+	}
+
+
+	// thread that checks every second
+	setInterval(__WRAPPER__update_current_light, 5000);
+</script>

@@ -1,0 +1,38 @@
+{# [/ || /index] #}
+{% extends "Dependencies/Wrapper.html" %}
+{% block body %}
+
+<title>{{ header.selected_curtain().name() }}</title>
+<div style='width:100%; padding-top:32px; margin:auto;'>
+	<table class='alternate' style='margin-top:20px;width:100%;' width='100%'>
+		<tr width='100%'>
+			<th width='50%' align='center'>
+				Time
+			</th>
+			<th width='50%' align='center'>
+				Position
+			</th>
+		</tr>
+
+		<!-- TODO: allow for editing events -->
+
+		{% for event in header.selected_curtain().CurtainEvents() %}
+				<tr width='100%' align='center'>
+					<td width='50%' align='center'>
+						{{ header.datetime_to_datetext(header.selected_curtain().CurtainEvents()[event].time()) }}
+						at
+						{{ header.datetime_to_timetext(header.selected_curtain().CurtainEvents()[event].time()) }}
+					</td>
+					<td width='50%' align='center'>
+						{{ header.selected_curtain().CurtainEvents()[event].desired_position() }}
+					</td>
+				</tr>
+		{% endfor %}
+	</table>
+</div>
+
+<script>
+
+</script>
+
+{% endblock %}
