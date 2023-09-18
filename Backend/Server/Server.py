@@ -67,7 +67,7 @@ class Server:
 		SUMMARY: Adds routes to server & class, and starts the server instance.
 		DETAILS: Sets routes using hardcoded routes, functions & HTTP request methods. Calls the Flask::run method.
 		"""
-		self._app(host="0.0.0.0", port=80)
+		self._app(host="0.0.0.0", port=8001)
 
 
 	def start(self) -> None:
