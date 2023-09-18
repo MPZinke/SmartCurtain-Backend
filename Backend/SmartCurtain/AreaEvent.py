@@ -16,7 +16,7 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta
 import json
-from requests import post
+from mpzinke import threading, Generic
 from typing import Optional, TypeVar
 from warnings import warn as Warn
 
@@ -24,9 +24,6 @@ from warnings import warn as Warn
 from SmartCurtain import Area
 from SmartCurtain import DB
 from SmartCurtain import Option
-from Utility import Generic
-from Utility.Thread import SingleRunThread
-from Utility import Logger
 
 
 AreaEvent = TypeVar("AreaEvent")
@@ -49,7 +46,7 @@ class AreaEvent(Generic):
 		self._percentage: int = percentage
 		self._time: datetime = time
 		# THREAD #
-		self._publish_thread = SingleRunThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
+		self._publish_thread = threading.DelayThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
 
 
 	@Generic

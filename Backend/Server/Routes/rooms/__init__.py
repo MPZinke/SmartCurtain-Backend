@@ -14,10 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import request
+from flask import request, Response
 import json
 from werkzeug.exceptions import NotFound
-
 
 from SmartCurtain import SmartCurtain
 
@@ -26,7 +25,7 @@ def GET(smart_curtain: SmartCurtain) -> str:
 	"""
 	`GET /rooms`
 	"""
-	return json.dumps({room.id(): room.name() for room in smart_curtain["-"]}, indent=4)
+	return Response(json.dumps({room.id(): room.name() for room in smart_curtain["-"]}), mimetype="application/json")
 
 
 def GET_room_id(smart_curtain: SmartCurtain, room_id: int) -> str:
@@ -38,7 +37,7 @@ def GET_room_id(smart_curtain: SmartCurtain, room_id: int) -> str:
 
 	room_dict = dict(room)
 	room_dict["Curtains"] = {curtain["id"]: curtain["name"] for curtain in room_dict["Curtains"]}
-	return json.dumps(room_dict, indent=4, default=str)
+	return Response(json.dumps(room_dict, default=str), mimetype="application/json")
 
 
 def GET_room_id_curtains(smart_curtain: SmartCurtain, room_id: int) -> str:
@@ -48,7 +47,9 @@ def GET_room_id_curtains(smart_curtain: SmartCurtain, room_id: int) -> str:
 	if((room := smart_curtain["-"][room_id]) is None):
 		raise NotFound(f"No room with id '{room_id}' was found")
 
-	return json.dumps({curtain.id(): curtain.name() for curtain in room.Curtains()}, indent=4, default=str)
+	return Response(json.dumps({curtain.id(): curtain.name() for curtain in room.Curtains()}, default=str),
+		mimetype="application/json"
+	)
 
 
 def GET_room_id_events(smart_curtain: SmartCurtain, room_id: int) -> str:
@@ -58,7 +59,9 @@ def GET_room_id_events(smart_curtain: SmartCurtain, room_id: int) -> str:
 	if((room := smart_curtain["-"][room_id]) is None):
 		raise NotFound(f"No room with id '{room_id}' was found")
 
-	return json.dumps([dict(event) for event in room.RoomEvents()], indent=4, default=str)
+	return Response(json.dumps([dict(event) for event in room.RoomEvents()], default=str),
+		mimetype="application/json"
+	)
 
 
 def POST(smart_curtain: SmartCurtain) -> str:

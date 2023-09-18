@@ -1,6 +1,6 @@
 
 
-from Utility import Generic
+from mpzinke import Generic
 
 
 class LookupStruct(Generic):

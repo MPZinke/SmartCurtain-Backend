@@ -14,7 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from flask import request
+from flask import request, Response
 import json
 from werkzeug.exceptions import NotFound
 
@@ -26,7 +26,7 @@ def GET(smart_curtain: SmartCurtain) -> str:
 	"""
 	`GET /homes`
 	"""
-	return json.dumps({home.id(): home.name() for home in smart_curtain.Homes()}, indent=4)
+	return Response(json.dumps({home.id(): home.name() for home in smart_curtain.Homes()}), mimetype="application/json")
 
 
 def GET_home_id(smart_curtain: SmartCurtain, home_id: int) -> str:
@@ -38,7 +38,7 @@ def GET_home_id(smart_curtain: SmartCurtain, home_id: int) -> str:
 
 	home_dict = dict(home)
 	home_dict["Rooms"] = {room["id"]: room["name"] for room in home_dict["Rooms"]}
-	return json.dumps(home_dict, indent=4, default=str)
+	return Response(json.dumps(home_dict, default=str), mimetype="application/json")
 
 
 def GET_home_id_rooms(smart_curtain: SmartCurtain, home_id: int) -> str:
@@ -49,7 +49,7 @@ def GET_home_id_rooms(smart_curtain: SmartCurtain, home_id: int) -> str:
 		raise NotFound(f"No home with id '{home_id}' was found")
 
 	home_dict = dict(home)
-	return json.dumps({room["id"]: room["name"] for room in home_dict["Rooms"]}, indent=4)
+	return Response(json.dumps({room["id"]: room["name"] for room in home_dict["Rooms"]}), mimetype="application/json")
 
 
 def GET_home_id_curtains(smart_curtain: SmartCurtain, home_id: int) -> str:
@@ -59,7 +59,7 @@ def GET_home_id_curtains(smart_curtain: SmartCurtain, home_id: int) -> str:
 	if((home := smart_curtain[home_id]) is None):
 		raise NotFound(f"No home with id '{home_id}' was found")
 
-	return json.dumps({curtain.id(): curtain.name() for curtain in home["-"]}, indent=4)
+	return Response(json.dumps({curtain.id(): curtain.name() for curtain in home["-"]}), mimetype="application/json")
 
 
 def GET_home_id_events(smart_curtain: SmartCurtain, home_id: int) -> str:
@@ -69,7 +69,7 @@ def GET_home_id_events(smart_curtain: SmartCurtain, home_id: int) -> str:
 	if((home := smart_curtain[home_id]) is None):
 		raise NotFound(f"No home with id '{home_id}' was found")
 
-	return json.dumps([dict(event) for event in home.HomeEvents()], indent=4, default=str)
+	return Response(json.dumps([dict(event) for event in home.HomeEvents()], default=str), mimetype="application/json")
 
 
 def GET_home_id_structure(smart_curtain: SmartCurtain, home_id: int) -> str:
@@ -88,7 +88,7 @@ def GET_home_id_structure(smart_curtain: SmartCurtain, home_id: int) -> str:
 
 		home_structure["rooms"].append(room_dict)
 
-	return json.dumps(home_structure, indent=4, default=str)
+	return Response(json.dumps(home_structure, default=str), mimetype="application/json")
 
 
 def POST(smart_curtain: SmartCurtain) -> str:

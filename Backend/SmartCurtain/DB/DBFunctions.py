@@ -1,6 +1,7 @@
 
 
 from datetime import datetime, timedelta
+from mpzinke import Generic
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from typing import Optional, TypeVar
@@ -19,7 +20,6 @@ from SmartCurtain.DB import (
 	RoomsOptions,
 	CurtainsOptions,
 )
-from Utility import Generic
 
 
 def SELECT_Homes() -> list:

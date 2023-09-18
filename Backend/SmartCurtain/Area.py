@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from mpzinke import Generic
 from typing import Optional, TypeVar
 
 
@@ -21,7 +22,7 @@ AreaEvent = TypeVar("AreaEvent")
 AreaOption = TypeVar("AreaOption")
 
 
-class Area:
+class Area(Generic):
 	def __init__(self, *, id: int, is_deleted: bool, name: str, AreaEvents: list[AreaEvent],
 	  AreaOptions: list[AreaOption]
 	):

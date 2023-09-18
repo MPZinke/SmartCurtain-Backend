@@ -14,11 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import json;
-from typing import Any, Generic, Optional, TypeVar, get_args
-
-
-from Utility import Generic
+import json
+from mpzinke import Generic
+from typing import Any, Optional, TypeVar
 
 
 Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")

@@ -17,6 +17,9 @@ __author__ = "MPZinke"
 from typing import Dict
 
 
+VERSION = "5.1.0"
+
+
 def compare_function_params(func1: Dict[str, type], func2: Dict[str, type]) -> Dict[str, type]:
 	"""
 	SUMMARY: Compares the args and types of two functions.
