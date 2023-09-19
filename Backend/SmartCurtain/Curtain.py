@@ -36,10 +36,10 @@ Room = TypeVar("Room")
 
 class Curtain(Area):
 	def __init__(self, Room: Optional[Room]=None, *, id: int, is_deleted: bool, length: Optional[int], name: str,
-	  CurtainEvents: list[AreaEvent[Curtain]], CurtainOptions: list[AreaOption[Curtain]]
+		CurtainEvents: list[AreaEvent[Curtain]], CurtainOptions: list[AreaOption[Curtain]]
 	):
 		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=CurtainEvents,
-		  AreaOptions=CurtainOptions
+			AreaOptions=CurtainOptions
 		)
 		# STRUCTURE #
 		self._Room = Room

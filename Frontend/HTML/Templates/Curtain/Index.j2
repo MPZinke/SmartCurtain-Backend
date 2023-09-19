@@ -1,0 +1,10 @@
+{% extends "Header.j2" %}
+{% block body %}
+	{% from "Components/EventList.j2" import EventList %}
+	{% from "Components/OptionList.j2" import OptionList %}
+	<title>
+		Curtain
+	</title>
+	{{ EventList(curtain["CurtainEvents"], "Curtain Events") }}
+	{{ OptionList(curtain["CurtainOptions"], "Curtain Options") }}
+{% endblock %}

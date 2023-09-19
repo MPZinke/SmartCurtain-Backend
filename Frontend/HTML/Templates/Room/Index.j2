@@ -1,0 +1,33 @@
+{% extends "Header.j2" %}
+{% block body %}
+	{% from "Components/EventList.j2" import EventList %}
+	{% from "Components/OptionList.j2" import OptionList %}
+
+	<title>
+		Room
+	</title>
+
+	<h4>
+		Curtains
+	</h4>
+	<table
+	  class="table table-dark table-striped"
+	>
+		<tbody>
+			{% for id, name in room["Curtains"].items() %}
+				<tr>
+					<td>
+						<a
+						  href="/curtains/{{ id }}"
+						>
+							{{ name }}
+						</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	{{ EventList(room["RoomEvents"], "Room Events") }}
+	{{ OptionList(room["RoomOptions"], "Room Options") }}
+{% endblock %}

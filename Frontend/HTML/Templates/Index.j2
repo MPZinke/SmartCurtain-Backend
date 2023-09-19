@@ -1,7 +1,7 @@
 
 <!----------------------------------------------------------------------------------------------------------------------
 -                                                                                                                      -
--    Created by: MPZinke on 2021.10.08                                                                                 -
+-    Created by: MPZinke on 2023.01.22                                                                                 -
 -                                                                                                                      -
 -    DESCRIPTION:                                                                                                      -
 -    BUGS:                                                                                                             -
@@ -10,45 +10,38 @@
 ----------------------------------------------------------------------------------------------------------------------->
 
 
-{# [/edit] #}
-{% extends "Dependencies/Wrapper.html" %}
+{% extends "Header.j2" %}
 {% block body %}
-
-<title>Edit Curtain Values for {{ header.selected_curtain().name() }}</title>
-
-<table>
-	<tr>
-		<th>Variable</th>
-		<th>Value</th>
-	</tr>
-
-	<tr>
-		<td>
-			Safety
-		</td>
-		<td>
-			<select onchange='update_value(this, "Curtains", "is_safe");'>
-				<option value='1'>
-					ON
-				</option>
-				<option value='0'>
-					OFF
-				</option>
-			</select>
-		</td>
-	</tr>
-
-	<!-- TODO: finish variables/options -->
-
-</table>
-
-<script>
-
-	// AJAX call to API to update the column of a table for the value of an element.
-	function update_value(element, table, column)
-	{
-		var value = element.value;
-	}
-</script>
-
+	<title>
+		Homes
+	</title>
+	<h3
+	  style="padding-top: 8px;"
+	>
+		Homes
+	</h3>
+	<table
+	  class="table table-dark table-striped"
+	>
+		<thead>
+			<tr>
+				<th>
+					Home
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for id, name in homes.items() %}
+				<tr>
+					<td>
+						<a
+						  href="/homes/{{ id }}"
+						>
+							{{ name }}
+						</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}
