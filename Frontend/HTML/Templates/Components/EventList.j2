@@ -1,60 +1,37 @@
 
 {% macro EventList(event_list, event_name) %}
 	<div>
-		<p
-		  class="d-inline-flex gap-1"
+		<table
+		  class="table table-dark table-striped"
 		>
-			<a
-			  class="btn btn-primary"
-			  data-bs-toggle="collapse"
-			  href="#event_list-collapse"
-			  role="button"
-			  aria-expanded="false"
-			  aria-controls="event_list-collapse"
-			>
-				{{ event_name }}
-			</a>
-		</p>
-		<div
-		  class="collapse"
-		  id="event_list-collapse"
-		>
-			<div
-			  class="card card-body"
-			>
-				<table
-				  class="table table-dark table-striped"
-				>
-					<thead>
-						<tr>
-							<th>
-								Time
-							</th>
-							<th>
-								Percentage
-							</th>
-							<th>
-								Option
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for event in event_list %}
-							<tr>
-								<td>
-									{{ event["time"] }}
-								</td>
-								<td>
-									{{ event["percentage"] }}
-								</td>
-								<td>
-									{{ event["option"] }}
-								</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
+			<thead>
+				<tr>
+					<th>
+						Time
+					</th>
+					<th>
+						Percentage
+					</th>
+					<th>
+						Option
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for event in event_list %}
+					<tr>
+						<td>
+							{{ event["time"] }}
+						</td>
+						<td>
+							{{ event["percentage"] }}
+						</td>
+						<td>
+							{{ event["option"] }}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 	</div>
 {% endmacro %}

@@ -1,66 +1,43 @@
 
 {% macro OptionList(option_list, option_name) %}
 	<div>
-		<p
-		  class="d-inline-flex gap-1"
+		<table
+		  class="table table-dark table-striped"
 		>
-			<a
-			  class="btn btn-primary"
-			  data-bs-toggle="collapse"
-			  href="#option_list-collapse"
-			  role="button"
-			  aria-expanded="false"
-			  aria-controls="option_list-collapse"
-			>
-				{{ option_name }}
-			</a>
-		</p>
-		<div
-		  class="collapse"
-		  id="option_list-collapse"
-		>
-			<div
-			  class="card card-body"
-			>
-				<table
-				  class="table table-dark table-striped"
-				>
-					<thead>
-						<tr>
-							<th>
-								Name
-							</th>
-							<th>
-								Is On
-							</th>
-							<th>
-								Data
-							</th>
-							<th>
-								Description
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for option in option_list %}
-							<tr>
-								<td>
-									{{ option["Option"]["name"] }}
-								</td>
-								<td>
-									{{ option["is_on"] }}
-								</td>
-								<td>
-									{{ option["data"] }}
-								</td>
-								<td>
-									{{ option["Option"]["description"] }}
-								</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
+			<thead>
+				<tr>
+					<th>
+						Name
+					</th>
+					<th>
+						Is On
+					</th>
+					<th>
+						Data
+					</th>
+					<th>
+						Description
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for option in option_list %}
+					<tr>
+						<td>
+							{{ option["Option"]["name"] }}
+						</td>
+						<td>
+							{{ option["is_on"] }}
+						</td>
+						<td>
+							{{ option["data"] }}
+						</td>
+						<td>
+							{{ option["Option"]["description"] }}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 	</div>
 {% endmacro %}

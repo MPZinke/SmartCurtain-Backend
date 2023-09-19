@@ -1,5 +1,6 @@
 
 
+import jinja2
 import mpzinke
 import os
 import pathlib
@@ -26,6 +27,10 @@ def main():
 	)
 
 	server._app.secret_key = random_keygen(64)
+	# server._app.jinja_env = jinja2.Environment(extensions=["jinja2.ext.do"])
+	# server._app.jinja_options['extensions'].append('jinja2.ext.do')
+	# server._app.jinja_env.filters["enumerate"] = enumerate
+	# server._app.jinja_env.filters["zip"] = zip
 	server.route("/", Routes.Root.index)
 	server.route("/homes", Routes.Root.index)
 	server.route("/homes/<int:home_id>", Routes.Root.home)
