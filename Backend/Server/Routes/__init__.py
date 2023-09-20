@@ -25,9 +25,10 @@ from Server.Routes import curtains
 from SmartCurtain import SmartCurtain
 
 
+# `GET /`
 def GET(server: Server) -> str:
 	"""
-	`GET /`
+	Lists all all backend endpoints.
 	"""
 	# Uses `json.dumps` to keep order
 	return Response(json.dumps(dict(server)), mimetype="application/json")

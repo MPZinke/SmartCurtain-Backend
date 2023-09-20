@@ -64,5 +64,20 @@ def GET_room_id_events(smart_curtain: SmartCurtain, room_id: int) -> str:
 	)
 
 
+# `GET /rooms/<int:room_id>/structure`
+def GET_room_id_structure(smart_curtain: SmartCurtain, room_id: int) -> str:
+	"""
+	Lists the structure a room is under.
+	"""
+	if((room := smart_curtain["-"][room_id]) is None):
+		raise NotFound(f"No room with id '{room_id}' was found")
+
+	home = room.Home()
+	structure = {"room": {"id": room.id(), "name": room.name()}, "home": {"id": home.id(), "name": home.name()}}
+	return Response(json.dumps(structure), mimetype="application/json")
+
+
+
+
 def POST(smart_curtain: SmartCurtain) -> str:
 	pass

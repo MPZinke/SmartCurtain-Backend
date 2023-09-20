@@ -29,28 +29,29 @@ class Server:
 		self._SmartCurtain: SmartCurtain = smart_curtain
 
 		self._thread = threading.Thread(name="Server", target=self)
-		self._app = mpzinke.Server(name="SmartCurtain-Backend", version=Global.VERSION)
+		self._app = mpzinke.Server(name="SmartCurtain-Backend", version=Global.VERSION,
+			additional_args={SmartCurtain: smart_curtain}
+		)
 
 		self._app.route("/", Routes.GET, additional_args={mpzinke.Server: self._app})
 
-		additional_args = {SmartCurtain: smart_curtain}
+		self._app.route("/homes", Routes.homes.GET)
+		self._app.route("/homes/<int:home_id>", Routes.homes.GET_home_id)
+		self._app.route("/homes/<int:home_id>/rooms", Routes.homes.GET_home_id_rooms)
+		self._app.route("/homes/<int:home_id>/curtains", Routes.homes.GET_home_id_curtains)
+		self._app.route("/homes/<int:home_id>/events", Routes.homes.GET_home_id_events)
 
-		self._app.route("/homes", Routes.homes.GET, additional_args=additional_args)
-		self._app.route("/homes/<int:home_id>", Routes.homes.GET_home_id, additional_args=additional_args)
-		self._app.route("/homes/<int:home_id>/structure", Routes.homes.GET_home_id_structure, additional_args=additional_args)
-		self._app.route("/homes/<int:home_id>/rooms", Routes.homes.GET_home_id_rooms, additional_args=additional_args)
-		self._app.route("/homes/<int:home_id>/curtains", Routes.homes.GET_home_id_curtains, additional_args=additional_args)
-		self._app.route("/homes/<int:home_id>/events", Routes.homes.GET_home_id_events, additional_args=additional_args)
+		self._app.route("/rooms", Routes.rooms.GET)
+		self._app.route("/rooms/<int:room_id>", Routes.rooms.GET_room_id)
+		self._app.route("/rooms/<int:room_id>/curtains", Routes.rooms.GET_room_id_curtains)
+		self._app.route("/rooms/<int:room_id>/events", Routes.rooms.GET_room_id_events)
+		self._app.route("/rooms/<int:room_id>/structure", Routes.rooms.GET_room_id_structure)
 
-		self._app.route("/rooms", Routes.rooms.GET, additional_args=additional_args)
-		self._app.route("/rooms/<int:room_id>", Routes.rooms.GET_room_id, additional_args=additional_args)
-		self._app.route("/rooms/<int:room_id>/curtains", Routes.rooms.GET_room_id_curtains, additional_args=additional_args)
-		self._app.route("/rooms/<int:room_id>/events", Routes.rooms.GET_room_id_events, additional_args=additional_args)
-
-		self._app.route("/curtains", Routes.curtains.GET, additional_args=additional_args)
-		# self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, additional_args=additional_args)
-		self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, POST=Routes.curtains.POST, additional_args=additional_args)
-		self._app.route("/curtains/<int:curtain_id>/events", Routes.curtains.GET_curtain_id_events, additional_args=additional_args)
+		self._app.route("/curtains", Routes.curtains.GET)
+		# self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id)
+		self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, POST=Routes.curtains.POST)
+		self._app.route("/curtains/<int:curtain_id>/events", Routes.curtains.GET_curtain_id_events)
+		self._app.route("/curtains/<int:curtain_id>/structure", Routes.curtains.GET_curtain_id_structure)
 
 		# self.route("/events")
 		# self.route("/events/<int:event_id>")

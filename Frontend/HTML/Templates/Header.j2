@@ -6,7 +6,6 @@
 		<link rel='stylesheet' href='{{ url_for("static", filename="Libraries/Bootstrap/bootstrap.min.css") }}'>
 		<link rel='stylesheet' href='{{ url_for("static", filename="Style.css") }}'>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		{# <script type='text/javascript' src='{{ url_for("static", filename="Libraries/Google/jquery.min.js") }}'></script> #}
 		<script type='text/javascript' src='{{ url_for("static", filename="Libraries/Bootstrap/bootstrap.bundle.min.js") }}'></script>
 	</head>
 	<nav
@@ -43,22 +42,22 @@
 				>
 					<nav aria-label="breadcrumb">
 						<ol class="breadcrumb">
-							{% for breadcrumb in path %}
-								{% if loop.index0 == (path | length - 1 ) %}
+							{% for area in path %}
+								{% if loop.index == path | length %}
 									<li
 									  class="breadcrumb-item active"
 									  aria-current="page"
 									>
-										{{ breadcrumb["name"] }}
+										{{ area["name"] }}
 									</li>
 								{% else %}
 									<li
 									  class="breadcrumb-item"
 									>
 										<a
-										  href="{{ breadcrumb["path"] }}"
+										  href="/{{ ["homes", "rooms", "curtains"][loop.index0] }}/{{ area["id"] }}"
 										>
-											{{ breadcrumb["name"] }}
+											{{ area["name"] }}
 										</a>
 									</li>
 								{% endif %}
