@@ -11,6 +11,7 @@ import Routes
 FRONTEND_DIRECTORY = str(pathlib.Path(__file__).parent)
 TEMPLATE_DIRECTORY = os.path.join(FRONTEND_DIRECTORY, "HTML", "Templates")
 STATIC_DIRECTORY = os.path.join(FRONTEND_DIRECTORY, "HTML", "Static")
+print(STATIC_DIRECTORY)
 
 
 def random_keygen(length):

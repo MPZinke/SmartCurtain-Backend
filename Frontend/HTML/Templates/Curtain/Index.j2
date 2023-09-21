@@ -3,6 +3,10 @@
 	{% from "Components/EventList.j2" import EventList %}
 	{% from "Components/OptionList.j2" import OptionList %}
 
+	<script>
+		var Curtain = {};
+	</script>
+
 	<title>
 		Curtain
 	</title>
@@ -13,6 +17,7 @@
 		{{ curtain["name"] }}
 	</h3>
 
+	{% include("Curtain/Modal.j2") %}
 	<div
 	  class="accordion"
 	  id="accordionExample"
