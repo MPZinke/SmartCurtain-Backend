@@ -19,5 +19,7 @@ jobs:
       - name: "Update Parent"
         run: |
           git submodule update --remote
+          git config --global user.email "mathew.zinke@gmail.com"
+          git config --global user.name "mpzinke"
           git commit -am "Updates to track HEAD of SmartCurtain-Backend"
           git push
