@@ -77,6 +77,12 @@
 				  aria-controls="collapseTwo"
 				>
 					Room's Events
+					<span
+					  class="badge text-bg-primary"
+					  style="margin-left: 4px;"
+					>
+						{{ room["RoomEvents"] | length }}
+					</span>
 				</button>
 			</h2>
 			<div
@@ -121,4 +127,5 @@
 			</div>
 		</div>
 	</div>
+	{% include("NewEventModal.j2") %}
 {% endblock %}

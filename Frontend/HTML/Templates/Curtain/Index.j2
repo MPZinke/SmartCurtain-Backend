@@ -17,7 +17,6 @@
 		{{ curtain["name"] }}
 	</h3>
 
-	{% include("Curtain/Modal.j2") %}
 	<div
 	  class="accordion"
 	  id="accordionExample"
@@ -37,6 +36,12 @@
 				  aria-controls="collapseOne"
 				>
 					Curtain's Events
+					<span
+					  class="badge text-bg-primary"
+					  style="margin-left: 4px;"
+					>
+						{{ curtain["CurtainEvents"] | length }}
+					</span>
 				</button>
 			</h2>
 			<div
@@ -81,4 +86,5 @@
 			</div>
 		</div>
 	</div>
+	{% include("NewEventModal.j2") %}
 {% endblock %}

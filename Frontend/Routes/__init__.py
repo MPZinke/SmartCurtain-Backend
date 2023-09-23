@@ -15,3 +15,6 @@ __author__ = "MPZinke"
 
 
 import Routes.Root
+import Routes.Home
+import Routes.Room
+import Routes.Curtain

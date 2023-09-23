@@ -22,17 +22,16 @@ def random_keygen(length):
 
 
 def main():
-	server = mpzinke.Server(name="SmartCurtain-Frontend",
+	server = mpzinke.Server(name="SmartCurtain-Frontend", debug=True,
 		template_folder=TEMPLATE_DIRECTORY, static_folder=STATIC_DIRECTORY
 	)
 
 	server._app.secret_key = random_keygen(64)
-	server.route("/", Routes.Root.index)
-	server.route("/homes", Routes.Root.index)
-	server.route("/homes/<int:home_id>", Routes.Root.home)
-	server.route("/rooms/<int:room_id>", Routes.Root.room)
-	server.route("/curtains/<int:curtain_id>", Routes.Root.curtain)
-	# server._app.add_url_rule("/", "/", Routes.Root.index, ["GET"])
+	server.route("/", Routes.Root.GET)
+	server.route("/homes", Routes.Root.GET)
+	server.route("/homes/<int:home_id>", GET=Routes.Home.GET)
+	server.route("/rooms/<int:room_id>", GET=Routes.Room.GET)
+	server.route("/curtains/<int:curtain_id>", GET=Routes.Curtain.GET, POST=Routes.Curtain.POST)
 
 	server(port=80)
 
