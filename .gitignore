@@ -1,0 +1,5 @@
+__pycache__/
+Node/src/Config.cpp
+*.DS_Store
+*.env
+*.log

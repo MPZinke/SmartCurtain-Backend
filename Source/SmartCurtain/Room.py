@@ -27,13 +27,13 @@ from SmartCurtain import AreaOption
 from SmartCurtain import Curtain
 
 
-Home = TypeVar("Home")
-Room = TypeVar("Room")
+Home = type("Home", (), {})
+Room = type("Room", (), {})
 
 
 class Room(Area):
 	def __init__(self, Home: Optional[Home]=None, *, id: int, is_deleted: bool, name: str,
-	  RoomEvents: list[AreaEvent[Home]], RoomOptions: list[AreaOption[Room]], Curtains: list[Curtain]
+		RoomEvents: list[AreaEvent[Home]], RoomOptions: list[AreaOption[Room]], Curtains: list[Curtain]
 	):
 		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=RoomEvents, AreaOptions=RoomOptions)
 		# STRUCTURE #
@@ -64,7 +64,7 @@ class Room(Area):
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __delitem__(self, event: AreaEvent[Room]) -> None:
-		self._AreaEvents.remove(event)
+		self._RoomEvents.remove(event)
 
 
 	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
@@ -76,7 +76,7 @@ class Room(Area):
 			"id": self._id,
 			"is_deleted": self._is_deleted,
 			"name": self._name,
-			"RoomEvents": list(map(dict, self._AreaEvents)),
+			"RoomEvents": list(map(dict, self._RoomEvents)),
 			"RoomOptions": list(map(dict, self._AreaOptions)),
 			"Curtains": list(map(dict, self._Curtains))
 		}.items()

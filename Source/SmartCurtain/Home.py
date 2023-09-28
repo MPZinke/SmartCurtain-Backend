@@ -31,12 +31,12 @@ from SmartCurtain.DB import DBFunctions
 from Utility import LookupStruct
 
 
-Home = TypeVar("Home")
+Home = type("Home", (), {})
 
 
 class Home(Area):
 	def __init__(self, *, id: int, is_deleted: bool, name: str, HomeEvents: list[AreaEvent[Home]],
-	  HomeOptions: list[AreaOption[Home]], Rooms: list[Room]
+		HomeOptions: list[AreaOption[Home]], Rooms: list[Room]
 	):
 		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=HomeEvents, AreaOptions=HomeOptions)
 
@@ -49,11 +49,6 @@ class Home(Area):
 	@staticmethod
 	def all() -> list[Home]:
 		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes()]
-
-
-	@staticmethod
-	def current() -> list[Home]:
-		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes_WHERE_Current()]
 
 
 	@staticmethod
@@ -83,7 +78,7 @@ class Home(Area):
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __delitem__(self, event: AreaEvent[Home]) -> None:
-		self._AreaEvents.remove(event)
+		self._HomeEvents.remove(event)
 
 
 	def __getitem__(self, Room_id: int|str) -> Optional[Room]|LookupStruct[Curtain]:
@@ -100,8 +95,8 @@ class Home(Area):
 			"id": self._id,
 			"is_deleted": self._is_deleted,
 			"name": self._name,
-			"HomeEvents": list(map(dict, self._AreaEvents)),
-			"HomeOptions": list(map(dict, self._AreaOptions)),
+			"HomeEvents": list(map(dict, self._HomeEvents)),
+			"HomeOptions": list(map(dict, self._HomeOptions)),
 			"Rooms": list(map(dict, self._Rooms))
 		}.items()
 
@@ -110,22 +105,6 @@ class Home(Area):
 
 	def Rooms(self):
 		return self._Rooms.copy()
-
-
-	def HomeEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
-	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
-	) -> list[AreaEvent[Home]]:
-		return self.AreaEvents(Option_id=Option_id, is_activated=is_activated, is_deleted=is_deleted,
-		  percentage=percentage
-		)
-
-
-	def HomeOption(self, identifier: int|str) -> Optional[AreaOption[Home]]:
-		return self.AreaOption(identifier)
-
-
-	def HomeOptions(self) -> list[AreaOption[Home]]:
-		return self._AreaOptions.copy()
 
 
 	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #

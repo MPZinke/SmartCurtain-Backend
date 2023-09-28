@@ -118,7 +118,8 @@ class AreaEvent(Generic):
 			return self._is_activated
 
 		if(not isinstance(new_is_activated, bool)):
-			message = f"'AreaEvent[{self.__args__[0]}]::is_activated' must be of type 'bool' not '{type(new_is_activated).__name__}'"
+			new_value_type: str = type(new_is_activated).__name__
+			message = f"'AreaEvent[{self.__args__[0]}]::is_activated' must be of type 'bool' not '{new_value_type}'"
 			raise Exception(message)
 
 		self._is_activated = new_is_activated
@@ -129,7 +130,8 @@ class AreaEvent(Generic):
 			return self._is_deleted
 
 		if(not isinstance(new_is_deleted, bool)):
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
+			new_value_type: str = type(new_is_deleted).__name__
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::is_deleted' must be of type 'bool' not '{new_value_type}'")
 
 		self._is_deleted = new_is_deleted
 
@@ -139,7 +141,8 @@ class AreaEvent(Generic):
 			return self._percentage
 
 		if(not isinstance(new_percentage, int)):
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::percentage' must be of type 'int' not '{type(new_percentage).__name__}'")
+			new_value_type: str = type(new_percentage).__name__
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::percentage' must be of type 'int' not '{new_value_type}'")
 
 		self._percentage = new_percentage
 
@@ -149,7 +152,8 @@ class AreaEvent(Generic):
 			return self._Option
 
 		if(not isinstance(new_Option, Option)):
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::Option' must be of type 'Option' not '{type(new_Option).__name__}'")
+			new_value_type: str = type(new_Option).__name__
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::Option' must be of type 'Option' not '{new_value_type}'")
 
 		self._Option = new_Option
 
@@ -159,7 +163,8 @@ class AreaEvent(Generic):
 			return self._time
 
 		if(not isinstance(new_time, datetime)):
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::time' must be of type 'datetime' not '{type(new_time).__name__}'")
+			new_value_type: str = type(new_time).__name__
+			raise Exception(f"'AreaEvent[{self.__args__[0]}]::time' must be of type 'datetime' not '{new_value_type}'")
 
 		self._time = new_time
 

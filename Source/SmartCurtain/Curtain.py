@@ -30,7 +30,7 @@ from SmartCurtain import DB
 from SmartCurtain import Option
 
 
-Curtain = TypeVar("Curtain")
+Curtain = type("Curtain", (), {})
 Room = TypeVar("Room")
 
 
@@ -155,27 +155,6 @@ class Curtain(Area):
 		self._percentage = new_percentage
 
 
-	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
-
-	def CurtainEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
-	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
-	) -> list[AreaEvent[Curtain]]:
-		return self.AreaEvents(Option_id=Option_id, is_activated=is_activated, is_deleted=is_deleted,
-		  percentage=percentage
-		)
-
-
-	def CurtainOption(self, identifier: int|str) -> Optional[AreaOption]:
-		if((room_option := self.AreaOption(identifier)) is not None):
-			return room_option
-
-		return self._Room.RoomOption(identifier)
-
-
-	def CurtainOptions(self) -> list[AreaOption[Curtain]]:
-		return self._AreaOptions.copy()
-
-
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
 	def Room(self, new_Room: Optional[Room]=None) -> Optional[Room]:
@@ -195,12 +174,3 @@ class Curtain(Area):
 		client = mqtt.client.Client()
 		client.connect("localhost", 1883, 60)
 		client.publish(f"SmartCurtain/-/-/{self._id}/{command}", payload)
-
-
-	def new_CurtainEvent(self, *, percentage: int) -> AreaEvent[Curtain]:
-		new_event_dict: dict = DB.DBFunctions.INSERT_Events[Curtain](percentage=percentage, **{"Curtains.id": self._id})
-		new_event = AreaEvent[Curtain](self, **new_event_dict)
-		self._AreaEvents.append(new_event)
-		new_event.start()
-
-		return new_event

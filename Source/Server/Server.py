@@ -48,9 +48,10 @@ class Server:
 		self._app.route("/rooms/<int:room_id>/structure", Routes.rooms.GET_room_id_structure)
 
 		self._app.route("/curtains", Routes.curtains.GET)
-		# self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id)
-		self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id, POST=Routes.curtains.POST)
-		self._app.route("/curtains/<int:curtain_id>/events", Routes.curtains.GET_curtain_id_events)
+		self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id)
+		self._app.route("/curtains/<int:curtain_id>/events", GET=Routes.curtains.GET_curtain_id_events,
+			POST=Routes.curtains.POST_curtain_id_events
+		)
 		self._app.route("/curtains/<int:curtain_id>/structure", Routes.curtains.GET_curtain_id_structure)
 
 		# self.route("/events")
