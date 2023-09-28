@@ -21,7 +21,7 @@ from werkzeug.exceptions import Forbidden, HTTPException, Unauthorized
 
 import Global
 from Server import Routes
-from SmartCurtain import SmartCurtain
+from SmartCurtain import SmartCurtain, Home, Room, Curtain
 
 
 class Server:
@@ -35,24 +35,26 @@ class Server:
 
 		self._app.route("/", Routes.GET, additional_args={mpzinke.Server: self._app})
 
-		self._app.route("/homes", Routes.homes.GET)
-		self._app.route("/homes/<int:home_id>", Routes.homes.GET_home_id)
-		self._app.route("/homes/<int:home_id>/rooms", Routes.homes.GET_home_id_rooms)
-		self._app.route("/homes/<int:home_id>/curtains", Routes.homes.GET_home_id_curtains)
-		self._app.route("/homes/<int:home_id>/events", Routes.homes.GET_home_id_events)
-
-		self._app.route("/rooms", Routes.rooms.GET)
-		self._app.route("/rooms/<int:room_id>", Routes.rooms.GET_room_id)
-		self._app.route("/rooms/<int:room_id>/curtains", Routes.rooms.GET_room_id_curtains)
-		self._app.route("/rooms/<int:room_id>/events", Routes.rooms.GET_room_id_events)
-		self._app.route("/rooms/<int:room_id>/structure", Routes.rooms.GET_room_id_structure)
-
-		self._app.route("/curtains", Routes.curtains.GET)
-		self._app.route("/curtains/<int:curtain_id>", Routes.curtains.GET_curtain_id)
-		self._app.route("/curtains/<int:curtain_id>/events", GET=Routes.curtains.GET_curtain_id_events,
-			POST=Routes.curtains.POST_curtain_id_events
+		self._app.route("/homes", Routes.GET_area[Home])
+		self._app.route("/homes/<int:area_id>", Routes.GET_area_id[Home])
+		self._app.route("/homes/<int:area_id>/structure", Routes.GET_area_id_structure[Home])
+		self._app.route("/homes/<int:area_id>/events", GET=Routes.GET_area_id_events[Home],
+			POST=Routes.POST_area_id_events[Home]
 		)
-		self._app.route("/curtains/<int:curtain_id>/structure", Routes.curtains.GET_curtain_id_structure)
+
+		self._app.route("/rooms", Routes.GET_area[Room])
+		self._app.route("/rooms/<int:area_id>", Routes.GET_area_id[Room])
+		self._app.route("/rooms/<int:area_id>/structure", Routes.GET_area_id_structure[Room])
+		self._app.route("/rooms/<int:area_id>/events", GET=Routes.GET_area_id_events[Room],
+			POST=Routes.POST_area_id_events[Room]
+		)
+
+		self._app.route("/curtains", Routes.GET_area[Curtain])
+		self._app.route("/curtains/<int:area_id>", Routes.GET_area_id[Curtain])
+		self._app.route("/curtains/<int:area_id>/structure", Routes.GET_area_id_structure[Curtain])
+		self._app.route("/curtains/<int:area_id>/events", GET=Routes.GET_area_id_events[Curtain],
+			POST=Routes.POST_area_id_events[Curtain]
+		)
 
 		# self.route("/events")
 		# self.route("/events/<int:event_id>")

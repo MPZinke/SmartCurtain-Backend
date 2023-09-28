@@ -71,11 +71,11 @@ class Curtain(Area):
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __delitem__(self, event: AreaEvent[Curtain]) -> None:
-		self._AreaEvents.remove(event)
+		self._CurtainEvents.remove(event)
 
 
-	def __getitem__(self, curtain_event_id: int) -> Optional[AreaEvent[Curtain]]:
-		return next((event for event in self._AreaEvents if(event.id() == curtain_event_id)), None)
+	def __getitem__(self, *_) -> Optional[AreaEvent[Curtain]]:
+		raise NotImplementedError("Cannot use [int] operator as it has no child areas")
 
 
 	def __iter__(self) -> dict:
@@ -85,8 +85,8 @@ class Curtain(Area):
 			"is_deleted": self._is_deleted,
 			"length": self._length,
 			"name": self._name,
-			"CurtainEvents": list(map(dict, self._AreaEvents)),
-			"CurtainOptions": list(map(dict, self._AreaOptions)),
+			"CurtainEvents": list(map(dict, self._CurtainEvents)),
+			"CurtainOptions": list(map(dict, self._CurtainOptions)),
 			# TEMP STATE #
 			"is_connected": self._is_connected,
 			"is_moving": self._is_moving,

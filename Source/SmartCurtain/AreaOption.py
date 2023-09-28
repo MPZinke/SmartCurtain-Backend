@@ -54,35 +54,21 @@ class AreaOption(Generic):
 			"data": self._data,
 			"is_on": self._is_on,
 			"notes": self._notes
-		}.items();
+		}.items()
 
 
 	def __repr__(self) -> str:
-		return str(self);
+		return str(self)
 
 
 	def __str__(self) -> str:
-		return json.dumps(dict(self), default=str);
+		return json.dumps(dict(self), default=str)
 
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
 	def id(self):
 		return self._id
-
-
-	def get_or_set__args__(self, new_Area: Optional[Area]=None) -> Optional[Area]:
-		__args___name = self.__args__[0].__name__
-		if(new_Area is None):
-			return getattr(self, f"_{__args___name}")
-
-		if(not isinstance(new_Area, self.__args__[0])):
-			value_type_str = type(new_Area).__name__
-			message = f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'"
-			raise Exception(message);
-
-		self._Area = new_Area
-		setattr(self, f"_{__args___name}", new_Area)
 
 
 	def Area(self, new_Area: Optional[Area]=None) -> Optional[Area]:
@@ -106,34 +92,21 @@ class AreaOption(Generic):
 
 	def is_on(self, new_is_on: Optional[bool]=None) -> Optional[bool]:
 		if(new_is_on is None):
-			return self._is_on;
+			return self._is_on
 
 		if(not isinstance(new_is_on, bool)):
 			value_type_str = type(new_is_on).__is_on__
-			raise Exception(f"'Area::is_on' must be of type '{bool.__name__}' not '{value_type_str}'");
+			raise Exception(f"'Area::is_on' must be of type 'bool' not '{value_type_str}'")
 
-		self._is_on = new_is_on;
+		self._is_on = new_is_on
 
 
 	def notes(self, new_notes: Optional[str]=None) -> Optional[str]:
 		if(new_notes is None):
-			return self._notes;
+			return self._notes
 
 		if(not isinstance(new_notes, str)):
 			value_type_str = type(new_notes).__notes__
-			raise Exception(f"'Area::notes' must be of type '{str.__notes__}' not '{value_type_str}'");
+			raise Exception(f"'Area::notes' must be of type 'str' not '{value_type_str}'")
 
-		self._notes = new_notes;
-
-
-def test():
-	area_option = AreaOption[int](id=1, option=None, data=None, is_on=False, notes="Test")
-	print(area_option.int())
-	print(area_option.int(5))
-	print(area_option.int())
-	print(area_option.int("apples"))
-	print(area_option.int())
-
-
-if(__name__ == "__main__"):
-	test()
+		self._notes = new_notes

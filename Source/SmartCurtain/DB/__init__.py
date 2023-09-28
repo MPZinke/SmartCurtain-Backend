@@ -19,9 +19,9 @@ from sqlalchemy import create_engine, Boolean, Column, DateTime, ForeignKey, Int
 from sqlalchemy.ext.automap import automap_base
 
 
-DB_USER: str = os.getenv("SMARTCURTAIN_DB_USER");
-DB_HOST: str = os.getenv("SMARTCURTAIN_DB_HOST");
-DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD");
+DB_USER: str = os.getenv("SMARTCURTAIN_DB_USER")
+DB_HOST: str = os.getenv("SMARTCURTAIN_DB_HOST")
+DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD")
 
 
 # ————————————————————————————————————————————————— OBJECT  CREATION ————————————————————————————————————————————————— #

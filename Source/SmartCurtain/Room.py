@@ -77,7 +77,7 @@ class Room(Area):
 			"is_deleted": self._is_deleted,
 			"name": self._name,
 			"RoomEvents": list(map(dict, self._RoomEvents)),
-			"RoomOptions": list(map(dict, self._AreaOptions)),
+			"RoomOptions": list(map(dict, self._RoomOptions)),
 			"Curtains": list(map(dict, self._Curtains))
 		}.items()
 
@@ -86,25 +86,6 @@ class Room(Area):
 
 	def Curtains(self):
 		return self._Curtains.copy()
-
-
-	def RoomEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
-	  is_deleted: Optional[bool]=None, percentage: Optional[int]=None
-	) -> list[AreaEvent[Room]]:
-		return self.AreaEvents(Option_id=Option_id, is_activated=is_activated, is_deleted=is_deleted,
-		  percentage=percentage
-		)
-
-
-	def RoomOption(self, identifier: int|str) -> Optional[AreaOption]:
-		if((room_option := self.AreaOption(identifier)) is not None):
-			return room_option
-
-		return self._Home.HomeOption(identifier)
-
-
-	def RoomOptions(self) -> list[AreaOption[Room]]:
-		return self._AreaOptions.copy()
 
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #

@@ -14,5 +14,5 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from Server import Routes;
-from Server.Server import Server;
+from Server import Routes
+from Server.Server import Server

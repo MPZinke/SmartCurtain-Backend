@@ -16,7 +16,6 @@ __author__ = "MPZinke"
 
 from datetime import datetime
 import json
-from mpzinke import Generic
 from typing import Optional, TypeVar
 
 
@@ -117,7 +116,7 @@ class Area:
 
 		event_data = {f"{area.__name__}s.id": self._id, "Options.id": option, "percentage": percentage, "time": time}
 
-		new_event_dict: dict = DB.DBFunctions.INSERT_Events[type(self)](**event_data)
+		new_event_dict: dict = DB.DBFunctions.INSERT_Events[area](**event_data)
 		new_event = AreaEvent[area](self, **new_event_dict)
 		getattr(self, f"_{area.__name__}Events").append(new_event)
 		new_event.start()

@@ -97,7 +97,7 @@ class AreaEvent(Generic):
 		if(not isinstance(new_Area, self.__args__[0])):
 			value_type_str = type(new_Area).__name__
 			message = f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'"
-			raise Exception(message);
+			raise Exception(message)
 
 		self._Area = new_Area
 		setattr(self, f"_{__args___name}", new_Area)
