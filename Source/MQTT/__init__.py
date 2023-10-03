@@ -15,11 +15,15 @@ __author__ = "MPZinke"
 
 
 import json
+import os
 from paho.mqtt.client import Client
 import threading
 
 
 from SmartCurtain import SmartCurtain
+
+
+assert(MQTT_HOST := os.getenv("SMARTCURTAIN_MQTT_HOST")), "'SMARTCURTAIN_MQTT_HOST' cannot evaluate to False"
 
 
 class MQTTClient(Client):
@@ -31,7 +35,7 @@ class MQTTClient(Client):
 
 
 	def __call__(self) -> None:
-		self.connect("localhost", 1883, 60)
+		self.connect(MQTT_HOST, 1883, 60)
 		self.loop_forever()
 
 

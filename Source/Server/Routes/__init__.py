@@ -56,7 +56,6 @@ def GET_area_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int
 	"""
 	All information for a given area.
 	"""
-	print(__args__[0])
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			print("65")
@@ -73,7 +72,6 @@ def GET_area_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int
 	if(area is None):
 		raise NotFound(f"No {__args__[0].__name__} with id '{area_id}' was found")
 
-	print(json.dumps(dict(area), default=str, indent=4))
 	return Response(json.dumps(dict(area), default=str), mimetype="application/json")
 
 

@@ -19,15 +19,16 @@ from sqlalchemy import create_engine, Boolean, Column, DateTime, ForeignKey, Int
 from sqlalchemy.ext.automap import automap_base
 
 
-DB_USER: str = os.getenv("SMARTCURTAIN_DB_USER")
-DB_HOST: str = os.getenv("SMARTCURTAIN_DB_HOST")
-DB_PASSWORD: str = os.getenv("SMARTCURTAIN_DB_PASSWORD")
+assert(DB_USER := os.getenv("SMARTCURTAIN_DB_USER")), "'SMARTCURTAIN_DB_USER' cannot evaluate to False"
+assert(DB_HOST := os.getenv("SMARTCURTAIN_DB_HOST")), "'SMARTCURTAIN_DB_HOST' cannot evaluate to False"
+assert((DB_PASSWORD := os.getenv("SMARTCURTAIN_DB_PASSWORD")) is not None), \
+"'SMARTCURTAIN_DB_PASSWORD' is missing from environment"
 
 
 # ————————————————————————————————————————————————— OBJECT  CREATION ————————————————————————————————————————————————— #
 
 # FROM: https://docs.sqlalchemy.org/en/20/orm/extensions/automap.html
-ENGINE = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/SmartCurtain", future=True)
+ENGINE = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/SmartCurtain", future=True)
 BASE = automap_base()
 
 

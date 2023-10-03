@@ -289,6 +289,11 @@ BEGIN
 		NEW."time" = CURRENT_TIMESTAMP;
 	END IF;
 
+	IF NEW."time" < (CURRENT_TIMESTAMP - INTERVAL '1 SECONDS')
+	THEN
+		RAISE 'A Home Event cannot be created in the past';
+	END IF;
+
 	-- If any RoomsEvents exist and are not deleted and have the home ID, mark as deleted
 	UPDATE "RoomsEvents"
 	SET "is_deleted" = TRUE
@@ -353,6 +358,11 @@ BEGIN
 		NEW."time" = CURRENT_TIMESTAMP;
 	END IF;
 
+	IF NEW."time" < (CURRENT_TIMESTAMP - INTERVAL '1 SECONDS')
+	THEN
+		RAISE 'A Room Event cannot be created in the past';
+	END IF;
+
 	-- If any CurtainsEvents exist and are not deleted and have the home ID, mark as deleted
 	UPDATE "CurtainsEvents"
 	SET "is_deleted" = TRUE
@@ -414,6 +424,11 @@ BEGIN
 	IF NEW."time" IS NULL
 	THEN
 		NEW."time" = CURRENT_TIMESTAMP;
+	END IF;
+
+	IF NEW."time" < (CURRENT_TIMESTAMP - INTERVAL '1 SECONDS')
+	THEN
+		RAISE 'A Curtain Event cannot be created in the past';
 	END IF;
 
 	-- If HomesEvents exists for this time and have the Rooms HomeID and is not deleted, raise Exception

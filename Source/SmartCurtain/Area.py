@@ -111,8 +111,6 @@ class Area:
 		from SmartCurtain import AreaEvent
 
 		area = type(self)
-		if(time < datetime.now()):
-			raise ValueError(f"""'{time.strftime("%Y-%m-%d %H:%M:%S")}' is too far in the past""")
 
 		event_data = {f"{area.__name__}s.id": self._id, "Options.id": option, "percentage": percentage, "time": time}
 

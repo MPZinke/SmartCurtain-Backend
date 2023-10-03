@@ -56,7 +56,18 @@ class AreaEvent(Generic):
 
 
 	def start(self) -> None:
-		self._publish_thread.start()
+		# Set a thread for any event in the future
+		if((now := datetime.now()) < self._time):
+			self._publish_thread.start()
+
+		# Run any event that was supposed to run in the last 5 seconds
+		elif(now - timedelta(seconds=5) < self._time):  # IMPLICIT `self._time < now`
+			self.publish()
+
+		# Ignore any other event
+		else:
+			DB.DBFunctions.UPDATE_Events[type(self._Area)](self._id, is_activated=True)
+			del self._Area[self]
 
 
 	def __del__(self) -> None:
