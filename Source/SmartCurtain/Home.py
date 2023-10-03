@@ -105,11 +105,3 @@ class Home(Area):
 
 	def Rooms(self):
 		return self._Rooms.copy()
-
-
-	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
-
-	def publish(self, command: str, payload: str) -> None:
-		client = mqtt.client.Client()
-		client.connect("localhost", 1883, 60)
-		client.publish(f"SmartCurtain/{self._id}/{command}", payload)

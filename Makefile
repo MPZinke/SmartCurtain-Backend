@@ -1,28 +1,17 @@
 
 
-build-backend:
-	docker build -t smart_curtain-backend \
-	  --build-arg NETWORKLOOKUP_BEARERTOKEN="${NETWORKLOOKUP_BEARERTOKEN}" \
-	  --build-arg NETWORKLOOKUP_HOST="${NETWORKLOOKUP_HOST}" \
-	  --build-arg SMARTCURTAIN_NETWORKNAME="${SMARTCURTAIN_NETWORKNAME}" \
-	  --build-arg SMARTCURTAIN_DB_USER="${SMARTCURTAIN_DB_USER}" \
-	  --build-arg SMARTCURTAIN_DB_HOST="${SMARTCURTAIN_DB_HOST}" \
-	  --build-arg SMARTCURTAIN_DB_PASSWORD="${SMARTCURTAIN_DB_PASSWORD}" \
-	  --build-arg SMARTCURTAIN_BACKEND_API_KEY="${SMARTCURTAIN_BACKEND_API_KEY}" \
-	  ./Backend
+all:
+	docker build -t smartcurtain:backend ./Source
 
 
-build-frontend:
-	docker build -t smart_curtain-frontend ./Frontend
-
-
-run-backend:
-	# https://stackoverflow.com/a/49907758
-	docker run --add-host="host.docker.internal:host-gateway" -p 8080:8080 smart_curtain-backend
-
-run-frontend:
-	# https://stackoverflow.com/a/49907758
-	docker run --add-host="host.docker.internal:host-gateway" -p 3000:3000 smart_curtain-frontend
+run:
+	set -a; source .env; set +a; docker run \
+		-p 8001:8001 \
+		-e SMARTCURTAIN_MQTT_HOST="host.docker.internal" \
+		-e SMARTCURTAIN_DB_USER=mpzinke \
+		-e SMARTCURTAIN_DB_HOST="host.docker.internal" \
+		-e SMARTCURTAIN_DB_PASSWORD="" \
+		smartcurtain:backend
 
 
 clean:

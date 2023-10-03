@@ -17,10 +17,12 @@ __author__ = "MPZinke"
 from datetime import datetime, timedelta
 import json
 from mpzinke import threading, Generic
+from paho import mqtt
 from typing import Optional, TypeVar
 from warnings import warn as Warn
 
 
+import SmartCurtain
 from SmartCurtain import Area
 from SmartCurtain import DB
 from SmartCurtain import Option
@@ -35,7 +37,6 @@ class AreaEvent(Generic):
 	  is_deleted: bool, percentage: int, time: datetime, **kwargs: dict
 	):
 		# STRUCTURE #
-		self._Area = area
 		setattr(self, f"_{self.__args__[0].__name__}", area)
 		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
 		# DATABASE #
@@ -46,7 +47,7 @@ class AreaEvent(Generic):
 		self._percentage: int = percentage
 		self._time: datetime = time
 		# THREAD #
-		self._publish_thread = threading.DelayThread(f"Event Thread #{self._id}", action=self.publish, time=self.sleep_time)
+		self._publish_thread = threading.DelayThread(f"Event Thread #{self._id}", action=self, time=self.sleep_time)
 
 
 	@Generic
@@ -55,23 +56,11 @@ class AreaEvent(Generic):
 		return AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
 
 
-	def start(self) -> None:
-		# Set a thread for any event in the future
-		if((now := datetime.now()) < self._time):
-			self._publish_thread.start()
-
-		# Run any event that was supposed to run in the last 5 seconds
-		elif(now - timedelta(seconds=5) < self._time):  # IMPLICIT `self._time < now`
-			self.publish()
-
-		# Ignore any other event
-		else:
-			DB.DBFunctions.UPDATE_Events[type(self._Area)](self._id, is_activated=True)
-			del self._Area[self]
-
-
 	def __del__(self) -> None:
-		self._publish_thread.kill()
+		try:
+			self._publish_thread.kill()
+		except:
+			pass
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -101,17 +90,17 @@ class AreaEvent(Generic):
 
 
 	def get_or_set__args__(self, new_Area: Optional[Area]=None) -> Optional[Area]:
-		__args___name = self.__args__[0].__name__
+		area_type = self.__args__[0]
+		area_type_name = area_type.__name__
 		if(new_Area is None):
-			return getattr(self, f"_{__args___name}")
+			return getattr(self, f"_{area_type_name}")
 
-		if(not isinstance(new_Area, self.__args__[0])):
+		if(not isinstance(new_Area, area_type)):
 			value_type_str = type(new_Area).__name__
-			message = f"'__args__Option::{__args___name}' must be of type '{__args___name}' not '{value_type_str}'"
+			message = f"'__args__Option::{area_type_name}' must be of type '{area_type_name}' not '{value_type_str}'"
 			raise Exception(message)
 
-		self._Area = new_Area
-		setattr(self, f"_{__args___name}", new_Area)
+		setattr(self, f"_{area_type_name}", new_Area)
 
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
@@ -180,15 +169,60 @@ class AreaEvent(Generic):
 		self._time = new_time
 
 
-	# ——————————————————————————————————————————————————— PUBLISH  ——————————————————————————————————————————————————— #
+	# —————————————————————————————————————————————————— EXECUTION  —————————————————————————————————————————————————— #
+
+	def __call__(self) -> None:
+		"""
+		SUMMARY: Activates an event by publishing it and cleaning up the resources
+		"""
+		self.publish()
+		area_type = self.__args__[0]
+		DB.DBFunctions.UPDATE_Events[area_type](self._id, is_activated=True)
+		getattr(getattr(self, f"_{area_type.__name__}"), f"_{area_type.__name__}Events").remove(self)
+		# `del self` is not required at this point, because the thread has successfully ended and should not rerun.
+
 
 	def publish(self) -> None:
-		print(payload := f"""{{"percentage": {self._percentage}}}""")
-		self._Area.publish("move", payload)
+		from MQTT import MQTT_HOST
 
-		DB.DBFunctions.UPDATE_Events[type(self._Area)](self._id, is_activated=True)
+		area = getattr(self, f"_{self.__args__[0].__name__}")
+		match(self.__args__[0]):
+			case SmartCurtain.Home:
+				topic = f"SmartCurtain/{area.id()}/move"
+			case SmartCurtain.Room:
+				topic = f"SmartCurtain/-/{area.id()}/move"
+			case SmartCurtain.Curtain:
+				topic = f"SmartCurtain/-/-/{area.id()}/move"
+			case _:
+				raise NotImplementedError(f"{self.__args__[0].__name__} is not an allowed template type")
 
-		del self._Area[self]
+		import sys
+		print(payload := f"""[{topic}]""", file=sys.stderr, end=" ")
+		print(payload := f"""{{"percentage": {self._percentage}}}""", file=sys.stderr)
+
+		client = mqtt.client.Client()
+		client.connect(MQTT_HOST, 1883, 60)
+		client.publish(topic, payload)
+
+
+	def start(self) -> None:
+		# Set a thread for any event in the future
+		if((now := datetime.now()) < self._time):
+			self._publish_thread.start()
+
+		# Run any event that was supposed to run in the last 5 seconds
+		elif(now - timedelta(seconds=5) < self._time):  # IMPLICIT `self._time < now`
+			self()
+
+		# Ignore any other event
+		else:
+			area_type = self.__args__[0]
+
+			DB.DBFunctions.UPDATE_Events[area_type](self._id, is_activated=True)
+
+			getattr(getattr(self, f"_{area_type.__name__}"), f"_{area_type.__name__}Events").remove(self)
+			# `del self` is not required at this point, because the thread was never started since it should only be
+			#  started in this method.
 
 
 	def sleep_time(self):

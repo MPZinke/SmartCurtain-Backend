@@ -99,11 +99,3 @@ class Room(Area):
 			raise Exception(f"'Room::Home' must be of type 'Home' not '{type(new_Home).__name__}'")
 
 		self._Home = new_Home
-
-
-	# ————————————————————————————————————————————————————— MQTT ————————————————————————————————————————————————————— #
-
-	def publish(self, command: str, payload: str) -> None:
-		client = mqtt.client.Client()
-		client.connect("localhost", 1883, 60)
-		client.publish(f"SmartCurtain/-/{self._id}/{command}", payload)
