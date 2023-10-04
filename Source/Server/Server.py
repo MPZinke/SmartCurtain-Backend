@@ -59,7 +59,7 @@ class Server:
 		# self.route("/events")
 		# self.route("/events/<int:event_id>")
 
-		# self.route("/options")
+		self._app.route("/options", Routes.GET_options)
 		# self.route("/options/all")
 		# self.route("/options/<int:option_id>")
 		# self.route("/options/<string:option_name>")

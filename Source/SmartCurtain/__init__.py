@@ -62,17 +62,12 @@ class SmartCurtain:
 
 
 	def Room(self, Room_id: int) -> Optional[Room]:
-		for home in self._Homes:
-			if((room := home[Room_id]) is not None):
-				return room
-
-		return None
+		return self["-"][Room_id]
 
 
 	def Curtain(self, Curtain_id: int) -> Optional[Curtain]:
-		for home in self._Homes:
-			for room in home.Rooms():
-				if((curtain := room[Curtain_id]) is not None):
-					return curtain
+		return self["-"]["-"][Curtain_id]
 
-		return None
+
+	def Options(self) -> list[Option]:
+		return self._Options.copy()

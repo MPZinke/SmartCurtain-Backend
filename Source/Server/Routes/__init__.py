@@ -156,3 +156,8 @@ def POST_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area
 
 	event = area.new_AreaEvent(percentage=percentage, option=option, time=time)
 	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
+
+
+def GET_options(smart_curtain: SmartCurtain.SmartCurtain):
+	options = smart_curtain.Options()
+	return Response(json.dumps(list(map(dict, options)), default=str), mimetype="application/json")
