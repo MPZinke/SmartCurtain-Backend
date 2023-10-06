@@ -58,13 +58,10 @@ def GET_area_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int
 	"""
 	match(__args__[0]):
 		case SmartCurtain.Home:
-			print("65")
 			area = smart_curtain[area_id]
 		case SmartCurtain.Room:
-			print("66")
 			area = smart_curtain["-"][area_id]
 		case SmartCurtain.Curtain:
-			print("67")
 			area = smart_curtain["-"]["-"][area_id]
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
@@ -106,24 +103,19 @@ def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, ar
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
+			areas = {"home": area}
 		case SmartCurtain.Room:
 			area = smart_curtain["-"][area_id]
+			areas = {"room": area, "home": area.Home()}
 		case SmartCurtain.Curtain:
 			area = smart_curtain["-"]["-"][area_id]
+			room = area.Room()
+			areas = {"curtain": area, "room": room, "home": room.Home()}
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
 	if(area is None):
 		raise NotFound(f"No {__args__[0].__name__} with id '{area_id}' was found")
-
-	match(__args__[0]):
-		case SmartCurtain.Home:
-			areas = {"home": area}
-		case SmartCurtain.Room:
-			areas = {"room": area, "home": area.Home()}
-		case SmartCurtain.Curtain:
-			room = area.Room()
-			areas = {"curtain": area, "room": room, "home": room.Home()}
 
 	structure = {name: {attr: getattr(area, attr)() for attr in ["id", "name"]} for name, area in areas.items()}
 	return Response(json.dumps(structure), mimetype="application/json")
@@ -155,6 +147,24 @@ def POST_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area
 		raise BadRequest(f"'{time}' if not of proper format '%Y-%m-%d %H:%M:%S'") from error
 
 	event = area.new_AreaEvent(percentage=percentage, option=option, time=time)
+	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
+
+
+@Generic
+def GET_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int, event_id: int):
+	match(__args__[0]):
+		case SmartCurtain.Home:
+			area = smart_curtain[area_id]
+		case SmartCurtain.Room:
+			area = smart_curtain["-"][area_id]
+		case SmartCurtain.Curtain:
+			area = smart_curtain["-"]["-"][area_id]
+		case _:
+			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
+
+	if((event := next((event for event in area.AreaEvents() if(event.id() == event_id)), None)) is None):
+		raise NotFound(f"Event with id '{event_id}' not found for {__args__[0].__name__} '{area_id}'")
+
 	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
 
 
