@@ -15,12 +15,18 @@ __author__ = "MPZinke"
 
 
 import json
-from mpzinke import Generic
+from mpzinke import typename, Generic
 from typing import Any, Optional, TypeVar
 
 
 Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
 AreaOption = TypeVar("AreaOption")
+
+
+def wrong_type_string(instance: object, argument_name: str, required_type: type, supplied_value: Any) -> str:
+	# "'{classname}::{argument_name}' must be of type '{required_type_name}' not '{supplied_type}'"
+	message = "'{}::{}' must be of type '{}' not '{}'"
+	return message.format(typename(instance), argument_name, required_type.__name__, typename(supplied_value))
 
 
 class AreaOption(Generic):
@@ -29,15 +35,22 @@ class AreaOption(Generic):
 	):
 		self._Area: Area = area
 		# STRUCTURE #
-		setattr(self, f"_{self.__args__[0].__name__}", area)
-		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
+		getter = property(type(self).Area_getter)
+		setter = getter.setter(type(self).Area_setter)
+		setattr(type(self), f"Area", getter)  # EG `print(event.Area)`
+		setattr(type(self), f"Area", setter)  # EG `event.Area = curtain`
+		setattr(type(self), self.__args__[0].__name__, getter)  # EG `print(event.Curtain)`
+		setattr(type(self), self.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
+		setattr(type(self), f"_{self.__args__[0].__name__}", getter)  # EG `print(event._Curtain)`
+		setattr(type(self), f"_{self.__args__[0].__name__}", setter)  # EG `event._Curtain = curtain`
+
 		# DATABASE #
 		self._id: int = id
 		self._Option: object = Option
 		self._data: Optional[dict|list] = data
 		self._is_deleted: bool = is_deleted
 		self._is_on: bool = is_on
-		self._notes: bool = notes
+		self._notes: str = notes
 
 
 	def __eq__(self, right: int|str) -> bool:
@@ -71,8 +84,15 @@ class AreaOption(Generic):
 		return self._id
 
 
-	def Area(self, new_Area: Optional[Area]=None) -> Optional[Area]:
-		return self.get_or_set__args__(new_Area)
+	def Area_getter(self) -> Optional[Area]:
+		return self._Area
+
+
+	def Area_setter(self, new_Area) -> None:
+		if(not isinstance(new_Area, self.__args__[0])):
+			raise TypeError(wrong_type_string(self, "Area", self.__args__[0], new_Area))
+
+		self._Area = new_Area
 
 
 	def Option(self):
@@ -101,10 +121,13 @@ class AreaOption(Generic):
 		self._is_on = new_is_on
 
 
-	def notes(self, new_notes: Optional[str]=None) -> Optional[str]:
-		if(new_notes is None):
-			return self._notes
+	@property
+	def notes(self) -> str:
+		return self._notes
 
+
+	@notes.setter
+	def notes(self, new_notes: str) -> None:
 		if(not isinstance(new_notes, str)):
 			value_type_str = type(new_notes).__notes__
 			raise Exception(f"'Area::notes' must be of type 'str' not '{value_type_str}'")

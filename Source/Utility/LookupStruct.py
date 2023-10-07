@@ -16,7 +16,7 @@ class LookupStruct(Generic):
 			raise Exception(f"Cannot further recurse Dict[{self.__args__[0].__name__}]")
 
 		if(key != "-"):
-			return next((value for value in self._values if(value.id() == key)), None)
+			return next((value for value in self._values if(value.id == key)), None)
 
 		# EG. [room for home in self._homes for room in home.Rooms()]
 		subvalues = []

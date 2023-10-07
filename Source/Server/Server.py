@@ -16,7 +16,6 @@ __author__ = "MPZinke"
 
 import mpzinke
 import threading
-from werkzeug.exceptions import Forbidden, HTTPException, Unauthorized
 
 
 import Global

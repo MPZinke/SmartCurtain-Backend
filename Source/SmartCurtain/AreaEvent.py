@@ -16,10 +16,10 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta
 import json
-from mpzinke import threading, Generic
+from mpzinke import threading, typename, Generic
 from paho import mqtt
-from typing import Optional, TypeVar
-from warnings import warn as Warn
+from typing import Any, Optional, TypeVar
+import warnings
 
 
 import SmartCurtain
@@ -32,20 +32,35 @@ AreaEvent = TypeVar("AreaEvent")
 Option = TypeVar("Option")
 
 
+def wrong_type_string(instance: object, argument_name: str, required_type: type, supplied_value: Any) -> str:
+	# "'{classname}::{argument_name}' must be of type '{required_type_name}' not '{supplied_type}'"
+	message = "'{}::{}' must be of type '{}' not '{}'"
+	return message.format(typename(instance), argument_name, required_type.__name__, typename(supplied_value))
+
+
 class AreaEvent(Generic):
 	def __init__(self, area: Optional[Area]=None, *, id: int, Option: Optional[object], is_activated: bool,
 	  is_deleted: bool, percentage: int, time: datetime, **kwargs: dict
 	):
 		# STRUCTURE #
-		setattr(self, f"_{self.__args__[0].__name__}", area)
-		setattr(self, self.__args__[0].__name__, self.get_or_set__args__)
+		self._Area: Optional[Area] = area
+
+		getter = property(type(self).Area_getter)
+		setter = getter.setter(type(self).Area_setter)
+		setattr(type(self), f"Area", getter)  # EG `print(event.Area)`
+		setattr(type(self), f"Area", setter)  # EG `event.Area = curtain`
+		setattr(type(self), self.__args__[0].__name__, getter)  # EG `print(event.Curtain)`
+		setattr(type(self), self.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
+		setattr(type(self), f"_{self.__args__[0].__name__}", getter)  # EG `print(event._Curtain)`
+		setattr(type(self), f"_{self.__args__[0].__name__}", setter)  # EG `event._Curtain = curtain`
+
 		# DATABASE #
 		self._id: int = id
-		self._is_activated: bool = is_activated
-		self._is_deleted: bool = is_deleted
-		self._Option: Optional[object] = Option
-		self._percentage: int = percentage
-		self._time: datetime = time
+		self.is_activated: bool = is_activated
+		self.is_deleted: bool = is_deleted
+		self.Option: Optional[object] = Option
+		self.percentage: int = percentage
+		self.time: datetime = time
 		# THREAD #
 		self._publish_thread = threading.DelayThread(f"Event Thread #{self._id}", action=self, time=self.sleep_time)
 
@@ -57,17 +72,29 @@ class AreaEvent(Generic):
 
 
 	def __del__(self) -> None:
-		try:
+		# Kill the thread
+		if(self._publish_thread.is_alive()):
 			self._publish_thread.kill()
+
+		# Remove from DB
+		try:
+			# Update DB.
+			pass
 		except:
 			pass
+
+		# Remove from memory
+		try:
+			self._Area.AreaEvents.remove(self)
+		except Exception as error:
+			warnings.warn(error)
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __eq__(self, right) -> bool:
-		return self._id == right.id()
+		return self.id == right.id
 
 
 	def __iter__(self) -> dict:
@@ -89,82 +116,93 @@ class AreaEvent(Generic):
 		return json.dumps(dict(self), default=str, indent=4)
 
 
-	def get_or_set__args__(self, new_Area: Optional[Area]=None) -> Optional[Area]:
-		area_type = self.__args__[0]
-		area_type_name = area_type.__name__
-		if(new_Area is None):
-			return getattr(self, f"_{area_type_name}")
-
-		if(not isinstance(new_Area, area_type)):
-			value_type_str = type(new_Area).__name__
-			message = f"'__args__Option::{area_type_name}' must be of type '{area_type_name}' not '{value_type_str}'"
-			raise Exception(message)
-
-		setattr(self, f"_{area_type_name}", new_Area)
-
-
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
-	def Area(self, new_Area: Optional[Area]=None) -> Optional[Area]:
-		return self.get_or_set__args__(new_Area)
+	def Area_getter(self) -> Optional[Area]:
+		return self._Area
 
 
+	def Area_setter(self, new_Area) -> None:
+		if(not isinstance(new_Area, self.__args__[0])):
+			raise TypeError(wrong_type_string(self, "Area", self.__args__[0], new_Area))
+
+		self._Area = new_Area
+
+
+	@property
 	def id(self):
 		return self._id
 
 
-	def is_activated(self, new_is_activated: Optional[bool]=None) -> Optional[bool]:
-		if(new_is_activated is None):
-			return self._is_activated
+	@property
+	def is_activated(self) -> bool:
+		return self._is_activated
 
+
+	@is_activated.setter
+	def is_activated(self, new_is_activated: bool):
 		if(not isinstance(new_is_activated, bool)):
-			new_value_type: str = type(new_is_activated).__name__
-			message = f"'AreaEvent[{self.__args__[0]}]::is_activated' must be of type 'bool' not '{new_value_type}'"
-			raise Exception(message)
+			raise TypeError(wrong_type_string(self, "is_activated", bool, new_is_activated))
 
 		self._is_activated = new_is_activated
 
 
-	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
-		if(new_is_deleted is None):
-			return self._is_deleted
+	@property
+	def is_deleted(self) -> bool:
+		return self._is_deleted
 
+
+	@is_deleted.setter
+	def is_deleted(self, new_is_deleted: bool) -> None:
 		if(not isinstance(new_is_deleted, bool)):
-			new_value_type: str = type(new_is_deleted).__name__
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::is_deleted' must be of type 'bool' not '{new_value_type}'")
+			raise TypeError(wrong_type_string(self, "is_deleted", bool, new_is_deleted))
 
 		self._is_deleted = new_is_deleted
 
 
-	def percentage(self, new_percentage: Optional[int]=None) -> Optional[int]:
-		if(new_percentage is None):
-			return self._percentage
+	@property
+	def percentage(self) -> int:
+		return self._percentage
 
+
+	@percentage.setter
+	def percentage(self, new_percentage) -> int:
 		if(not isinstance(new_percentage, int)):
-			new_value_type: str = type(new_percentage).__name__
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::percentage' must be of type 'int' not '{new_value_type}'")
+			raise TypeError(wrong_type_string(self, "percentage", int, new_percentage))
+
+		if(new_percentage < 0):
+			warnings.warn(f"Percentage of '{new_percentage}' is being adjusted up to 0.")
+			new_percentage = 0
+
+		if(100 < new_percentage):
+			warnings.warn(f"Percentage of '{new_percentage}' is being adjusted down to 100.")
+			new_percentage = 0
 
 		self._percentage = new_percentage
 
 
-	def Option(self, new_Option: Optional[Option]=None) -> Optional[Option]:
-		if(new_Option is None):
-			return self._Option
+	@property
+	def Option(self) -> Optional[Option]:
+		return self._Option
 
-		if(not isinstance(new_Option, Option)):
-			new_value_type: str = type(new_Option).__name__
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::Option' must be of type 'Option' not '{new_value_type}'")
+
+	@Option.setter
+	def Option(self, new_Option: Optional[Option]) -> None:
+		if(new_Option is not None and not isinstance(new_Option, Option)):
+			raise TypeError(wrong_type_string(self, "Option", Optional[Option], new_Option))
 
 		self._Option = new_Option
 
 
-	def time(self, new_time: Optional[datetime]=None) -> Optional[datetime]:
-		if(new_time is None):
-			return self._time
+	@property
+	def time(self) -> datetime:
+		return self._time
 
+
+	@time.setter
+	def time(self, new_time: datetime) -> None:
 		if(not isinstance(new_time, datetime)):
-			new_value_type: str = type(new_time).__name__
-			raise Exception(f"'AreaEvent[{self.__args__[0]}]::time' must be of type 'datetime' not '{new_value_type}'")
+			raise TypeError(wrong_type_string(self, "time", datetime, new_time))
 
 		self._time = new_time
 
@@ -178,21 +216,21 @@ class AreaEvent(Generic):
 		self.publish()
 		area_type = self.__args__[0]
 		DB.DBFunctions.UPDATE_Events[area_type](self._id, is_activated=True)
-		getattr(getattr(self, f"_{area_type.__name__}"), f"_{area_type.__name__}Events").remove(self)
+		getattr(self._Area, f"_{area_type.__name__}Events").remove(self)
 		# `del self` is not required at this point, because the thread has successfully ended and should not rerun.
 
 
 	def publish(self) -> None:
 		from MQTT import MQTT_HOST
 
-		area = getattr(self, f"_{self.__args__[0].__name__}")
+		area = self._Area
 		match(self.__args__[0]):
 			case SmartCurtain.Home:
-				topic = f"SmartCurtain/{area.id()}/move"
+				topic = f"SmartCurtain/{area.id}/move"
 			case SmartCurtain.Room:
-				topic = f"SmartCurtain/-/{area.id()}/move"
+				topic = f"SmartCurtain/-/{area.id}/move"
 			case SmartCurtain.Curtain:
-				topic = f"SmartCurtain/-/-/{area.id()}/move"
+				topic = f"SmartCurtain/-/-/{area.id}/move"
 			case _:
 				raise NotImplementedError(f"{self.__args__[0].__name__} is not an allowed template type")
 
@@ -220,13 +258,13 @@ class AreaEvent(Generic):
 
 			DB.DBFunctions.UPDATE_Events[area_type](self._id, is_activated=True)
 
-			getattr(getattr(self, f"_{area_type.__name__}"), f"_{area_type.__name__}Events").remove(self)
+			self._Area.AreaEvents.remove(self)
 			# `del self` is not required at this point, because the thread was never started since it should only be
 			#  started in this method.
 
 
 	def sleep_time(self):
 		if((now := datetime.now()) > self._time + timedelta(seconds=1)):
-			Warn(f"Event {self._id} is scheduled at a time in the past")
+			warnings.warn(f"Event {self._id} is scheduled at a time in the past")
 
 		return (self._time - now).seconds if(now < self._time) else .25

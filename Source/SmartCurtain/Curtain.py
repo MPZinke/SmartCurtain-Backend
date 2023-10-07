@@ -98,8 +98,8 @@ class Curtain(Area):
 		# Structure
 		node_dict = {
 			"id": self._id,
-			"Room.id": self._Room.id(),
-			"Home.id": self._Room.Home().id()
+			"Room.id": self._Room.id,
+			"Home.id": self._Room.Home().id
 		}
 
 		# Hardware overriding values

@@ -61,7 +61,7 @@ class AdafruitFeed(ZWidget):
 			# Convert Option to percentage
 			curtain_option = curtain.CurtainOption(Option_id=self._option_id);
 			percentage = try_convert(percentage_payload, int) or try_convert(curtain_option.data().get(feed_id,0), int);
-			print(f"Curtain: {curtain.name()}, feed: {feed_id}, percentage: {percentage}");
+			print(f"Curtain: {curtain.name}, feed: {feed_id}, percentage: {percentage}");
 			if(percentage is None):
 				raise Exception("Could not get a valid percentage");
 

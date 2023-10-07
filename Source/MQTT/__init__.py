@@ -85,7 +85,7 @@ class MQTTClient(Client):
 				# Values that are updated by curtain
 				if(request["is_moving"] != curtain.is_moving()):
 					curtain.is_moving(request["is_moving"])
-				if(request["percentage"] != curtain.percentage()):
+				if(request["percentage"] != curtain.percentage):
 					curtain.percentage(request["percentage"])
 
 				# Values for Curtain that can be updated

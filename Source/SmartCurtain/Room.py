@@ -68,7 +68,7 @@ class Room(Area):
 
 
 	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
-		return next((room for room in self._Curtains if(room.id() == Curtain_id)), None)
+		return next((room for room in self._Curtains if(room.id == Curtain_id)), None)
 
 
 	def __iter__(self) -> dict:

@@ -16,7 +16,8 @@ __author__ = "MPZinke"
 
 from datetime import datetime
 import json
-from typing import Optional, TypeVar
+from mpzinke import typename
+from typing import Any, Optional, TypeVar
 
 
 from SmartCurtain import DB
@@ -26,27 +27,42 @@ AreaEvent = TypeVar("AreaEvent")
 AreaOption = TypeVar("AreaOption")
 
 
+def wrong_type_string(instance: object, argument_name: str, required_type: type, supplied_value: Any) -> str:
+	# "'{classname}::{argument_name}' must be of type '{required_type_name}' not '{supplied_type}'"
+	message = "'{}::{}' must be of type '{}' not '{}'"
+	return message.format(typename(instance), argument_name, required_type.__name__, typename(supplied_value))
+
+
 class Area:
 	def __init__(self, *, id: int, is_deleted: bool, name: str, AreaEvents: list[AreaEvent],
 		AreaOptions: list[AreaOption]
 	):
 		self._id: int = id
-		self._is_deleted: bool = is_deleted
-		self._name: str = name
-		# Set attributes
-		setattr(self, f"_{type(self).__name__}Events", AreaEvents.copy())
-		setattr(self, f"_{type(self).__name__}Options", AreaOptions.copy())
+		self.is_deleted: bool = is_deleted
+		self.name: str = name
 
-		# Set methods
-		setattr(self, f"{type(self).__name__}Events", self.AreaEvents)
-		setattr(self, f"{type(self).__name__}Option", self.AreaOption)
-		setattr(self, f"{type(self).__name__}Options", self.AreaOptions)
-		setattr(self, f"new_{type(self).__name__}Event", self.new_AreaEvent)
+		self._AreaEvents = AreaEvents.copy()
+		event_getter = property(type(self).AreaEvents_getter)
+		setattr(type(self), f"AreaEvents", event_getter)  # EG `print(home.AreaEvents)`
+		setattr(type(self), f"{typename(self)}Events", event_getter)  # EG `print(home.CurtainEvents)`
+		setattr(type(self), f"_{typename(self)}Events", event_getter)  # EG `print(home._CurtainEvents)`
 
-		[event.Area(self) for event in AreaEvents]
-		[event.start() for event in AreaEvents]
-		[option.Area(self) for option in AreaOptions]
+		self._AreaOptions = AreaOptions.copy()
+		option_getter = property(type(self).AreaOptions_getter)
+		setattr(type(self), f"AreaOptions", option_getter)  # EG `print(home.AreaOptions)`
+		setattr(type(self), f"{typename(self)}Options", option_getter)  # EG `print(home.CurtainOptions)`
+		setattr(type(self), f"_{typename(self)}Options", option_getter)  # EG `print(home._CurtainOptions)`
 
+		for event in AreaEvents:
+			event.Area = self
+			event.start()
+
+		for option in AreaOptions:
+			option.Area = self
+
+
+	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
+	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
 	def __repr__(self) -> str:
 		return str(self)
@@ -56,67 +72,59 @@ class Area:
 		return json.dumps(dict(self), default=str, indent=4)
 
 
+	@property
 	def id(self):
 		return self._id
 
 
+	@property
 	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> Optional[bool]:
 		if(new_is_deleted is None):
 			return self._is_deleted
 
+
+	@is_deleted.setter
+	def is_deleted(self, new_is_deleted: Optional[bool]=None) -> None:
 		if(not isinstance(new_is_deleted, bool)):
-			raise Exception(f"'Home::is_deleted' must be of type 'bool' not '{type(new_is_deleted).__name__}'")
+			raise TypeError(wrong_type_string(self, "is_deleted", bool, new_is_deleted))
 
 		self._is_deleted = new_is_deleted
 
 
+	@property
 	def name(self, new_name: Optional[str]=None) -> Optional[str]:
 		if(new_name is None):
 			return self._name
 
+
+	@name.setter
+	def name(self, new_name: Optional[str]=None) -> None:
 		if(not isinstance(new_name, str)):
-			raise Exception(f"'Home::name' must be of type 'str' not '{type(new_name).__name__}'")
+			raise TypeError(wrong_type_string(self, "new_name", str, new_name))
 
 		self._name = new_name
 
 
-	def AreaEvents(self, *, Option_id: Optional[int]=None, is_activated: Optional[bool]=None,
-		is_deleted: Optional[bool]=None, percentage: Optional[int]=None
-	) -> list[AreaEvent]:
-		area_events: list[AreaEvent] = getattr(self, f"_{type(self).__name__}Events")
-		known_events: list[AreaEvent] = area_events.copy()
-
-		if(Option_id is not None):
-			known_events = [event for event in known_events if(event.Option().id() == Option_id)]
-		if(is_activated is not None):
-			known_events = [event for event in known_events if(event.is_activated() == is_activated)]
-		if(is_deleted is not None):
-			known_events = [event for event in known_events if(event.is_deleted() == is_deleted)]
-		if(percentage is not None):
-			known_events = [event for event in known_events if(event.percentage() == percentage)]
-
-		return known_events
+	def AreaEvents_getter(self) -> list[AreaEvent]:
+		return self._AreaEvents.copy()
 
 
-	def AreaOption(self, identifier: int|str) -> Optional[AreaOption]:
-		area_options: list[AreaOption] = getattr(self, f"_{type(self).__name__}Options")
-		return next((option for option in area_options if(option == identifier)), None)
+	def AreaOptions_getter(self) -> list[AreaOption]:
+		return self._AreaOptions.copy()
 
 
-	def AreaOptions(self) -> list[AreaOption]:
-		return getattr(self, f"_{type(self).__name__}Options").copy()
-
+	# ———————————————————————————————————————————————————— EVENT  ———————————————————————————————————————————————————— #
 
 	def new_AreaEvent(self, *, percentage: int, option: Optional[int], time: datetime) -> AreaEvent:
 		from SmartCurtain import AreaEvent
 
 		area = type(self)
 
-		event_data = {f"{area.__name__}s.id": self._id, "Options.id": option, "percentage": percentage, "time": time}
+		event_data = {f"{typename(self)}s.id": self._id, "Options.id": option, "percentage": percentage, "time": time}
 
 		new_event_dict: dict = DB.DBFunctions.INSERT_Events[area](**event_data)
 		new_event = AreaEvent[area](self, **new_event_dict)
-		getattr(self, f"_{area.__name__}Events").append(new_event)
+		self._AreaEvents.append(new_event)
 		new_event.start()
 
 		return new_event

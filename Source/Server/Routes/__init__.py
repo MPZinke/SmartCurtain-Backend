@@ -18,7 +18,7 @@ __author__ = "MPZinke"
 from datetime import datetime
 from flask import request, Response
 import json
-from mpzinke import Generic, Server, Validator
+from mpzinke import typename, Generic, Server, Validator
 from typing import Optional
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -47,7 +47,7 @@ def GET_area(__args__, smart_curtain: SmartCurtain.SmartCurtain) -> Response:
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
-	return Response(json.dumps({area.id(): area.name() for area in areas}), mimetype="application/json")
+	return Response(json.dumps({area.id: area.name for area in areas}), mimetype="application/json")
 
 
 # `GET /[AREA]/<int:area_id>`
@@ -117,7 +117,7 @@ def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, ar
 	if(area is None):
 		raise NotFound(f"No {__args__[0].__name__} with id '{area_id}' was found")
 
-	structure = {name: {attr: getattr(area, attr)() for attr in ["id", "name"]} for name, area in areas.items()}
+	structure = {name: {attr: getattr(area, attr) for attr in ["id", "name"]} for name, area in areas.items()}
 	return Response(json.dumps(structure), mimetype="application/json")
 
 
@@ -162,10 +162,29 @@ def GET_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, are
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
-	if((event := next((event for event in area.AreaEvents() if(event.id() == event_id)), None)) is None):
+	if((event := next((event for event in area.AreaEvents() if(event.id == event_id)), None)) is None):
 		raise NotFound(f"Event with id '{event_id}' not found for {__args__[0].__name__} '{area_id}'")
 
 	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
+
+
+@Generic
+def DELETE_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int, event_id: int):
+	match(__args__[0]):
+		case SmartCurtain.Home:
+			area = smart_curtain[area_id]
+		case SmartCurtain.Room:
+			area = smart_curtain["-"][area_id]
+		case SmartCurtain.Curtain:
+			area = smart_curtain["-"]["-"][area_id]
+		case _:
+			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
+
+	if((event := next((event for event in area.AreaEvents() if(event.id == event_id)), None)) is None):
+		raise NotFound(f"Event with id '{event_id}' not found for {__args__[0].__name__} '{area_id}'")
+
+	del event
+	return "", 204
 
 
 def GET_options(smart_curtain: SmartCurtain.SmartCurtain):
