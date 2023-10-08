@@ -38,7 +38,6 @@ class Backend:
 		self._Server.start()
 
 
-
 def main():
 	smartcurtain = Backend()
 	smartcurtain.start()

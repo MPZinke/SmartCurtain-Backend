@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 import json
 from mpzinke import threading, Generic
 from paho import mqtt
-from typing import Optional, TypeVar
+from typing import Optional
 import warnings
 
 

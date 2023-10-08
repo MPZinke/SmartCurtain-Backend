@@ -43,13 +43,6 @@ class MQTTClient(Client):
 		self._thread.start()
 
 
-	def __iter__(self) -> dict:
-		yield from {
-			"Curtains": [dict(curtain) for curtain in self._Curtains],
-			"Options": [dict(option) for option in self._Options]
-		}.items()
-
-
 	def __str__(self) -> str:
 		return json.dumps(dict(self), default=str)
 

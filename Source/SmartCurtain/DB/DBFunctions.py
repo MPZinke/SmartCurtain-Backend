@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from mpzinke import Generic
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-from typing import Optional, TypeVar
+from typing import Optional
 
 
 from SmartCurtain.DB import (
@@ -15,10 +15,7 @@ from SmartCurtain.DB import (
 	HomesEvents,
 	RoomsEvents,
 	CurtainsEvents,
-	Options,
-	HomesOptions,
-	RoomsOptions,
-	CurtainsOptions,
+	Options
 )
 
 
@@ -49,7 +46,7 @@ def SELECT_Options() -> list:
 def SELECT_Homes_WHERE_Current() -> list[Homes]:
 	def is_valid(event: dict) -> bool:
 		now_plus_1_second: datetime = datetime.now() + timedelta(seconds=1)
-		return event["is_deleted"] == False and event["is_activated"] == False and event["time"] > now_plus_1_second
+		return event["is_deleted"] is False and event["is_activated"] is False and event["time"] > now_plus_1_second
 
 	with Session(ENGINE) as session:
 		statement = select(Homes).where(Homes.is_deleted == False)
@@ -57,31 +54,31 @@ def SELECT_Homes_WHERE_Current() -> list[Homes]:
 
 	for home in homes:
 		home["HomesEvents"] = [event for event in home["HomesEvents"] if(is_valid(event))]
-		home["HomesOptions"] = [option for option in home["HomesOptions"] if(option["is_deleted"] == False)]
+		home["HomesOptions"] = [option for option in home["HomesOptions"] if(option["is_deleted"] is False)]
 
-		home["Rooms"] = [room for room in home["Rooms"] if(room["is_deleted"] == False)]
+		home["Rooms"] = [room for room in home["Rooms"] if(room["is_deleted"] is False)]
 		for room in home["Rooms"]:
 			room["RoomsEvents"] = [event for event in room["RoomsEvents"] if(is_valid(event))]
-			room["RoomsOptions"] = [option for option in room["RoomsOptions"] if(option["is_deleted"] == False)]
+			room["RoomsOptions"] = [option for option in room["RoomsOptions"] if(option["is_deleted"] is False)]
 
-			room["Curtains"] = [curtain for curtain in room["Curtains"] if(curtain["is_deleted"] == False)]
+			room["Curtains"] = [curtain for curtain in room["Curtains"] if(curtain["is_deleted"] is False)]
 			for curtain in room["Curtains"]:
 				curtain["CurtainsEvents"] = [event for event in curtain["CurtainsEvents"] if(is_valid(event))]
 
 				curtain_options = curtain["CurtainsOptions"]
-				curtain["CurtainsOptions"] = [option for option in curtain_options if(option["is_deleted"] == False)]
+				curtain["CurtainsOptions"] = [option for option in curtain_options if(option["is_deleted"] is False)]
 
 	return homes
 
 
 @Generic
 def UPDATE_Events(__args__: type, id: int, *, is_activated: Optional[bool]=None, is_deleted: Optional[bool]=None,
-  percentage: Optional[int]=None, time: Optional[datetime]=None, **kwargs: dict
+	percentage: Optional[int]=None, time: Optional[datetime]=None, **kwargs: dict
 ):
 	Event = {"Home": HomesEvents, "Room": RoomsEvents, "Curtain": CurtainsEvents}[__args__[0].__name__]
 
 	if(1 < len(kwargs) or (len(kwargs) == 1 and next(kwargs) != "Option.id")):
-		raise Exception(f"""Bad key(s) {", ".join([key for key in kwargs if(key != "Options.id")])}""")
+		raise KeyError(f"""Bad key(s) {", ".join([key for key in kwargs if(key != "Options.id")])}""")
 
 	with Session(ENGINE) as session:
 		statement = update(Event).where(Event.id == id)
@@ -121,7 +118,7 @@ def INSERT_Events(__args__, *, percentage: int, time: Optional[datetime|str]=Non
 
 	allowed_args = [f"{area}s.id", "Options.id"]
 	if(any(key not in allowed_args for key in kwargs)):
-		raise Exception(f"""Bad key(s) {", ".join([key for key in kwargs if(key not in allowed_args)])}""")
+		raise KeyError(f"""Bad key(s) {", ".join([key for key in kwargs if(key not in allowed_args)])}""")
 
 	event_args = {f"{area}s.id": kwargs[f"{area}s.id"], "Options.id": kwargs.get("Options.id"),
 	  "percentage": percentage, "time": (time or datetime.now())}
@@ -133,15 +130,3 @@ def INSERT_Events(__args__, *, percentage: int, time: Optional[datetime|str]=Non
 		session.refresh(event)
 
 		return dict(event)
-
-
-def test():
-	import json
-	print(json.dumps(INSERT_Events[TypeVar("Room")](percentage=0, time="2024-01-01 00:00:10", **{"Rooms.id": 1}), default=str, indent=4))
-	print(json.dumps(INSERT_Events[TypeVar("Home")](percentage=0, time="2024-01-01 00:00:10", **{"Homes.id": 1}), default=str, indent=4))
-
-	print(json.dumps(SELECT_Homes(), default=str, indent=4))
-
-
-if(__name__ == "__main__"):
-	test()

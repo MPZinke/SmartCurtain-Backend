@@ -14,18 +14,12 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import json
-from paho import mqtt
-import re
-from typing import Dict, Optional, TypeVar
+from typing import Dict, Optional
 
 
 import SmartCurtain
 from SmartCurtain.DB import DBFunctions
 from Utility import wrong_type_string, LookupStruct
-
-
-Home = type("Home", (), {})
 
 
 class Home(SmartCurtain.Area):

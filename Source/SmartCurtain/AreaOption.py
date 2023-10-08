@@ -16,7 +16,7 @@ __author__ = "MPZinke"
 
 import json
 from mpzinke import Generic
-from typing import Optional, TypeVar
+from typing import Optional
 
 
 import SmartCurtain
