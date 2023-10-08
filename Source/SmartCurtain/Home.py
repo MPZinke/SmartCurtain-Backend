@@ -20,12 +20,7 @@ import re
 from typing import Dict, Optional, TypeVar
 
 
-from SmartCurtain import Option
-from SmartCurtain import Area
-from SmartCurtain import AreaOption
-from SmartCurtain import AreaEvent
-from SmartCurtain import Curtain
-from SmartCurtain import Room
+import SmartCurtain
 from SmartCurtain.DB import DBFunctions
 from Utility import wrong_type_string, LookupStruct
 
@@ -33,40 +28,46 @@ from Utility import wrong_type_string, LookupStruct
 Home = type("Home", (), {})
 
 
-class Home(Area):
-	def __init__(self, *, id: int, is_deleted: bool, name: str, HomeEvents: list[AreaEvent[Home]],
-		HomeOptions: list[AreaOption[Home]], Rooms: list[Room]
+class Home(SmartCurtain.Area):
+	def __init__(self, *, id: int, is_deleted: bool, name: str,
+		HomeEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Home]],
+		HomeOptions: list[SmartCurtain.AreaOption[SmartCurtain.Home]], Rooms: list[SmartCurtain.Room]
 	):
-		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=HomeEvents, AreaOptions=HomeOptions)
+		SmartCurtain.Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=HomeEvents,
+			AreaOptions=HomeOptions
+		)
 
 		# STRUCTURE #
-		self.Rooms: list[Room] = Rooms
+		self.Rooms: list[SmartCurtain.Room] = Rooms
 		for room in self.Rooms:
 			room.Home = self
 
 
 	@staticmethod
-	def all() -> list[Home]:
+	def all() -> list[SmartCurtain.Home]:
 		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes()]
 
 
 	@staticmethod
-	def current() -> list[Home]:
+	def current() -> list[SmartCurtain.Home]:
 		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes_WHERE_Current()]
 
 
 	@staticmethod
-	def from_dictionary(home_data: dict) -> Home:
-		events: list[AreaEvent[Home]] = []
+	def from_dictionary(home_data: dict) -> SmartCurtain.Home:
+		events: list[SmartCurtain.AreaEvent[SmartCurtain.Home]] = []
 		for event_data in home_data["HomesEvents"]:
-			event_data["Option"] = Option(**event_data["Option"]) if(event_data["Option"] is not None) else None
-			events.append(AreaEvent.from_dictionary[Home](event_data))
+			event_data["Option"] = SmartCurtain.Option(**event_data["Option"]) if(event_data["Option"]) else None
+			events.append(SmartCurtain.AreaEvent.from_dictionary[SmartCurtain.Home](event_data))
 
-		options: list[AreaOption[Home]] = []
+		options: list[SmartCurtain.AreaOption[SmartCurtain.Home]] = []
 		for option_data in home_data["HomesOptions"]:
-			options.append(AreaOption[Home](**{**option_data, "Option": Option(**option_data["Option"])}))
+			option = SmartCurtain.Option(**option_data["Option"])
+			options.append(SmartCurtain.AreaOption[SmartCurtain.Home](**{**option_data, "Option": option}))
 
-		rooms: list[Room] = [Room.from_dictionary(room_data) for room_data in home_data["Rooms"]]
+		rooms: list[SmartCurtain.Room] = []
+		for room_data in home_data["Rooms"]:
+			rooms.append(SmartCurtain.Room.from_dictionary(room_data))
 
 		return Home(id=home_data["id"], is_deleted=home_data["is_deleted"], name=home_data["name"], HomeEvents=events,
 			HomeOptions=options, Rooms=rooms
@@ -76,17 +77,13 @@ class Home(Area):
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __delitem__(self, event: AreaEvent[Home]) -> None:
-		self._HomeEvents.remove(event)
-
-
-	def __getitem__(self, Room_id: int|str) -> Optional[Room]|LookupStruct[Curtain]:
+	def __getitem__(self, Room_id: int|str) -> Optional[SmartCurtain.Room]|LookupStruct[SmartCurtain.Curtain]:
 		"""
 		RETURNS: If an int is supplied, the home with a matching ID is returned or none. If "-" is supplied, a
 		         dictionary of the rooms and curtains is returned.
 		         IE `{<curtain ids: curtains>}`
 		"""
-		return LookupStruct[Room, Curtain](self._Rooms)[Room_id]
+		return LookupStruct[SmartCurtain.Room, SmartCurtain.Curtain](self._Rooms)[Room_id]
 
 
 	def __iter__(self) -> dict:
@@ -100,22 +97,22 @@ class Home(Area):
 		}.items()
 
 
-	def structure(self) -> Dict[str, Area]:
+	def structure(self) -> Dict[str, SmartCurtain.Area]:
 		return {
-			"id": self._id
+			"id": self.id
 		}
 
 
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
 	@property
-	def Rooms(self) -> list[Room]:
+	def Rooms(self) -> list[SmartCurtain.Room]:
 		return self._Rooms.copy()
 
 
 	@Rooms.setter
-	def Rooms(self, new_Rooms: list[Room]) -> None:
-		if(any(not isinstance(room, Room) for room in new_Rooms)):
-			raise TypeError(wrong_type_string(self, "Rooms", list[Room], []))
+	def Rooms(self, new_Rooms: list[SmartCurtain.Room]) -> None:
+		if(any(not isinstance(room, SmartCurtain.Room) for room in new_Rooms)):
+			raise TypeError(wrong_type_string(self, "Rooms", list[SmartCurtain.Room], []))
 
 		self._Rooms = new_Rooms.copy()

@@ -24,35 +24,30 @@ import warnings
 
 import SmartCurtain
 from SmartCurtain import DB
-from SmartCurtain import Option
 from Utility import wrong_type_string
 
 
-Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
-AreaEvent = TypeVar("AreaEvent")
-Option = TypeVar("Option")
-
-
 class AreaEvent(Generic):
-	def __init__(self, area: Optional[Area]=None, *, id: int, Option: Optional[object], is_activated: bool,
-	  is_deleted: bool, percentage: int, time: datetime, **kwargs: dict
+	def __init_subclass__(cls):
+		getter = property(cls.Area_getter)
+		setter = getter.setter(cls.Area_setter)
+		setattr(cls, "Area", getter)  # EG `print(event.Area)`
+		setattr(cls, "Area", setter)  # EG `event.Area = curtain`
+		setattr(cls, cls.__args__[0].__name__, getter)  # EG `print(event.Curtain)`
+		setattr(cls, cls.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
+
+
+	def __init__(self, Area: Optional[SmartCurtain.Area]=None, *, id: int, Option: Optional[SmartCurtain.Option],
+		is_activated: bool, is_deleted: bool, percentage: int, time: datetime
 	):
 		# STRUCTURE #
-		self._Area: Optional[Area] = area
-
-		getter = property(type(self).Area_getter)
-		setter = getter.setter(type(self).Area_setter)
-		setattr(type(self), "Area", getter)  # EG `print(event.Area)`
-		setattr(type(self), "Area", setter)  # EG `event.Area = curtain`
-		setattr(type(self), self.__args__[0].__name__, getter)  # EG `print(event.Curtain)`
-		setattr(type(self), self.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
-
+		self.Area: Optional[SmartCurtain.Area] = Area
 		# DATABASE #
 		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
 		self._id: int = id
 		self.is_activated: bool = is_activated
 		self.is_deleted: bool = is_deleted
-		self.Option: Optional[object] = Option
+		self.Option: Optional[SmartCurtain.Option] = Option
 		self.percentage: int = percentage
 		self.time: datetime = time
 		# THREAD #
@@ -60,12 +55,13 @@ class AreaEvent(Generic):
 
 
 	@Generic
-	def from_dictionary(__args__: set, curtain_event_data: dict) -> AreaEvent:
-		option = Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"] is not None) else None
-		return AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
+	def from_dictionary(__args__: set, curtain_event_data: dict) -> SmartCurtain.AreaEvent:
+		option = SmartCurtain.Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"]) else None
+		return SmartCurtain.AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
 
 
 	def __del__(self) -> None:
+		print(f"Killing event with id '{self.id}'")
 		# Kill the thread
 		if(self._publish_thread.is_alive()):
 			self._publish_thread.kill()
@@ -77,17 +73,11 @@ class AreaEvent(Generic):
 		except:
 			pass
 
-		# Remove from memory
-		try:
-			self._Area.AreaEvents.remove(self)
-		except Exception as error:
-			warnings.warn(error)
-
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __eq__(self, right) -> bool:
+	def __eq__(self, right: SmartCurtain.AreaEvent) -> bool:
 		return self.id == right.id
 
 
@@ -112,12 +102,12 @@ class AreaEvent(Generic):
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
-	def Area_getter(self) -> Optional[Area]:
+	def Area_getter(self) -> Optional[SmartCurtain.Area]:
 		return self._Area
 
 
-	def Area_setter(self, new_Area) -> None:
-		if(not isinstance(new_Area, self.__args__[0])):
+	def Area_setter(self, new_Area: Optional[SmartCurtain.Area]) -> None:
+		if(not isinstance(new_Area, Optional[self.__args__[0]])):
 			raise TypeError(wrong_type_string(self, "Area", self.__args__[0], new_Area))
 
 		self._Area = new_Area
@@ -160,7 +150,7 @@ class AreaEvent(Generic):
 
 
 	@percentage.setter
-	def percentage(self, new_percentage) -> int:
+	def percentage(self, new_percentage: int) -> int:
 		if(not isinstance(new_percentage, int)):
 			raise TypeError(wrong_type_string(self, "percentage", int, new_percentage))
 
@@ -176,14 +166,14 @@ class AreaEvent(Generic):
 
 
 	@property
-	def Option(self) -> Optional[Option]:
+	def Option(self) -> Optional[SmartCurtain.Option]:
 		return self._Option
 
 
 	@Option.setter
-	def Option(self, new_Option: Optional[Option]) -> None:
-		if(new_Option is not None and not isinstance(new_Option, Option)):
-			raise TypeError(wrong_type_string(self, "Option", Optional[Option], new_Option))
+	def Option(self, new_Option: Optional[SmartCurtain.Option]) -> None:
+		if(new_Option is not None and not isinstance(new_Option, SmartCurtain.Option)):
+			raise TypeError(wrong_type_string(self, "Option", Optional[SmartCurtain.Option], new_Option))
 
 		self._Option = new_Option
 
@@ -208,9 +198,8 @@ class AreaEvent(Generic):
 		SUMMARY: Activates an event by publishing it and cleaning up the resources
 		"""
 		self.publish()
-		area_type = self.__args__[0]
-		DB.DBFunctions.UPDATE_Events[area_type](self._id, is_activated=True)
-		getattr(self._Area, f"_{area_type.__name__}Events").remove(self)
+		DB.DBFunctions.UPDATE_Events[self.__args__[0]](self._id, is_activated=True)
+		self._Area._AreaEvents.remove(self)  # `._AreaEvents` so that the event is removed from the saved list
 		# `del self` is not required at this point, because the thread has successfully ended and should not rerun.
 
 
@@ -248,9 +237,7 @@ class AreaEvent(Generic):
 
 		# Ignore any other event
 		else:
-			area_type = self.__args__[0]
-
-			DB.DBFunctions.UPDATE_Events[area_type](self._id, is_activated=True)
+			DB.DBFunctions.UPDATE_Events[self.__args__[0]](self._id, is_activated=True)
 
 			self._Area.AreaEvents.remove(self)
 			# `del self` is not required at this point, because the thread was never started since it should only be

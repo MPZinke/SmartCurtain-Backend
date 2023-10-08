@@ -18,11 +18,9 @@ import json
 from typing import Optional, TypeVar
 
 
+import SmartCurtain
 from SmartCurtain.DB import DBFunctions
 from Utility import wrong_type_string
-
-
-Option = TypeVar("Option")
 
 
 class Option:
@@ -44,13 +42,12 @@ class Option:
 
 
 	@staticmethod
-	def all() -> list[Option]:
+	def all() -> list[SmartCurtain.Option]:
 		return [Option(**option_data) for option_data in DBFunctions.SELECT_Options()]
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
-
 
 	def __iter__(self) -> dict:
 		yield from {

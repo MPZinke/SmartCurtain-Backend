@@ -14,50 +14,44 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import json
-from mpzinke import typename
-from paho import mqtt
-import re
-from typing import Any, Dict, Optional, TypeVar
+from typing import Dict, Optional
 
 
-from SmartCurtain import Option
-from SmartCurtain import Area
-from SmartCurtain import AreaEvent
-from SmartCurtain import AreaOption
-from SmartCurtain import Curtain
+import SmartCurtain
 from Utility import wrong_type_string
 
 
-Home = type("Home", (), {})
-Room = type("Room", (), {})
-
-
-class Room(Area):
-	def __init__(self, Home: Optional[Home]=None, *, id: int, is_deleted: bool, name: str,
-		RoomEvents: list[AreaEvent[Home]], RoomOptions: list[AreaOption[Room]], Curtains: list[Curtain]
+class Room(SmartCurtain.Area):
+	def __init__(self, Home: Optional[SmartCurtain.Home]=None, *, id: int, is_deleted: bool, name: str,
+		RoomEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Room]],
+		RoomOptions: list[SmartCurtain.AreaOption[SmartCurtain.Room]],
+		Curtains: list[SmartCurtain.Curtain]
 	):
-		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=RoomEvents, AreaOptions=RoomOptions)
+		SmartCurtain.Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=RoomEvents,
+			AreaOptions=RoomOptions
+		)
 		# STRUCTURE #
-		self.Home = Home
-		self.Curtains: list[Curtain] = Curtains
-
+		self.Home: SmartCurtain.Home = Home
+		self.Curtains: list[SmartCurtain.Curtain] = Curtains
 		for curtain in self.Curtains:
 			curtain.Room = self
 
 
 	@staticmethod
-	def from_dictionary(room_data: dict) -> Room:
-		events: list[AreaEvent[Room]] = []
+	def from_dictionary(room_data: dict) -> SmartCurtain.Room:
+		events: list[SmartCurtain.AreaEvent[SmartCurtain.Room]] = []
 		for event_data in room_data["RoomsEvents"]:
-			event_data["Option"] = Option(**event_data["Option"]) if(event_data["Option"] is not None) else None
-			events.append(AreaEvent.from_dictionary[Room](event_data))
+			event_data["Option"] = SmartCurtain.Option(**event_data["Option"]) if(event_data["Option"]) else None
+			events.append(SmartCurtain.AreaEvent.from_dictionary[SmartCurtain.Room](event_data))
 
 		options: list = []
 		for option_data in room_data["RoomsOptions"]:
-			options.append(AreaOption[Room](**{**option_data, "Option": Option(**option_data["Option"])}))
+			option = SmartCurtain.Option(**option_data["Option"])
+			options.append(SmartCurtain.AreaOption[SmartCurtain.Room](**{**option_data, "Option": option}))
 
-		curtains: list[Curtain] = [Curtain.from_dictionary(curtain_data) for curtain_data in room_data["Curtains"]]
+		curtains: list[SmartCurtain.Curtain] = []
+		for curtain_data in room_data["Curtains"]:
+			curtains.append(SmartCurtain.Curtain.from_dictionary(curtain_data))
 
 		return Room(id=room_data["id"], is_deleted=room_data["is_deleted"], name=room_data["name"], RoomEvents=events,
 			RoomOptions=options, Curtains=curtains
@@ -67,11 +61,7 @@ class Room(Area):
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __delitem__(self, event: AreaEvent[Room]) -> None:
-		self._RoomEvents.remove(event)
-
-
-	def __getitem__(self, Curtain_id: int) -> Optional[Curtain]:
+	def __getitem__(self, Curtain_id: int) -> Optional[SmartCurtain.Curtain]:
 		return next((room for room in self._Curtains if(room.id == Curtain_id)), None)
 
 
@@ -89,37 +79,35 @@ class Room(Area):
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
 	@property
-	def Curtains(self):
+	def Curtains(self) -> list[SmartCurtain.Curtain]:
 		return self._Curtains.copy()
 
 
 	@Curtains.setter
-	def Curtains(self, new_Curtains: list[Curtain]) -> None:
-		if(any(not isinstance(curtain, Curtain) for curtain in new_Curtains)):
-			raise TypeError(wrong_type_string(self, "Curtains", list[Curtain], []))
+	def Curtains(self, new_Curtains: list[SmartCurtain.Curtain]) -> None:
+		if(any(not isinstance(curtain, SmartCurtain.Curtain) for curtain in new_Curtains)):
+			raise TypeError(wrong_type_string(self, "Curtains", list[SmartCurtain.Curtain], []))
 
 		self._Curtains = new_Curtains.copy()
 
 
-	def structure(self) -> Dict[str, Area]:
+	def structure(self) -> Dict[str, SmartCurtain.Area]:
 		return {
 			"id": self._id,
-			"Home.id": self._Room.Home().id
+			"Home.id": self.Home.id
 		}
 
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
 	@property
-	def Home(self) -> Optional[Home]:
+	def Home(self) -> Optional[SmartCurtain.Home]:
 		return self._Home
 
 
 	@Home.setter
 	def Home(self, new_Home: Home) -> None:
-		from SmartCurtain import Home
-
-		if(not isinstance(new_Home, Optional[Home])):
-			raise TypeError(wrong_type_string(self, "Home", Home, new_Home))
+		if(not isinstance(new_Home, Optional[SmartCurtain.Home])):
+			raise TypeError(wrong_type_string(self, "Home", SmartCurtain.Home, new_Home))
 
 		self._Home = new_Home

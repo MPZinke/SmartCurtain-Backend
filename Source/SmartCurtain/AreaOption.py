@@ -19,27 +19,25 @@ from mpzinke import Generic
 from typing import Optional, TypeVar
 
 
-from SmartCurtain import Option
+import SmartCurtain
 from Utility import wrong_type_string
 
 
-Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
-AreaOption = TypeVar("AreaOption")
-
-
 class AreaOption(Generic):
-	def __init__(self, area: Optional[Area]=None, *, id: int, Option: object, data: Optional[dict|list],
-	  is_deleted: bool, is_on: bool, notes: str
+	def __init_subclass__(cls):
+		getter = property(cls.Area_getter)
+		setter = getter.setter(cls.Area_setter)
+		setattr(cls, "Area", getter)  # EG `print(option.Area)`
+		setattr(cls, "Area", setter)  # EG `option.Area = curtain`
+		setattr(cls, cls.__args__[0].__name__, getter)  # EG `print(option.Curtain)`
+		setattr(cls, cls.__args__[0].__name__, setter)  # EG `option.Curtain = curtain`
+
+
+	def __init__(self, Area: Optional[SmartCurtain.Area]=None, *, id: int, Option: SmartCurtain.Option,
+		data: Optional[dict|list], is_deleted: bool, is_on: bool, notes: str
 	):
 		# STRUCTURE #
-		self._Area: Area = area
-
-		getter = property(type(self).Area_getter)
-		setter = getter.setter(type(self).Area_setter)
-		setattr(type(self), f"Area", getter)  # EG `print(event.Area)`
-		setattr(type(self), f"Area", setter)  # EG `event.Area = curtain`
-		setattr(type(self), self.__args__[0].__name__, getter)  # EG `print(event.Curtain)`
-		setattr(type(self), self.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
+		self.Area: Area = Area
 		# DATABASE #
 		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
 		self._id: int = id
@@ -81,26 +79,26 @@ class AreaOption(Generic):
 		return self._id
 
 
-	def Area_getter(self) -> Optional[Area]:
+	def Area_getter(self) -> Optional[SmartCurtain.Area]:
 		return self._Area
 
 
-	def Area_setter(self, new_Area) -> None:
-		if(not isinstance(new_Area, self.__args__[0])):
+	def Area_setter(self, new_Area: Optional[SmartCurtain.Area]) -> None:
+		if(not isinstance(new_Area, Optional[self.__args__[0]])):
 			raise TypeError(wrong_type_string(self, "Area", self.__args__[0], new_Area))
 
 		self._Area = new_Area
 
 
 	@property
-	def Option(self) -> Option:
+	def Option(self) -> SmartCurtain.Option:
 		return self._Option
 
 
 	@Option.setter
-	def Option(self, new_Option: Option) -> None:
-		if(not isinstance(new_Option, Option)):
-			raise TypeError(wrong_type_string(self, "Option", Option, new_Option))
+	def Option(self, new_Option: SmartCurtain.Option) -> None:
+		if(not isinstance(new_Option, SmartCurtain.Option)):
+			raise TypeError(wrong_type_string(self, "Option", SmartCurtain.Option, new_Option))
 
 		self._Option = new_Option
 
@@ -119,7 +117,7 @@ class AreaOption(Generic):
 
 
 	@property
-	def is_on(self) -> Optional[bool]:
+	def is_on(self) -> bool:
 		return self._is_on
 
 
@@ -139,7 +137,6 @@ class AreaOption(Generic):
 	@notes.setter
 	def notes(self, new_notes: str) -> None:
 		if(not isinstance(new_notes, str)):
-			value_type_str = type(new_notes).__notes__
-			raise Exception(f"'Area::notes' must be of type 'str' not '{value_type_str}'")
+			raise TypeError(wrong_type_string(self, "notes", str, new_notes))
 
 		self._notes = new_notes

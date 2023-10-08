@@ -39,7 +39,7 @@ def GET(server: Server) -> str:
 def GET_area(__args__, smart_curtain: SmartCurtain.SmartCurtain) -> Response:
 	match(__args__[0]):
 		case SmartCurtain.Home:
-			areas = smart_curtain.Homes()
+			areas = smart_curtain.Homes
 		case SmartCurtain.Room:
 			areas = smart_curtain["-"]
 		case SmartCurtain.Curtain:
@@ -91,7 +91,7 @@ def GET_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_
 	if(area is None):
 		raise NotFound(f"No {__args__[0].__name__} with id '{area_id}' was found")
 
-	return Response(json.dumps([dict(event) for event in area.AreaEvents()], default=str), mimetype="application/json")
+	return Response(json.dumps([dict(event) for event in area.AreaEvents], default=str), mimetype="application/json")
 
 
 # `GET /[AREA]/<int:area_id>/structure`
@@ -106,7 +106,7 @@ def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, ar
 			areas = {"home": area}
 		case SmartCurtain.Room:
 			area = smart_curtain["-"][area_id]
-			areas = {"room": area, "home": area.Home()}
+			areas = {"room": area, "home": area.Home}
 		case SmartCurtain.Curtain:
 			area = smart_curtain["-"]["-"][area_id]
 			room = area.Room
@@ -180,10 +180,7 @@ def DELETE_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, 
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
-	if((event := next((event for event in area.AreaEvents() if(event.id == event_id)), None)) is None):
-		raise NotFound(f"Event with id '{event_id}' not found for {__args__[0].__name__} '{area_id}'")
-
-	del event
+	del area[event_id]
 	return "", 204
 
 

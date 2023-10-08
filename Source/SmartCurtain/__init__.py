@@ -14,8 +14,13 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-import json
-from typing import Optional
+Option = type("Option", (), {})
+AreaEvent = type("AreaEvent", (), {})
+AreaOption = type("AreaOption", (), {})
+Area = type("Area", (), {})
+Curtain = type("Curtain", (), {})
+Room = type("Room", (), {})
+Home = type("Home", (), {})
 
 
 from SmartCurtain.Option import Option
@@ -25,6 +30,14 @@ from SmartCurtain.Area import Area
 from SmartCurtain.Curtain import Curtain
 from SmartCurtain.Room import Room
 from SmartCurtain.Home import Home
+
+
+# ————————————————————————————————————————————— SMARTCURTAIN DECLARATION ————————————————————————————————————————————— #
+
+import json
+from typing import Optional
+
+
 from Utility import wrong_type_string, LookupStruct
 
 

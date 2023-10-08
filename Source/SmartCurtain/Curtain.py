@@ -14,31 +14,24 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from typing import Dict, Optional, TypeVar
+from typing import Dict, Optional
 import warnings
 
 
-from SmartCurtain import Area
-from SmartCurtain import AreaEvent
-from SmartCurtain import AreaOption
-from SmartCurtain import DB
-from SmartCurtain import Option
+import SmartCurtain
 from Utility import warning_message, wrong_type_string
 
 
-Curtain = type("Curtain", (), {})
-Room = TypeVar("Room")
-
-
-class Curtain(Area):
-	def __init__(self, Room: Optional[Room]=None, *, id: int, is_deleted: bool, length: Optional[int], name: str,
-		CurtainEvents: list[AreaEvent[Curtain]], CurtainOptions: list[AreaOption[Curtain]]
+class Curtain(SmartCurtain.Area):
+	def __init__(self, Room: Optional[SmartCurtain.Room]=None, *, id: int, is_deleted: bool, length: Optional[int],
+		name: str, CurtainEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Curtain]],
+		CurtainOptions: list[SmartCurtain.AreaOption[SmartCurtain.Curtain]]
 	):
-		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=CurtainEvents,
+		SmartCurtain.Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=CurtainEvents,
 			AreaOptions=CurtainOptions
 		)
 		# STRUCTURE #
-		self.Room = Room
+		self.Room: SmartCurtain.Room = Room
 		# DATABASE #
 		self.length: Optional[int] = length
 		# TEMP STATE #
@@ -50,15 +43,16 @@ class Curtain(Area):
 
 
 	@staticmethod
-	def from_dictionary(curtain_data: dict) -> Curtain:
-		events: list[AreaEvent[Curtain]] = []
+	def from_dictionary(curtain_data: dict) -> SmartCurtain.Curtain:
+		events: list[SmartCurtain.AreaEvent[SmartCurtain.Curtain]] = []
 		for event_data in curtain_data["CurtainsEvents"]:
-			event_data["Option"] = Option(**event_data["Option"]) if(event_data["Option"] is not None) else None
-			events.append(AreaEvent.from_dictionary[Curtain](event_data))
+			event_data["Option"] = SmartCurtain.Option(**event_data["Option"]) if(event_data["Option"]) else None
+			events.append(SmartCurtain.AreaEvent.from_dictionary[SmartCurtain.Curtain](event_data))
 
-		options: list[AreaOption[Curtain]] = []
+		options: list[SmartCurtain.AreaOption[SmartCurtain.Curtain]] = []
 		for option_data in curtain_data["CurtainsOptions"]:
-			options.append(AreaOption[Curtain](**{**option_data, "Option": Option(**option_data["Option"])}))
+			option = SmartCurtain.Option(**option_data["Option"])
+			options.append(SmartCurtain.AreaOption[SmartCurtain.Curtain](**{**option_data, "Option": option}))
 
 		return Curtain(id=curtain_data["id"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
 			name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
@@ -68,11 +62,7 @@ class Curtain(Area):
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
 	# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
 
-	def __delitem__(self, event: AreaEvent[Curtain]) -> None:
-		self._CurtainEvents.remove(event)
-
-
-	def __getitem__(self, *_) -> Optional[AreaEvent[Curtain]]:
+	def __getitem__(self, *_) -> None:
 		raise NotImplementedError("Cannot use [int] operator as it has no child areas")
 
 
@@ -154,7 +144,7 @@ class Curtain(Area):
 		self._percentage = new_percentage
 
 
-	def structure(self) -> Dict[str, Area]:
+	def structure(self) -> Dict[str, SmartCurtain.Area]:
 		return {
 			"id": self._id,
 			"Room.id": self._Room.id,
@@ -165,15 +155,13 @@ class Curtain(Area):
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
 	@property
-	def Room(self) -> Optional[Room]:
+	def Room(self) -> Optional[SmartCurtain.Room]:
 		return self._Room
 
 
 	@Room.setter
-	def Room(self, new_Room: Optional[Room]=None) -> None:
-		from SmartCurtain import Room
-
-		if(not isinstance(new_Room, Optional[Room])):
-			raise TypeError(wrong_type_string(self, "Room", Room, new_Room))
+	def Room(self, new_Room: Optional[SmartCurtain.Room]=None) -> None:
+		if(not isinstance(new_Room, Optional[SmartCurtain.Room])):
+			raise TypeError(wrong_type_string(self, "Room", SmartCurtain.Room, new_Room))
 
 		self._Room = new_Room
