@@ -17,48 +17,54 @@ __author__ = "MPZinke"
 from datetime import datetime
 import json
 from mpzinke import typename
-from typing import Any, Optional, TypeVar
+from typing import Dict, Optional, TypeVar
 
 
+from SmartCurtain import AreaEvent
+from SmartCurtain import AreaOption
 from SmartCurtain import DB
+from Utility import wrong_type_string
 
 
-AreaEvent = TypeVar("AreaEvent")
-AreaOption = TypeVar("AreaOption")
-
-
-def wrong_type_string(instance: object, argument_name: str, required_type: type, supplied_value: Any) -> str:
-	# "'{classname}::{argument_name}' must be of type '{required_type_name}' not '{supplied_type}'"
-	message = "'{}::{}' must be of type '{}' not '{}'"
-	return message.format(typename(instance), argument_name, required_type.__name__, typename(supplied_value))
+Area = TypeVar("Area")
 
 
 class Area:
 	def __init__(self, *, id: int, is_deleted: bool, name: str, AreaEvents: list[AreaEvent],
 		AreaOptions: list[AreaOption]
 	):
-		self._id: int = id
-		self.is_deleted: bool = is_deleted
-		self.name: str = name
-
-		self._AreaEvents = AreaEvents.copy()
-		event_getter = property(type(self).AreaEvents_getter)
-		setattr(type(self), f"AreaEvents", event_getter)  # EG `print(home.AreaEvents)`
-		setattr(type(self), f"{typename(self)}Events", event_getter)  # EG `print(home.CurtainEvents)`
-		setattr(type(self), f"_{typename(self)}Events", event_getter)  # EG `print(home._CurtainEvents)`
-
-		self._AreaOptions = AreaOptions.copy()
-		option_getter = property(type(self).AreaOptions_getter)
-		setattr(type(self), f"AreaOptions", option_getter)  # EG `print(home.AreaOptions)`
-		setattr(type(self), f"{typename(self)}Options", option_getter)  # EG `print(home.CurtainOptions)`
-		setattr(type(self), f"_{typename(self)}Options", option_getter)  # EG `print(home._CurtainOptions)`
-
+		# STRUCTURE #
+		self.AreaEvents = AreaEvents
 		for event in AreaEvents:
 			event.Area = self
 			event.start()
 
+		self.AreaOptions = AreaOptions
 		for option in AreaOptions:
 			option.Area = self
+		# DATABASE #
+		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
+		self._id: int = id
+		self.is_deleted: bool = is_deleted
+		self.name: str = name
+
+		setattr(self, f"{type(self).__name__}Option", self.AreaOption)
+
+
+	def __init_subclass__(cls):
+		event_getter = property(cls.AreaEvents_getter)
+		event_setter = event_getter.setter(cls.AreaEvents_setter)
+		cls.AreaEvents = event_setter
+		# setattr(type(self), "AreaEvents", event_setter)  # EG `print(home.AreaEvents)`
+		setattr(cls, f"{cls.__name__}Events", event_setter)  # EG `print(home.CurtainEvents)`
+		setattr(cls, f"_{cls.__name__}Events", event_setter)  # EG `print(self._CurtainEvents)`
+
+		option_getter = property(cls.AreaOptions_getter)
+		option_setter = option_getter.setter(cls.AreaOptions_setter)
+		cls.AreaOptions = option_setter
+		# setattr(cls, "AreaOptions", option_setter)  # EG `print(home.AreaOptions)`
+		setattr(cls, f"{cls.__name__}Options", option_setter)  # EG `print(home.CurtainOptions)`
+		setattr(cls, f"_{cls.__name__}Options", option_setter)  # EG `print(self._CurtainOptions)`
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -105,12 +111,37 @@ class Area:
 		self._name = new_name
 
 
+	def structure(self) -> Dict[str, Area]:
+		raise NotImplementedError("Structure must be specified on the inherited class")
+
+
 	def AreaEvents_getter(self) -> list[AreaEvent]:
 		return self._AreaEvents.copy()
 
 
+	def AreaEvents_setter(self, new_AreaEvents: list[AreaEvent]) -> None:
+		for area_event in new_AreaEvents:
+			if(not isinstance(area_event, AreaEvent) or area_event.__args__ != (type(self),)):
+				raise TypeError(wrong_type_string(self, "AreaEvents", list[AreaEvent], area_event))
+
+		self._AreaEvents = new_AreaEvents.copy()
+
+
 	def AreaOptions_getter(self) -> list[AreaOption]:
 		return self._AreaOptions.copy()
+
+
+	def AreaOptions_setter(self, new_AreaOptions: list[AreaOption]) -> None:
+		for area_option in new_AreaOptions:
+			if(not isinstance(area_option, AreaOption) or area_option.__args__ != (type(self),)):
+				raise TypeError(wrong_type_string(self, "AreaOptions", list[AreaOption], area_option))
+
+		self._AreaOptions = new_AreaOptions.copy()
+
+
+	def AreaOption(self, identifier: int|str) -> Optional[AreaOption]:
+		area_options: list[AreaOption] = getattr(self, f"_{type(self).__name__}Options")
+		return next((option for option in area_options if(option == identifier)), None)
 
 
 	# ———————————————————————————————————————————————————— EVENT  ———————————————————————————————————————————————————— #

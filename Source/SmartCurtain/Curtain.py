@@ -14,13 +14,8 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
-from datetime import datetime, timedelta
-import json
-import os
-from paho import mqtt
-import re
-import requests
-from typing import List, Optional, TypeVar, Union
+from typing import Dict, Optional, TypeVar
+import warnings
 
 
 from SmartCurtain import Area
@@ -28,6 +23,7 @@ from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
 from SmartCurtain import DB
 from SmartCurtain import Option
+from Utility import warning_message, wrong_type_string
 
 
 Curtain = type("Curtain", (), {})
@@ -42,13 +38,15 @@ class Curtain(Area):
 			AreaOptions=CurtainOptions
 		)
 		# STRUCTURE #
-		self._Room = Room
+		self.Room = Room
 		# DATABASE #
-		self._length: Optional[int] = length
+		self.length: Optional[int] = length
 		# TEMP STATE #
-		self._is_connected: bool = False
-		self._is_moving: bool = False
-		self._percentage: int = 0
+		self.is_connected: bool = False
+		self.is_moving: bool = False
+		self.percentage: int = 0
+
+		warnings.formatwarning = warning_message
 
 
 	@staticmethod
@@ -63,7 +61,7 @@ class Curtain(Area):
 			options.append(AreaOption[Curtain](**{**option_data, "Option": Option(**option_data["Option"])}))
 
 		return Curtain(id=curtain_data["id"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
-		  name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
+			name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
 		)
 
 
@@ -94,75 +92,88 @@ class Curtain(Area):
 		}.items()
 
 
-	def node_dict(self) -> dict:
-		# Structure
-		node_dict = {
+	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
+
+	@property
+	def is_moving(self) -> bool:
+		return self._is_moving
+
+
+	@is_moving.setter
+	def is_moving(self, new_is_moving: bool) -> None:
+		if(not isinstance(new_is_moving, bool)):
+			raise TypeError(wrong_type_string(self, "is_moving", bool, new_is_moving))
+
+		self._is_moving = new_is_moving
+
+
+	@property
+	def is_connected(self) -> bool:
+		return self._is_connected
+
+
+	@is_connected.setter
+	def is_connected(self, new_is_connected: bool) -> None:
+		if(not isinstance(new_is_connected, bool)):
+			raise TypeError(wrong_type_string(self, "is_connecte", bool, new_is_connected))
+
+		self._is_connected = new_is_connected
+
+
+	@property
+	def length(self) -> Optional[int]:
+		return self._length
+
+
+	@length.setter
+	def length(self, new_length: Optional[int]) -> None:
+		if(not isinstance(new_length, Optional[int])):
+			raise TypeError(wrong_type_string(self, "length", Optional[int], new_length))
+
+		self._length = new_length
+
+
+	@property
+	def percentage(self) -> int:
+		return self._percentage
+
+
+	@percentage.setter
+	def percentage(self, new_percentage: int) -> None:
+		if(not isinstance(new_percentage, int)):
+			raise TypeError(wrong_type_string(self, "percentage", int, new_percentage))
+
+		if(new_percentage < 0):
+			warnings.warn(f"Percentage of '{new_percentage}' is being adjusted up to 0.")
+			new_percentage = 0
+
+		if(100 < new_percentage):
+			warnings.warn(f"Percentage of '{new_percentage}' is being adjusted down to 100.")
+			new_percentage = 0
+
+		self._percentage = new_percentage
+
+
+	def structure(self) -> Dict[str, Area]:
+		return {
 			"id": self._id,
 			"Room.id": self._Room.id,
 			"Home.id": self._Room.Home().id
 		}
 
-		# Hardware overriding values
-		if(self._length is not None):
-			node_dict["length"] = self._length
-
-		# Movement overriding values
-		if((option := self.CurtainOption("Auto Correct")) is not None):
-			node_dict["Auto Correct"] = option.is_on()
-
-		return node_dict
-
-
-	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
-
-	def is_moving(self, new_is_moving: Optional[bool]=None) -> Optional[bool]:
-		if(new_is_moving is None):
-			return self._is_moving
-
-		if(not isinstance(new_is_moving, bool)):
-			raise Exception(f"'Curtain::is_moving' must be of type 'bool' not '{type(new_is_moving).__name__}'")
-
-		self._is_moving = new_is_moving
-
-
-	def is_connected(self, new_is_connected: Optional[bool]=None) -> Optional[bool]:
-		if(new_is_connected is None):
-			return self._is_connected
-
-		if(not isinstance(new_is_connected, bool)):
-			raise Exception(f"'Curtain::is_connected' must be of type 'bool' not '{type(new_is_connected).__name__}'")
-
-		self._is_connected = new_is_connected
-
-
-	def length(self, new_length: Optional[int]=None) -> Optional[int]:
-		if(new_length is None):
-			return self._length
-
-		if(not isinstance(new_length, int)):
-			raise Exception(f"'Curtain::length' must be of type 'int' not '{type(new_length).__name__}'")
-
-		self._length = new_length
-
-
-	def percentage(self, new_percentage: Optional[int]=None) -> Optional[int]:
-		if(new_percentage is None):
-			return self._percentage
-
-		if(not isinstance(new_percentage, int)):
-			raise Exception(f"'Curtain::percentage' must be of type 'int' not '{type(new_percentage).__name__}'")
-
-		self._percentage = new_percentage
-
 
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
-	def Room(self, new_Room: Optional[Room]=None) -> Optional[Room]:
-		if(new_Room is None):
-			return self._Room
+	@property
+	def Room(self) -> Optional[Room]:
+		return self._Room
 
+
+	@Room.setter
+	def Room(self, new_Room: Optional[Room]=None) -> None:
 		from SmartCurtain import Room
-		if(not isinstance(new_Room, Room)):
-			raise Exception(f"'Curtain::Room' must be of type 'Room' not '{type(new_Room).__name__}'")
+
+		if(not isinstance(new_Room, Optional[Room])):
+			raise TypeError(wrong_type_string(self, "Room", Room, new_Room))
 
 		self._Room = new_Room

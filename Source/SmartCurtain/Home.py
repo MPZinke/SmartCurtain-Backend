@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 import json
 from paho import mqtt
 import re
-from typing import Optional, TypeVar
+from typing import Dict, Optional, TypeVar
 
 
 from SmartCurtain import Option
@@ -27,8 +27,7 @@ from SmartCurtain import AreaEvent
 from SmartCurtain import Curtain
 from SmartCurtain import Room
 from SmartCurtain.DB import DBFunctions
-
-from Utility import LookupStruct
+from Utility import wrong_type_string, LookupStruct
 
 
 Home = type("Home", (), {})
@@ -41,9 +40,9 @@ class Home(Area):
 		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=HomeEvents, AreaOptions=HomeOptions)
 
 		# STRUCTURE #
-		self._Rooms: list[Room] = Rooms.copy()
-
-		[room.Home(self) for room in self._Rooms]
+		self.Rooms: list[Room] = Rooms
+		for room in self.Rooms:
+			room.Home = self
 
 
 	@staticmethod
@@ -70,7 +69,7 @@ class Home(Area):
 		rooms: list[Room] = [Room.from_dictionary(room_data) for room_data in home_data["Rooms"]]
 
 		return Home(id=home_data["id"], is_deleted=home_data["is_deleted"], name=home_data["name"], HomeEvents=events,
-		  HomeOptions=options, Rooms=rooms
+			HomeOptions=options, Rooms=rooms
 		)
 
 
@@ -101,7 +100,22 @@ class Home(Area):
 		}.items()
 
 
+	def structure(self) -> Dict[str, Area]:
+		return {
+			"id": self._id
+		}
+
+
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
-	def Rooms(self):
+	@property
+	def Rooms(self) -> list[Room]:
 		return self._Rooms.copy()
+
+
+	@Rooms.setter
+	def Rooms(self, new_Rooms: list[Room]) -> None:
+		if(any(not isinstance(room, Room) for room in new_Rooms)):
+			raise TypeError(wrong_type_string(self, "Rooms", list[Room], []))
+
+		self._Rooms = new_Rooms.copy()

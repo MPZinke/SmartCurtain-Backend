@@ -21,7 +21,7 @@ class LookupStruct(Generic):
 		# EG. [room for home in self._homes for room in home.Rooms()]
 		subvalues = []
 		for value in self._values:
-			subvalues += [subvalue for subvalue in getattr(value, f"{self.__args__[1].__name__}s")()]
+			subvalues += [subvalue for subvalue in getattr(value, f"{self.__args__[1].__name__}s")]
 		return LookupStruct[self.__args__[1:]](subvalues)
 
 

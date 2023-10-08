@@ -89,10 +89,16 @@ class MQTTClient(Client):
 					curtain.percentage(request["percentage"])
 
 				# Values for Curtain that can be updated
-				curtain_dict = curtain.node_dict()
-				if(any(curtain_dict[key] != request[key] for key in ["Home.id", "Room.id", "Auto Correct"])
-				  or ("length" in curtain_dict and curtain_dict["length"] < request["length"])):
-					self.publish(f"""SmartCurtain/-/-/{request["id"]}/update""", json.dumps(curtain_dict))
+				curtain_info = curtain.structure()
+				if(curtain.length is not None):
+					curtain_info["length"] = curtain.length
+				# Movement overriding values
+				if((option := curtain.CurtainOption("Auto Correct")) is not None):
+					curtain_info["Auto Correct"] = option.is_on()
+
+				if(any(curtain_info[key] != request[key] for key in ["Home.id", "Room.id", "Auto Correct"])
+				  or ("length" in curtain_info and curtain_info["length"] < request["length"])):
+					self.publish(f"""SmartCurtain/-/-/{request["id"]}/update""", json.dumps(curtain_info))
 
 		except Exception as error:
 			print(error)

@@ -15,9 +15,10 @@ __author__ = "MPZinke"
 
 
 import json
+from mpzinke import typename
 from paho import mqtt
 import re
-from typing import Optional, TypeVar
+from typing import Any, Dict, Optional, TypeVar
 
 
 from SmartCurtain import Option
@@ -25,6 +26,7 @@ from SmartCurtain import Area
 from SmartCurtain import AreaEvent
 from SmartCurtain import AreaOption
 from SmartCurtain import Curtain
+from Utility import wrong_type_string
 
 
 Home = type("Home", (), {})
@@ -37,10 +39,11 @@ class Room(Area):
 	):
 		Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=RoomEvents, AreaOptions=RoomOptions)
 		# STRUCTURE #
-		self._Home = Home
-		self._Curtains: list[Curtain] = Curtains.copy()
+		self.Home = Home
+		self.Curtains: list[Curtain] = Curtains
 
-		[curtain.Room(self) for curtain in self._Curtains]
+		for curtain in self.Curtains:
+			curtain.Room = self
 
 
 	@staticmethod
@@ -57,7 +60,8 @@ class Room(Area):
 		curtains: list[Curtain] = [Curtain.from_dictionary(curtain_data) for curtain_data in room_data["Curtains"]]
 
 		return Room(id=room_data["id"], is_deleted=room_data["is_deleted"], name=room_data["name"], RoomEvents=events,
-		  RoomOptions=options, Curtains=curtains)
+			RoomOptions=options, Curtains=curtains
+		)
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -84,18 +88,38 @@ class Room(Area):
 
 	# ————————————————————————————————————————— GETTERS & SETTERS::CHILDREN  ————————————————————————————————————————— #
 
+	@property
 	def Curtains(self):
 		return self._Curtains.copy()
 
 
+	@Curtains.setter
+	def Curtains(self, new_Curtains: list[Curtain]) -> None:
+		if(any(not isinstance(curtain, Curtain) for curtain in new_Curtains)):
+			raise TypeError(wrong_type_string(self, "Curtains", list[Curtain], []))
+
+		self._Curtains = new_Curtains.copy()
+
+
+	def structure(self) -> Dict[str, Area]:
+		return {
+			"id": self._id,
+			"Home.id": self._Room.Home().id
+		}
+
+
 	# —————————————————————————————————————————— GETTERS & SETTERS::PARENTS —————————————————————————————————————————— #
 
-	def Home(self, new_Home: Optional[Home]=None) -> Optional[Home]:
-		if(new_Home is None):
-			return self._Home
+	@property
+	def Home(self) -> Optional[Home]:
+		return self._Home
 
+
+	@Home.setter
+	def Home(self, new_Home: Home) -> None:
 		from SmartCurtain import Home
-		if(not isinstance(new_Home, Home)):
-			raise Exception(f"'Room::Home' must be of type 'Home' not '{type(new_Home).__name__}'")
+
+		if(not isinstance(new_Home, Optional[Home])):
+			raise TypeError(wrong_type_string(self, "Home", Home, new_Home))
 
 		self._Home = new_Home

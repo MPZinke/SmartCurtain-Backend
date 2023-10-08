@@ -16,26 +16,21 @@ __author__ = "MPZinke"
 
 from datetime import datetime, timedelta
 import json
-from mpzinke import threading, typename, Generic
+from mpzinke import threading, Generic
 from paho import mqtt
-from typing import Any, Optional, TypeVar
+from typing import Optional, TypeVar
 import warnings
 
 
 import SmartCurtain
-from SmartCurtain import Area
 from SmartCurtain import DB
 from SmartCurtain import Option
+from Utility import wrong_type_string
 
 
+Area = TypeVar("Home") | TypeVar("Room") | TypeVar("Curtain")
 AreaEvent = TypeVar("AreaEvent")
 Option = TypeVar("Option")
-
-
-def wrong_type_string(instance: object, argument_name: str, required_type: type, supplied_value: Any) -> str:
-	# "'{classname}::{argument_name}' must be of type '{required_type_name}' not '{supplied_type}'"
-	message = "'{}::{}' must be of type '{}' not '{}'"
-	return message.format(typename(instance), argument_name, required_type.__name__, typename(supplied_value))
 
 
 class AreaEvent(Generic):
@@ -47,14 +42,13 @@ class AreaEvent(Generic):
 
 		getter = property(type(self).Area_getter)
 		setter = getter.setter(type(self).Area_setter)
-		setattr(type(self), f"Area", getter)  # EG `print(event.Area)`
-		setattr(type(self), f"Area", setter)  # EG `event.Area = curtain`
+		setattr(type(self), "Area", getter)  # EG `print(event.Area)`
+		setattr(type(self), "Area", setter)  # EG `event.Area = curtain`
 		setattr(type(self), self.__args__[0].__name__, getter)  # EG `print(event.Curtain)`
 		setattr(type(self), self.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
-		setattr(type(self), f"_{self.__args__[0].__name__}", getter)  # EG `print(event._Curtain)`
-		setattr(type(self), f"_{self.__args__[0].__name__}", setter)  # EG `event._Curtain = curtain`
 
 		# DATABASE #
+		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
 		self._id: int = id
 		self.is_activated: bool = is_activated
 		self.is_deleted: bool = is_deleted

@@ -18,6 +18,7 @@ from Utility.LookupStruct import LookupStruct
 
 
 from datetime import datetime, timedelta
+from mpzinke import typename
 from typing import Any
 
 
@@ -82,3 +83,9 @@ def warning_message(message, *_: list) -> str:
 	SUMMARY: Used to override warning format & return only the warning message.
 	"""
 	return str(message)+"\n"
+
+
+def wrong_type_string(instance: object, argument_name: str, required_type: type, supplied_value: Any) -> str:
+	# "'{classname}::{argument_name}' must be of type '{required_type_name}' not '{supplied_type}'"
+	message = "'{}::{}' must be of type '{}', not of type '{}'"
+	return message.format(typename(instance), argument_name, required_type.__name__, typename(supplied_value))

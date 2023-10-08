@@ -14,10 +14,12 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+import json
 from typing import Optional, TypeVar
 
 
 from SmartCurtain.DB import DBFunctions
+from Utility import wrong_type_string
 
 
 Option = TypeVar("Option")
@@ -25,10 +27,11 @@ Option = TypeVar("Option")
 
 class Option:
 	def __init__(self, *, id: int, description: str, is_deleted: bool, name: str):
+		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
 		self._id: int = id
-		self._description: str = description
-		self._is_deleted: bool = is_deleted
-		self._name: str = name
+		self.description: str = description
+		self.is_deleted: bool = is_deleted
+		self.name: str = name
 
 
 	def __eq__(self, right: int|str) -> bool:
@@ -37,7 +40,7 @@ class Option:
 		elif(isinstance(right, int)):
 			return self._id == right
 
-		raise NotImplemented
+		raise NotImplementedError()
 
 
 	@staticmethod
@@ -72,40 +75,40 @@ class Option:
 		return self._id
 
 
-	def description(self, new_description: Optional[int]=None) -> Optional[int]:
-		if(new_description is None):
-			return self._description
+	@property
+	def description(self) -> str:
+		return self._description
 
-		if(not isinstance(new_description, int)):
-			value_type_str = type(new_description).__name__
-			raise Exception(f"'Home::description' must be of type '{int.__name__}' not '{value_type_str}'")
+
+	@description.setter
+	def description(self, new_description: str) -> None:
+		if(not isinstance(new_description, str)):
+			raise TypeError(wrong_type_string(self, "description", str, new_description))
 
 		self._description = new_description
 
 
-	def is_deleted(self, new_is_deleted: Optional[int]=None) -> Optional[int]:
-		if(new_is_deleted is None):
-			return self._is_deleted
+	@property
+	def is_deleted(self) -> bool:
+		return self._is_deleted
 
-		if(not isinstance(new_is_deleted, int)):
-			value_type_str = type(new_is_deleted).__name__
-			raise Exception(f"'Home::is_deleted' must be of type '{int.__name__}' not '{value_type_str}'")
+
+	@is_deleted.setter
+	def is_deleted(self, new_is_deleted: bool) -> None:
+		if(not isinstance(new_is_deleted, bool)):
+			raise TypeError(wrong_type_string(self, "is_deleted", bool, new_is_deleted))
 
 		self._is_deleted = new_is_deleted
 
 
-	def name(self, new_name: Optional[int]=None) -> Optional[int]:
-		if(new_name is None):
-			return self._name
+	@property
+	def name(self) -> str:
+		return self._name
 
-		if(not isinstance(new_name, int)):
-			value_type_str = type(new_name).__name__
-			raise Exception(f"'Home::name' must be of type '{int.__name__}' not '{value_type_str}'")
+
+	@name.setter
+	def name(self, new_name: str) -> None:
+		if(not isinstance(new_name, str)):
+			raise TypeError(wrong_type_string(self, "name", str, new_name))
 
 		self._name = new_name
-
-
-	def Rooms(self):
-		return self._Rooms
-
-

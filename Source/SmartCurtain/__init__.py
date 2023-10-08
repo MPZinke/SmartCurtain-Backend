@@ -19,29 +19,27 @@ from typing import Optional
 
 
 from SmartCurtain.Option import Option
-from SmartCurtain.Area import Area
 from SmartCurtain.AreaEvent import AreaEvent
 from SmartCurtain.AreaOption import AreaOption
+from SmartCurtain.Area import Area
 from SmartCurtain.Curtain import Curtain
 from SmartCurtain.Room import Room
 from SmartCurtain.Home import Home
-
-
-from Utility import LookupStruct
+from Utility import wrong_type_string, LookupStruct
 
 
 class SmartCurtain:
 	def __init__(self):
-		self._Homes: list[Home] = Home.current()
-		self._Options: list[Option] = Option.all()
+		self.Homes: list[Home] = Home.current()
+		self.Options: list[Option] = Option.all()
 
 
 	# ——————————————————————————————————————————————— GETTERS/SETTERS  ——————————————————————————————————————————————— #
 
 	def __iter__(self) -> dict:
 		yield from {
-			"Homes": [dict(home) for home in self._Homes],
-			"Options": [dict(option) for option in self._Options]
+			"Homes": [dict(home) for home in self.Homes],
+			"Options": [dict(option) for option in self.Options]
 		}.items()
 
 
@@ -49,16 +47,25 @@ class SmartCurtain:
 		return json.dumps(dict(self), default=str)
 
 
-
 	def __getitem__(self, Home_id: int|str) -> Optional[Home]|LookupStruct[Room, Curtain]:
 		"""
 		RETURNS: If an int is supplied, the home with a matching ID is returned or none. If "-" is supplied, a...
 		"""
-		return LookupStruct[Home, Room, Curtain](self._Homes)[Home_id]
+		return LookupStruct[Home, Room, Curtain](self.Homes)[Home_id]
 
 
+	@property
 	def Homes(self) -> list[Home]:
 		return self._Homes.copy()
+
+
+	@Homes.setter
+	def Homes(self, new_Homes: list[Home]) -> None:
+		for home in new_Homes:
+			if(not isinstance(home, Home)):
+				raise TypeError(wrong_type_string(self, "Homes", list[Home], home))
+
+		self._Homes = new_Homes.copy()
 
 
 	def Room(self, Room_id: int) -> Optional[Room]:
@@ -69,5 +76,15 @@ class SmartCurtain:
 		return self["-"]["-"][Curtain_id]
 
 
+	@property
 	def Options(self) -> list[Option]:
 		return self._Options.copy()
+
+
+	@Options.setter
+	def Options(self, new_Options: list[Option]) -> None:
+		for option in new_Options:
+			if(not isinstance(option, Option)):
+				raise TypeError(wrong_type_string(self, "Options", list[Option], option))
+
+		self._Options = new_Options.copy()

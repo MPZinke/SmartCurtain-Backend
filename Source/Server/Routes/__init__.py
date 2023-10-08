@@ -109,8 +109,8 @@ def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, ar
 			areas = {"room": area, "home": area.Home()}
 		case SmartCurtain.Curtain:
 			area = smart_curtain["-"]["-"][area_id]
-			room = area.Room()
-			areas = {"curtain": area, "room": room, "home": room.Home()}
+			room = area.Room
+			areas = {"curtain": area, "room": room, "home": room.Home}
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
