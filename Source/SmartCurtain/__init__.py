@@ -27,6 +27,7 @@ Home = type("Home", (), {})
 setattr(sys.modules[__name__], "SmartCurtain", type("SmartCurtain", (), {}))
 
 
+from SmartCurtain import DB
 from SmartCurtain.Option import Option
 from SmartCurtain.AreaEvent import AreaEvent
 from SmartCurtain.AreaOption import AreaOption
@@ -47,10 +48,7 @@ from Utility import wrong_type_string, LookupStruct
 
 class SmartCurtain:
 	def __init__(self):
-		self.Homes: list[Home] = Home.current()
-		for home in self.Homes:
-			home.SmartCurtain = self
-		self.Options: list[Option] = Option.all()
+		self.current()
 
 
 	# ——————————————————————————————————————————————— GETTERS/SETTERS  ——————————————————————————————————————————————— #
@@ -117,6 +115,42 @@ class SmartCurtain:
 				raise TypeError(wrong_type_string(self, "Options", list[Option], option))
 
 		self._Options = new_Options.copy()
+
+
+
+	def current(self) -> None:
+		self.Options = Option.all()
+		options = self.Options
+
+		curtains = list(DB.SMART_CURTAIN_DATABASE.Curtains.find())
+		curtains_events = list(DB.SMART_CURTAIN_DATABASE.CurtainsEvents.find())
+		for curtain in curtains:
+			curtain["CurtainsEvents"] = list(filter(lambda event: event["_id"] in curtain["CurtainsEvents"], curtains_events))
+
+			for curtain_option in curtain["CurtainsOptions"]:
+				curtain_option["Option"] = next(option for option in options if(option.id == curtain_option["Option"]))
+
+		rooms = list(DB.SMART_CURTAIN_DATABASE.Rooms.find())
+		rooms_events = list(DB.SMART_CURTAIN_DATABASE.RoomsEvents.find())
+		for room in rooms:
+			room["RoomsEvents"] = list(filter(lambda event: event["_id"] in room["RoomsEvents"], rooms_events))
+			room["Curtains"] = list(filter(lambda event: event["_id"] in room["Curtains"], curtains))
+
+			for rooms_option in room["RoomsOptions"]:
+				rooms_option["Option"] = next(option for option in options if(option.id == rooms_option["Option"]))
+
+		homes = list(DB.SMART_CURTAIN_DATABASE.Homes.find())
+		homes_events = list(DB.SMART_CURTAIN_DATABASE.HomesEvents.find())
+		for home in homes:
+			home["HomesEvents"] = list(filter(lambda event: event["_id"] in home["HomesEvents"], homes_events))
+			home["Rooms"] = list(filter(lambda event: event["_id"] in home["Rooms"], rooms))
+
+			for homes_option in home["HomesOptions"]:
+				homes_option["Option"] = next(option for option in options if(option.id == homes_option["Option"]))
+
+		self.Homes = [Home.from_dictionary(home_dict) for home_dict in homes]
+		for home in self.Homes:
+			home.SmartCurtain = self
 
 
 	def resync(self) -> None:

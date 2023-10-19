@@ -15,17 +15,16 @@ __author__ = "MPZinke"
 
 
 from bson.objectid import ObjectId
+import json
 from typing import Dict, Optional
 
 
 import SmartCurtain
-from SmartCurtain import DB
 from Utility import wrong_type_string, LookupStruct
 
 
 class Home(SmartCurtain.Area):
-	def __init__(self, *, _id: ObjectId, is_deleted: bool, name: str,
-		HomeEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Home]],
+	def __init__(self, *, _id: ObjectId, name: str, HomeEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Home]],
 		HomeOptions: list[SmartCurtain.AreaOption[SmartCurtain.Home]], Rooms: list[SmartCurtain.Room]
 	):
 		SmartCurtain.Area.__init__(self, _id=_id, name=name, AreaEvents=HomeEvents, AreaOptions=HomeOptions)
@@ -34,52 +33,6 @@ class Home(SmartCurtain.Area):
 		self.Rooms: list[SmartCurtain.Room] = Rooms
 		for room in self.Rooms:
 			room.Home = self
-
-
-	@staticmethod
-	def all() -> list[SmartCurtain.Home]:
-		options = SmartCurtain.Option.all()
-		area_names = ["Homes", "Rooms", "Curtains"]
-		areas_dicts = {area_name: DB.all_Areas(area_name) for area_name in area_names}
-		areas_events_dicts = {area_name: DB.all_AreasEvents(f"{area_name}Events") for area_name in area_names}
-		areas_options_dicts = {area_name: DB.all_AreasOptions(f"{area_name}Options") for area_name in area_names}
-
-		for area_name, area_dicts in areas_dicts.items():
-			for area_dict in area_dicts:
-				filter_function = lambda item: item[f"{area_name}.id"]==area_dict["id"]
-				# Associate AreaEvents & Options with AreaEvents.
-				area_dict[f"{area_name}Events"] = list(filter(filter_function, areas_events_dicts[area_name]))
-				for event_dict in area_dict[f"{area_name}Events"]:
-					event_dict["Option"] = next(filter(lambda option: option==event_dict["Options.id"], options), None)
-				# Associate AreaOptions & Options with AreaOptions.
-				area_dict[f"{area_name}Options"] = list(filter(filter_function, areas_options_dicts[area_name]))
-				for option_dict in area_dict[f"{area_name}Options"]:
-					option_dict["Option"] = next(filter(lambda option: option==option_dict["Options.id"], options))
-
-				# Associate Areas with Areas.
-				if((child_area_names := {"Homes": "Rooms", "Rooms": "Curtains"}.get(area_name)) is not None):
-					area_dict[child_area_names] = list(filter(filter_function, areas_dicts[child_area_names]))
-
-		return [Home.from_dictionary(home_dict) for home_dict in areas_dicts["Homes"]]
-
-
-	@staticmethod
-	def current() -> list[SmartCurtain.Home]:
-		options = SmartCurtain.Option.all()
-		Homes = list(SmartCurtain.DB.SMART_CURTAIN_DATABASE.Homes.find())
-		for Home in Homes:
-			for area_option in Home["HomesOptions"]:
-				area_option["Option"] = next(option for option in options if(option.id == area_option["Option"]))
-
-			for Room in Home["Rooms"]:
-				for area_option in Room["RoomsOptions"]:
-					area_option["Option"] = next(option for option in options if(option.id == area_option["Option"]))
-
-				for Curtain in Room["Curtains"]:
-					for area_option in Curtain["CurtainsOptions"]:
-						area_option["Option"] = next(option for option in options if(option.id == area_option["Option"]))
-
-		return [SmartCurtain.Home.from_dictionary(home_dict) for home_dict in Homes]
 
 
 	@staticmethod
@@ -96,9 +49,7 @@ class Home(SmartCurtain.Area):
 		for room_data in home_data["Rooms"]:
 			rooms.append(SmartCurtain.Room.from_dictionary(room_data))
 
-		return Home(id=home_data["id"], is_deleted=home_data["is_deleted"], name=home_data["name"], HomeEvents=events,
-			HomeOptions=options, Rooms=rooms
-		)
+		return Home(_id=home_data["_id"], name=home_data["name"], HomeEvents=events, HomeOptions=options, Rooms=rooms)
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -116,11 +67,10 @@ class Home(SmartCurtain.Area):
 	def __iter__(self) -> dict:
 		yield from {
 			"id": self._id,
-			"is_deleted": self._is_deleted,
-			"name": self._name,
-			"HomeEvents": list(map(dict, self._HomeEvents)),
-			"HomeOptions": list(map(dict, self._HomeOptions)),
-			"Rooms": list(map(dict, self._Rooms))
+			"name": self.name,
+			"HomeEvents": list(map(dict, self.HomeEvents)),
+			"HomeOptions": list(map(dict, self.HomeOptions)),
+			"Rooms": list(map(dict, self.Rooms))
 		}.items()
 
 

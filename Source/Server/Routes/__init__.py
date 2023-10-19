@@ -15,6 +15,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 from datetime import datetime
 from flask import request, Response
 import json
@@ -47,15 +48,16 @@ def GET_area(__args__, smart_curtain: SmartCurtain.SmartCurtain) -> Response:
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
-	return Response(json.dumps({area.id: area.name for area in areas}), mimetype="application/json")
+	return Response(json.dumps({str(area.id): area.name for area in areas}), mimetype="application/json")
 
 
 # `GET /[AREA]/<int:area_id>`
 @Generic
-def GET_area_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int) -> Response:
+def GET_area_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str) -> Response:
 	"""
 	All information for a given area.
 	"""
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
@@ -74,10 +76,11 @@ def GET_area_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int
 
 # `GET /[AREA]/<int:area_id>/events`
 @Generic
-def GET_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int) -> str:
+def GET_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str) -> str:
 	"""
 	Lists events for a {__args___names[0]}.
 	"""
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
@@ -96,10 +99,11 @@ def GET_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_
 
 # `GET /[AREA]/<int:area_id>/structure`
 @Generic
-def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int) -> str:
+def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str) -> str:
 	"""
 	Lists the structure a room is under.
 	"""
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
@@ -118,11 +122,12 @@ def GET_area_id_structure(__args__, smart_curtain: SmartCurtain.SmartCurtain, ar
 		raise NotFound(f"No {__args__[0].__name__} with id '{area_id}' was found")
 
 	structure = {name: {attr: getattr(area, attr) for attr in ["id", "name"]} for name, area in areas.items()}
-	return Response(json.dumps(structure), mimetype="application/json")
+	return Response(json.dumps(structure, default=str), mimetype="application/json")
 
 
 @Generic
-def POST_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int) -> str:
+def POST_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str) -> str:
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
@@ -151,7 +156,8 @@ def POST_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area
 
 
 @Generic
-def GET_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int, event_id: int):
+def GET_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str, event_id: int):
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
@@ -169,7 +175,8 @@ def GET_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, are
 
 
 @Generic
-def PATCH_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int, event_id: int):
+def PATCH_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str, event_id: int):
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]
@@ -189,7 +196,8 @@ def PATCH_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, a
 
 
 @Generic
-def DELETE_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int, event_id: int):
+def DELETE_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: str, event_id: int):
+	area_id = ObjectId(area_id)
 	match(__args__[0]):
 		case SmartCurtain.Home:
 			area = smart_curtain[area_id]

@@ -35,7 +35,7 @@ class Area:
 		setattr(cls, f"{cls.__name__}Events", event_setter)  # EG `print(home.CurtainEvents)`
 		setattr(cls, f"_{cls.__name__}Events", event_setter)  # EG `print(self._CurtainEvents)`
 
-		setattr(cls, f"{cls.__name__}Events", cls.new_AreaEvent)  # EG `curtain.new_CurtainEvent`
+		setattr(cls, f"new_{cls.__name__}Events", cls.new_AreaEvent)  # EG `curtain.new_CurtainEvent`
 
 		option_getter = property(cls.AreaOptions_getter)
 		option_setter = option_getter.setter(cls.AreaOptions_setter)

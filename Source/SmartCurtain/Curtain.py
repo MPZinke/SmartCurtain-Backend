@@ -55,8 +55,8 @@ class Curtain(SmartCurtain.Area):
 		for option_data in curtain_data["CurtainsOptions"]:
 			options.append(SmartCurtain.AreaOption.from_dictionary[SmartCurtain.Curtain](option_data))
 
-		return Curtain(_id=curtain_data["_id"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
-			name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
+		return Curtain(_id=curtain_data["_id"], length=curtain_data["length"], name=curtain_data["name"],
+			CurtainEvents=events, CurtainOptions=options
 		)
 
 
@@ -70,16 +70,15 @@ class Curtain(SmartCurtain.Area):
 	def __iter__(self) -> dict:
 		yield from {
 			# DATABASE #
-			"id": self._id,
-			"is_deleted": self._is_deleted,
-			"length": self._length,
-			"name": self._name,
-			"CurtainEvents": list(map(dict, self._CurtainEvents)),
-			"CurtainOptions": list(map(dict, self._CurtainOptions)),
+			"id": self.id,
+			"length": self.length,
+			"name": self.name,
+			"CurtainEvents": list(map(dict, self.CurtainEvents)),
+			"CurtainOptions": list(map(dict, self.CurtainOptions)),
 			# TEMP STATE #
-			"is_connected": self._is_connected,
-			"is_moving": self._is_moving,
-			"percentage": self._percentage
+			"is_connected": self.is_connected,
+			"is_moving": self.is_moving,
+			"percentage": self.percentage
 		}.items()
 
 

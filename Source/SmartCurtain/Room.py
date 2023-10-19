@@ -54,8 +54,8 @@ class Room(SmartCurtain.Area):
 		for curtain_data in room_data["Curtains"]:
 			curtains.append(SmartCurtain.Curtain.from_dictionary(curtain_data))
 
-		return Room(_id=room_data["_id"], is_deleted=room_data["is_deleted"], name=room_data["name"], RoomEvents=events,
-			RoomOptions=options, Curtains=curtains
+		return Room(_id=room_data["_id"], name=room_data["name"], RoomEvents=events, RoomOptions=options,
+			Curtains=curtains
 		)
 
 
@@ -68,12 +68,11 @@ class Room(SmartCurtain.Area):
 
 	def __iter__(self) -> dict:
 		yield from {
-			"id": self._id,
-			"is_deleted": self._is_deleted,
-			"name": self._name,
-			"RoomEvents": list(map(dict, self._RoomEvents)),
-			"RoomOptions": list(map(dict, self._RoomOptions)),
-			"Curtains": list(map(dict, self._Curtains))
+			"id": self.id,
+			"name": self.name,
+			"RoomEvents": list(map(dict, self.RoomEvents)),
+			"RoomOptions": list(map(dict, self.RoomOptions)),
+			"Curtains": list(map(dict, self.Curtains))
 		}.items()
 
 

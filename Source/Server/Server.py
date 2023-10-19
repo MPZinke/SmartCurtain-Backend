@@ -35,28 +35,28 @@ class Server:
 		self._app.route("/", Routes.GET, additional_args={mpzinke.Server: self._app})
 
 		self._app.route("/homes", Routes.GET_area[Home])
-		self._app.route("/homes/<int:area_id>", Routes.GET_area_id[Home])
-		self._app.route("/homes/<int:area_id>/structure", Routes.GET_area_id_structure[Home])
-		self._app.route("/homes/<int:area_id>/events", GET=Routes.GET_area_id_events[Home],
+		self._app.route("/homes/<string:area_id>", Routes.GET_area_id[Home])
+		self._app.route("/homes/<string:area_id>/structure", Routes.GET_area_id_structure[Home])
+		self._app.route("/homes/<string:area_id>/events", GET=Routes.GET_area_id_events[Home],
 			POST=Routes.POST_area_id_events[Home]
 		)
-		self._app.route("/homes/<int:area_id>/events/<int:event_id>", Routes.GET_area_id_event_id[Home])
+		self._app.route("/homes/<string:area_id>/events/<int:event_id>", Routes.GET_area_id_event_id[Home])
 
 		self._app.route("/rooms", Routes.GET_area[Room])
-		self._app.route("/rooms/<int:area_id>", Routes.GET_area_id[Room])
-		self._app.route("/rooms/<int:area_id>/structure", Routes.GET_area_id_structure[Room])
-		self._app.route("/rooms/<int:area_id>/events", GET=Routes.GET_area_id_events[Room],
+		self._app.route("/rooms/<string:area_id>", Routes.GET_area_id[Room])
+		self._app.route("/rooms/<string:area_id>/structure", Routes.GET_area_id_structure[Room])
+		self._app.route("/rooms/<string:area_id>/events", GET=Routes.GET_area_id_events[Room],
 			POST=Routes.POST_area_id_events[Room]
 		)
-		self._app.route("/rooms/<int:area_id>/events/<int:event_id>", Routes.GET_area_id_event_id[Room])
+		self._app.route("/rooms/<string:area_id>/events/<int:event_id>", Routes.GET_area_id_event_id[Room])
 
 		self._app.route("/curtains", Routes.GET_area[Curtain])
-		self._app.route("/curtains/<int:area_id>", Routes.GET_area_id[Curtain])
-		self._app.route("/curtains/<int:area_id>/structure", Routes.GET_area_id_structure[Curtain])
-		self._app.route("/curtains/<int:area_id>/events", GET=Routes.GET_area_id_events[Curtain],
+		self._app.route("/curtains/<string:area_id>", Routes.GET_area_id[Curtain])
+		self._app.route("/curtains/<string:area_id>/structure", Routes.GET_area_id_structure[Curtain])
+		self._app.route("/curtains/<string:area_id>/events", GET=Routes.GET_area_id_events[Curtain],
 			POST=Routes.POST_area_id_events[Curtain]
 		)
-		self._app.route("/curtains/<int:area_id>/events/<int:event_id>",
+		self._app.route("/curtains/<string:area_id>/events/<int:event_id>",
 			GET=Routes.GET_area_id_event_id[Curtain],
 			PATCH=Routes.PATCH_area_id_event_id[Curtain],
 			DELETE=Routes.DELETE_area_id_event_id[Curtain]

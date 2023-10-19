@@ -66,7 +66,6 @@ class Option:
 		yield from {
 			"id": self._id,
 			"description,": self._description,
-			"is_deleted": self._is_deleted,
 			"name": self._name
 		}.items()
 
