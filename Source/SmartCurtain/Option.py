@@ -14,35 +14,49 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 import json
+from typing import Optional
 
 
 import SmartCurtain
-from SmartCurtain.DB import DBFunctions
+from SmartCurtain import DB
 from Utility import wrong_type_string
 
 
 class Option:
-	def __init__(self, *, id: int, description: str, is_deleted: bool, name: str):
-		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
-		self._id: int = id
+	def __init__(self, *, _id: ObjectId, description: str, name: str):
+		assert(isinstance(_id, ObjectId)), wrong_type_string(self, "_id", ObjectId, _id)
+		self._id: ObjectId = _id
 		self.description: str = description
-		self.is_deleted: bool = is_deleted
 		self.name: str = name
 
 
 	def __eq__(self, right: int|str) -> bool:
-		if(isinstance(right, str)):
-			return self._name == right
+		if(right is None):
+			return False
+
+		elif(isinstance(right, str)):
+			return self.name == right
+
 		elif(isinstance(right, int)):
-			return self._id == right
+			return self.id == right
 
 		raise NotImplementedError()
 
 
 	@staticmethod
 	def all() -> list[SmartCurtain.Option]:
-		return [Option(**option_data) for option_data in DBFunctions.SELECT_Options()]
+		return [Option(**option_data) for option_data in list(SmartCurtain.DB.SMART_CURTAIN_DATABASE.Options.find())]
+
+
+	@staticmethod
+	def from_id(id: int) -> SmartCurtain.Option:
+		option_data: Optional[dict] = DB.Option_by_id(id)
+		if(option_data is None):
+			raise ValueError(f"No Option with id '{id}' found")
+
+		return SmartCurtain.Option(**option_data)
 
 
 	# —————————————————————————————————————————————— GETTERS & SETTERS  —————————————————————————————————————————————— #
@@ -67,6 +81,7 @@ class Option:
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
 
+	@property
 	def id(self):
 		return self._id
 
@@ -82,19 +97,6 @@ class Option:
 			raise TypeError(wrong_type_string(self, "description", str, new_description))
 
 		self._description = new_description
-
-
-	@property
-	def is_deleted(self) -> bool:
-		return self._is_deleted
-
-
-	@is_deleted.setter
-	def is_deleted(self, new_is_deleted: bool) -> None:
-		if(not isinstance(new_is_deleted, bool)):
-			raise TypeError(wrong_type_string(self, "is_deleted", bool, new_is_deleted))
-
-		self._is_deleted = new_is_deleted
 
 
 	@property

@@ -14,22 +14,21 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 from typing import Dict, Optional
 
 
 import SmartCurtain
-from SmartCurtain.DB import DBFunctions
+from SmartCurtain import DB
 from Utility import wrong_type_string, LookupStruct
 
 
 class Home(SmartCurtain.Area):
-	def __init__(self, *, id: int, is_deleted: bool, name: str,
+	def __init__(self, *, _id: ObjectId, is_deleted: bool, name: str,
 		HomeEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Home]],
 		HomeOptions: list[SmartCurtain.AreaOption[SmartCurtain.Home]], Rooms: list[SmartCurtain.Room]
 	):
-		SmartCurtain.Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=HomeEvents,
-			AreaOptions=HomeOptions
-		)
+		SmartCurtain.Area.__init__(self, _id=_id, name=name, AreaEvents=HomeEvents, AreaOptions=HomeOptions)
 
 		# STRUCTURE #
 		self.Rooms: list[SmartCurtain.Room] = Rooms
@@ -39,25 +38,59 @@ class Home(SmartCurtain.Area):
 
 	@staticmethod
 	def all() -> list[SmartCurtain.Home]:
-		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes()]
+		options = SmartCurtain.Option.all()
+		area_names = ["Homes", "Rooms", "Curtains"]
+		areas_dicts = {area_name: DB.all_Areas(area_name) for area_name in area_names}
+		areas_events_dicts = {area_name: DB.all_AreasEvents(f"{area_name}Events") for area_name in area_names}
+		areas_options_dicts = {area_name: DB.all_AreasOptions(f"{area_name}Options") for area_name in area_names}
+
+		for area_name, area_dicts in areas_dicts.items():
+			for area_dict in area_dicts:
+				filter_function = lambda item: item[f"{area_name}.id"]==area_dict["id"]
+				# Associate AreaEvents & Options with AreaEvents.
+				area_dict[f"{area_name}Events"] = list(filter(filter_function, areas_events_dicts[area_name]))
+				for event_dict in area_dict[f"{area_name}Events"]:
+					event_dict["Option"] = next(filter(lambda option: option==event_dict["Options.id"], options), None)
+				# Associate AreaOptions & Options with AreaOptions.
+				area_dict[f"{area_name}Options"] = list(filter(filter_function, areas_options_dicts[area_name]))
+				for option_dict in area_dict[f"{area_name}Options"]:
+					option_dict["Option"] = next(filter(lambda option: option==option_dict["Options.id"], options))
+
+				# Associate Areas with Areas.
+				if((child_area_names := {"Homes": "Rooms", "Rooms": "Curtains"}.get(area_name)) is not None):
+					area_dict[child_area_names] = list(filter(filter_function, areas_dicts[child_area_names]))
+
+		return [Home.from_dictionary(home_dict) for home_dict in areas_dicts["Homes"]]
 
 
 	@staticmethod
 	def current() -> list[SmartCurtain.Home]:
-		return [Home.from_dictionary(home_data) for home_data in DBFunctions.SELECT_Homes_WHERE_Current()]
+		options = SmartCurtain.Option.all()
+		Homes = list(SmartCurtain.DB.SMART_CURTAIN_DATABASE.Homes.find())
+		for Home in Homes:
+			for area_option in Home["HomesOptions"]:
+				area_option["Option"] = next(option for option in options if(option.id == area_option["Option"]))
+
+			for Room in Home["Rooms"]:
+				for area_option in Room["RoomsOptions"]:
+					area_option["Option"] = next(option for option in options if(option.id == area_option["Option"]))
+
+				for Curtain in Room["Curtains"]:
+					for area_option in Curtain["CurtainsOptions"]:
+						area_option["Option"] = next(option for option in options if(option.id == area_option["Option"]))
+
+		return [SmartCurtain.Home.from_dictionary(home_dict) for home_dict in Homes]
 
 
 	@staticmethod
 	def from_dictionary(home_data: dict) -> SmartCurtain.Home:
 		events: list[SmartCurtain.AreaEvent[SmartCurtain.Home]] = []
 		for event_data in home_data["HomesEvents"]:
-			event_data["Option"] = SmartCurtain.Option(**event_data["Option"]) if(event_data["Option"]) else None
 			events.append(SmartCurtain.AreaEvent.from_dictionary[SmartCurtain.Home](event_data))
 
 		options: list[SmartCurtain.AreaOption[SmartCurtain.Home]] = []
 		for option_data in home_data["HomesOptions"]:
-			option = SmartCurtain.Option(**option_data["Option"])
-			options.append(SmartCurtain.AreaOption[SmartCurtain.Home](**{**option_data, "Option": option}))
+			options.append(SmartCurtain.AreaOption.from_dictionary[SmartCurtain.Home](option_data))
 
 		rooms: list[SmartCurtain.Room] = []
 		for room_data in home_data["Rooms"]:
@@ -110,3 +143,16 @@ class Home(SmartCurtain.Area):
 			raise TypeError(wrong_type_string(self, "Rooms", list[SmartCurtain.Room], []))
 
 		self._Rooms = new_Rooms.copy()
+
+
+	@property
+	def SmartCurtain(self) -> SmartCurtain.SmartCurtain:
+		return self._SmartCurtain
+
+
+	@SmartCurtain.setter
+	def SmartCurtain(self, smart_curtain: Optional[object]) -> None:
+		if(not isinstance(smart_curtain, SmartCurtain.SmartCurtain)):
+			raise TypeError(wrong_type_string(self, "SmartCurtain", SmartCurtain.SmartCurtain, smart_curtain))
+
+		self._SmartCurtain = smart_curtain

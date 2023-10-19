@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 from typing import Dict, Optional
 import warnings
 
@@ -23,13 +24,11 @@ from Utility import warning_message, wrong_type_string
 
 
 class Curtain(SmartCurtain.Area):
-	def __init__(self, Room: Optional[SmartCurtain.Room]=None, *, id: int, is_deleted: bool, length: Optional[int],
-		name: str, CurtainEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Curtain]],
+	def __init__(self, Room: Optional[SmartCurtain.Room]=None, *, _id: ObjectId, length: Optional[int], name: str,
+		CurtainEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Curtain]],
 		CurtainOptions: list[SmartCurtain.AreaOption[SmartCurtain.Curtain]]
 	):
-		SmartCurtain.Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=CurtainEvents,
-			AreaOptions=CurtainOptions
-		)
+		SmartCurtain.Area.__init__(self, _id=_id, name=name, AreaEvents=CurtainEvents, AreaOptions=CurtainOptions)
 		# STRUCTURE #
 		self.Room: SmartCurtain.Room = Room
 		# DATABASE #
@@ -44,17 +43,19 @@ class Curtain(SmartCurtain.Area):
 
 	@staticmethod
 	def from_dictionary(curtain_data: dict) -> SmartCurtain.Curtain:
+		curtain_data = curtain_data.copy()
+		if("Rooms.id" in curtain_data):
+			del curtain_data["Rooms.id"]
+
 		events: list[SmartCurtain.AreaEvent[SmartCurtain.Curtain]] = []
 		for event_data in curtain_data["CurtainsEvents"]:
-			event_data["Option"] = SmartCurtain.Option(**event_data["Option"]) if(event_data["Option"]) else None
 			events.append(SmartCurtain.AreaEvent.from_dictionary[SmartCurtain.Curtain](event_data))
 
 		options: list[SmartCurtain.AreaOption[SmartCurtain.Curtain]] = []
 		for option_data in curtain_data["CurtainsOptions"]:
-			option = SmartCurtain.Option(**option_data["Option"])
-			options.append(SmartCurtain.AreaOption[SmartCurtain.Curtain](**{**option_data, "Option": option}))
+			options.append(SmartCurtain.AreaOption.from_dictionary[SmartCurtain.Curtain](option_data))
 
-		return Curtain(id=curtain_data["id"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
+		return Curtain(_id=curtain_data["_id"], is_deleted=curtain_data["is_deleted"], length=curtain_data["length"],
 			name=curtain_data["name"], CurtainEvents=events, CurtainOptions=options
 		)
 
@@ -165,3 +166,8 @@ class Curtain(SmartCurtain.Area):
 			raise TypeError(wrong_type_string(self, "Room", SmartCurtain.Room, new_Room))
 
 		self._Room = new_Room
+
+
+	@property
+	def SmartCurtain(self) -> SmartCurtain.SmartCurtain:
+		return self.Room.Home.SmartCurtain

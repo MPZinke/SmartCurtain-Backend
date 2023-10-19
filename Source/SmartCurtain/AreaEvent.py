@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import json
 from mpzinke import threading, Generic
@@ -37,16 +38,15 @@ class AreaEvent(Generic):
 		setattr(cls, cls.__args__[0].__name__, setter)  # EG `event.Curtain = curtain`
 
 
-	def __init__(self, Area: Optional[SmartCurtain.Area]=None, *, id: int, Option: Optional[SmartCurtain.Option],
-		is_activated: bool, is_deleted: bool, percentage: int, time: datetime
+	def __init__(self, Area: Optional[SmartCurtain.Area]=None, *, _id: ObjectId, Option: Optional[SmartCurtain.Option],
+		is_activated: bool, percentage: int, time: datetime
 	):
 		# STRUCTURE #
 		self.Area: Optional[SmartCurtain.Area] = Area
 		# DATABASE #
-		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
-		self._id: int = id
+		assert(isinstance(_id, ObjectId)), wrong_type_string(self, "_id", ObjectId, _id)
+		self._id: ObjectId = _id
 		self.is_activated: bool = is_activated
-		self.is_deleted: bool = is_deleted
 		self.Option: Optional[SmartCurtain.Option] = Option
 		self.percentage: int = percentage
 		self.time: datetime = time
@@ -55,9 +55,24 @@ class AreaEvent(Generic):
 
 
 	@Generic
-	def from_dictionary(__args__: set, curtain_event_data: dict) -> SmartCurtain.AreaEvent:
-		option = SmartCurtain.Option(**curtain_event_data["Option"]) if(curtain_event_data["Option"]) else None
-		return SmartCurtain.AreaEvent[__args__[0]](**{**curtain_event_data, "Option": option})
+	def from_dictionary(__args__: set, area_event_data: dict) -> SmartCurtain.AreaEvent:
+		area_event_data = area_event_data.copy()
+		if("Options.id" in area_event_data):
+			if(area_event_data["Options.id"] is not None):
+				area_event_data["Option"] = SmartCurtain.Option.from_id(area_event_data["Options.id"])
+			del area_event_data["Options.id"]
+
+		elif("Option" in area_event_data):
+			area_event_data["Option"] = SmartCurtain.Option.from_dictionary(area_event_data["Option"])
+
+		else:
+			area_event_data["Option"] = None
+
+		for area in [SmartCurtain.Home, SmartCurtain.Room, SmartCurtain.Curtain]:
+			if(f"{area.__name__}s.id" in area_event_data):
+				del area_event_data[f"{area.__name__}s.id"]
+
+		return SmartCurtain.AreaEvent[__args__[0]](**area_event_data)
 
 
 	def __del__(self) -> None:
@@ -132,19 +147,6 @@ class AreaEvent(Generic):
 
 
 	@property
-	def is_deleted(self) -> bool:
-		return self._is_deleted
-
-
-	@is_deleted.setter
-	def is_deleted(self, new_is_deleted: bool) -> None:
-		if(not isinstance(new_is_deleted, bool)):
-			raise TypeError(wrong_type_string(self, "is_deleted", bool, new_is_deleted))
-
-		self._is_deleted = new_is_deleted
-
-
-	@property
 	def percentage(self) -> int:
 		return self._percentage
 
@@ -198,7 +200,10 @@ class AreaEvent(Generic):
 		SUMMARY: Activates an event by publishing it and cleaning up the resources
 		"""
 		self.publish()
-		DB.DBFunctions.UPDATE_Events[self.__args__[0]](self._id, is_activated=True)
+		option_id = self.Option.id if(self.Option is not None) else None
+		DB.update_AreasEvents(f"{self.__args__[0].__name__}sEvents", id=self.id, is_activated=True, is_deleted=False,
+			Options_id=option_id, percentage=self.percentage, time=self.time
+		)
 		self._Area._AreaEvents.remove(self)  # `._AreaEvents` so that the event is removed from the saved list
 		# `del self` is not required at this point, because the thread has successfully ended and should not rerun.
 
@@ -218,7 +223,7 @@ class AreaEvent(Generic):
 				raise NotImplementedError(f"{self.__args__[0].__name__} is not an allowed template type")
 
 		import sys
-		print(payload := f"""[{topic}]""", file=sys.stderr, end=" ")
+		print(f"""[{topic}]""", file=sys.stderr, end=" ")
 		print(payload := f"""{{"percentage": {self._percentage}}}""", file=sys.stderr)
 
 		client = mqtt.client.Client()

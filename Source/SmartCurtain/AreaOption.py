@@ -14,12 +14,14 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 import json
 from mpzinke import Generic
 from typing import Optional
 
 
 import SmartCurtain
+from SmartCurtain import DB
 from Utility import wrong_type_string
 
 
@@ -33,19 +35,31 @@ class AreaOption(Generic):
 		setattr(cls, cls.__args__[0].__name__, setter)  # EG `option.Curtain = curtain`
 
 
-	def __init__(self, Area: Optional[SmartCurtain.Area]=None, *, id: int, Option: SmartCurtain.Option,
-		data: Optional[dict|list], is_deleted: bool, is_on: bool, notes: str
+	def __init__(self, Area: Optional[SmartCurtain.Area]=None, *, Option: SmartCurtain.Option,
+		data: Optional[dict|list], is_enabled: bool, notes: str
 	):
 		# STRUCTURE #
 		self.Area: Area = Area
 		# DATABASE #
-		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
-		self._id: int = id
-		self.Option: object = Option
+		self.Option: SmartCurtain.Option = Option
 		self.data: Optional[dict|list] = data
-		self.is_deleted: bool = is_deleted
-		self.is_on: bool = is_on
+		self.is_enabled: bool = is_enabled
 		self.notes: str = notes
+
+
+	@Generic
+	def from_dictionary(__args__, area_option_data: dict) -> SmartCurtain.AreaOption:
+		area_option_data = area_option_data.copy()
+		if(f"{__args__[0].__name__}s.id" in area_option_data):
+			del area_option_data[f"{__args__[0].__name__}s.id"]
+
+		if("Options.id" in area_option_data):
+			del area_option_data["Options.id"]
+
+		if(isinstance(area_option_data["Option"], dict)):
+			area_option_data["Option"] = SmartCurtain.Option(area_option_data["Option"])
+
+		return AreaOption[__args__[0]](**area_option_data)
 
 
 	def __eq__(self, right: int|str) -> bool:
@@ -57,10 +71,9 @@ class AreaOption(Generic):
 
 	def __iter__(self) -> dict:
 		yield from {
-			"id": self._id,
 			"Option": dict(self._Option) if(self._Option is not None) else None,
 			"data": self._data,
-			"is_on": self._is_on,
+			"is_enabled": self._is_enabled,
 			"notes": self._notes
 		}.items()
 
@@ -74,10 +87,6 @@ class AreaOption(Generic):
 
 
 	# ———————————————————————————————————————— GETTERS & SETTERS::ATTRIBUTES  ———————————————————————————————————————— #
-
-	def id(self):
-		return self._id
-
 
 	def Area_getter(self) -> Optional[SmartCurtain.Area]:
 		return self._Area
@@ -117,16 +126,16 @@ class AreaOption(Generic):
 
 
 	@property
-	def is_on(self) -> bool:
-		return self._is_on
+	def is_enabled(self) -> bool:
+		return self._is_enabled
 
 
-	@is_on.setter
-	def is_on(self, new_is_on: Optional[bool]=None) -> None:
-		if(not isinstance(new_is_on, bool)):
-			raise TypeError(wrong_type_string(self, "is_on", bool, new_is_on))
+	@is_enabled.setter
+	def is_enabled(self, new_is_enabled: Optional[bool]=None) -> None:
+		if(not isinstance(new_is_enabled, bool)):
+			raise TypeError(wrong_type_string(self, "is_enabled", bool, new_is_enabled))
 
-		self._is_on = new_is_on
+		self._is_enabled = new_is_enabled
 
 
 	@property

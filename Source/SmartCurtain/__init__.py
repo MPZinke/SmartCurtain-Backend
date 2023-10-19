@@ -14,6 +14,9 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+import sys
+
+
 Option = type("Option", (), {})
 AreaEvent = type("AreaEvent", (), {})
 AreaOption = type("AreaOption", (), {})
@@ -21,6 +24,7 @@ Area = type("Area", (), {})
 Curtain = type("Curtain", (), {})
 Room = type("Room", (), {})
 Home = type("Home", (), {})
+setattr(sys.modules[__name__], "SmartCurtain", type("SmartCurtain", (), {}))
 
 
 from SmartCurtain.Option import Option
@@ -44,6 +48,8 @@ from Utility import wrong_type_string, LookupStruct
 class SmartCurtain:
 	def __init__(self):
 		self.Homes: list[Home] = Home.current()
+		for home in self.Homes:
+			home.SmartCurtain = self
 		self.Options: list[Option] = Option.all()
 
 
@@ -85,8 +91,18 @@ class SmartCurtain:
 		return self["-"][Room_id]
 
 
+	@property
+	def Rooms(self) -> list[Room]:
+		return list(self["-"])
+
+
 	def Curtain(self, Curtain_id: int) -> Optional[Curtain]:
 		return self["-"]["-"][Curtain_id]
+
+
+	@property
+	def Curtains(self) -> list[Room]:
+		return list(self["-"])
 
 
 	@property
@@ -101,3 +117,14 @@ class SmartCurtain:
 				raise TypeError(wrong_type_string(self, "Options", list[Option], option))
 
 		self._Options = new_Options.copy()
+
+
+	def resync(self) -> None:
+		for area in [self.Homes, self.Rooms, self.Curtains]:
+			for event in area.AreaEvents:
+				del area[event.id]
+
+		self.Homes = Home.current()
+		for home in self.Homes:
+			home.SmartCurtain = self
+		self.Options = Option.all()

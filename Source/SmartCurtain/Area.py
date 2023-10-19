@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 from datetime import datetime
 import json
 from mpzinke import typename
@@ -44,7 +45,7 @@ class Area:
 		setattr(cls, f"_{cls.__name__}Options", option_setter)  # EG `print(self._CurtainOptions)`
 
 
-	def __init__(self, *, id: int, is_deleted: bool, name: str, AreaEvents: list[SmartCurtain.AreaEvent],
+	def __init__(self, *, _id: ObjectId, name: str, AreaEvents: list[SmartCurtain.AreaEvent],
 		AreaOptions: list[SmartCurtain.AreaOption]
 	):
 		# STRUCTURE #
@@ -57,9 +58,8 @@ class Area:
 		for option in AreaOptions:
 			option.Area = self
 		# DATABASE #
-		assert(isinstance(id, int)), wrong_type_string(self, "id", int, id)
-		self._id: int = id
-		self.is_deleted: bool = is_deleted
+		assert(isinstance(_id, ObjectId)), wrong_type_string(self, "_id", ObjectId, _id)
+		self._id: ObjectId = _id
 		self.name: str = name
 
 		setattr(self, f"{type(self).__name__}Option", self.AreaOption)
@@ -70,9 +70,13 @@ class Area:
 
 	def __delitem__(self, event_id: int) -> None:
 		if((event := next((event for event in self.AreaEvents if(event.id == event_id)), None)) is None):
-			raise KeyError(f"No event with id '{event_id}' found for {self.__args__[0].__name__} with id '{self.id}'")
+			raise KeyError(f"No event with id '{event_id}' found for {typename(self)} with id '{self.id}'")
 
 		self._AreaEvents.remove(event)  # `self._AreaEvents` so that the event is removed from the saved list
+		option_id = event.Option.id if(event.Option is not None) else None
+		DB.update_AreasEvents(f"{typename(self)}sEvents", id=event.id, is_activated=event.is_activated, is_deleted=True,
+			Options_id=option_id, percentage=event.percentage, time=event.time
+		)
 		event.__del__()
 
 
@@ -87,19 +91,6 @@ class Area:
 	@property
 	def id(self):
 		return self._id
-
-
-	@property
-	def is_deleted(self) -> bool:
-		return self._is_deleted
-
-
-	@is_deleted.setter
-	def is_deleted(self, new_is_deleted: bool) -> None:
-		if(not isinstance(new_is_deleted, bool)):
-			raise TypeError(wrong_type_string(self, "is_deleted", bool, new_is_deleted))
-
-		self._is_deleted = new_is_deleted
 
 
 	@property
@@ -150,11 +141,17 @@ class Area:
 
 	# ———————————————————————————————————————————————————— EVENT  ———————————————————————————————————————————————————— #
 
-	def new_AreaEvent(self, *, percentage: int, option: Optional[int], time: datetime) -> SmartCurtain.AreaEvent:
-		event_data = {f"{typename(self)}s.id": self._id, "Options.id": option, "percentage": percentage, "time": time}
+	def new_AreaEvent(self, *, is_activated: bool, percentage: int, option_id: Optional[int], time: datetime
+	) -> SmartCurtain.AreaEvent:
+		event_data = {f"Areas_id": self._id, "is_activated": is_activated, "Options_id": option_id,
+			"percentage": percentage, "time": time
+		}
 
-		new_event_dict: dict = DB.DBFunctions.INSERT_Events[type(self)](**event_data)
-		new_event = SmartCurtain.AreaEvent[type(self)](self, **new_event_dict)
+		new_event_dict: dict = DB.insert_AreasEvents(f"{typename(self)}sEvents", **event_data)
+		options: list[SmartCurtain.Option] = self.SmartCurtain.Options
+		new_event_dict["Option"] = next(filter(lambda option: option == new_event_dict["Options.id"], options), None)
+		new_event = SmartCurtain.AreaEvent.from_dictionary[type(self)](new_event_dict)
+		new_event.Area = self
 		self._AreaEvents.append(new_event)  # `self._AreaEvents` so that the event is removed from the saved list
 
 		new_event.start()

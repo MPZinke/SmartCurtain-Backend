@@ -57,7 +57,9 @@ class Server:
 			POST=Routes.POST_area_id_events[Curtain]
 		)
 		self._app.route("/curtains/<int:area_id>/events/<int:event_id>",
-			GET=Routes.GET_area_id_event_id[Curtain], DELETE=Routes.DELETE_area_id_event_id[Curtain]
+			GET=Routes.GET_area_id_event_id[Curtain],
+			PATCH=Routes.PATCH_area_id_event_id[Curtain],
+			DELETE=Routes.DELETE_area_id_event_id[Curtain]
 		)
 
 		# self.route("/events")

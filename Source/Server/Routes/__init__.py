@@ -146,7 +146,7 @@ def POST_area_id_events(__args__, smart_curtain: SmartCurtain.SmartCurtain, area
 	except Exception as error:
 		raise BadRequest(f"'{time}' if not of proper format '%Y-%m-%d %H:%M:%S'") from error
 
-	event = area.new_AreaEvent(percentage=percentage, option=option, time=time)
+	event = area.new_AreaEvent(is_activated=False, percentage=percentage, option_id=option, time=time)
 	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
 
 
@@ -162,8 +162,28 @@ def GET_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, are
 		case _:
 			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
 
-	if((event := next((event for event in area.AreaEvents() if(event.id == event_id)), None)) is None):
+	if((event := next((event for event in area.AreaEvents if(event.id == event_id)), None)) is None):
 		raise NotFound(f"Event with id '{event_id}' not found for {__args__[0].__name__} '{area_id}'")
+
+	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
+
+
+@Generic
+def PATCH_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, area_id: int, event_id: int):
+	match(__args__[0]):
+		case SmartCurtain.Home:
+			area = smart_curtain[area_id]
+		case SmartCurtain.Room:
+			area = smart_curtain["-"][area_id]
+		case SmartCurtain.Curtain:
+			area = smart_curtain["-"]["-"][area_id]
+		case _:
+			raise NotImplementedError(f"{__args__[0].__name__} is not an allowed template type")
+
+	if((event := next((event for event in area.AreaEvents if(event.id == event_id)), None)) is None):
+		raise NotFound(f"Event with id '{event_id}' not found for {__args__[0].__name__} '{area_id}'")
+
+	#TODO: Update event
 
 	return Response(json.dumps(dict(event), default=str), mimetype="application/json")
 
@@ -185,5 +205,5 @@ def DELETE_area_id_event_id(__args__, smart_curtain: SmartCurtain.SmartCurtain, 
 
 
 def GET_options(smart_curtain: SmartCurtain.SmartCurtain):
-	options = smart_curtain.Options()
+	options = smart_curtain.Options
 	return Response(json.dumps(list(map(dict, options)), default=str), mimetype="application/json")

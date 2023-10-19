@@ -8,7 +8,7 @@ ENV TZ="America/Chicago"
 COPY ./  /usr/local/bin/SmartCurtain/Backend/
 RUN chmod -R 777 /usr/local/bin/SmartCurtain
 
-RUN pip3 install -r /usr/local/bin/SmartCurtain/Backend/Requirements.txt
+RUN pip3 install .
 
 
 # ————————————————————————————————————————————————————— RUNTIME ————————————————————————————————————————————————————— #

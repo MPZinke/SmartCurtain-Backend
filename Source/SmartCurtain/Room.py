@@ -14,6 +14,7 @@ __author__ = "MPZinke"
 ########################################################################################################################
 
 
+from bson.objectid import ObjectId
 from typing import Dict, Optional
 
 
@@ -22,14 +23,12 @@ from Utility import wrong_type_string
 
 
 class Room(SmartCurtain.Area):
-	def __init__(self, Home: Optional[SmartCurtain.Home]=None, *, id: int, is_deleted: bool, name: str,
+	def __init__(self, Home: Optional[SmartCurtain.Home]=None, *, _id: ObjectId, name: str,
 		RoomEvents: list[SmartCurtain.AreaEvent[SmartCurtain.Room]],
 		RoomOptions: list[SmartCurtain.AreaOption[SmartCurtain.Room]],
 		Curtains: list[SmartCurtain.Curtain]
 	):
-		SmartCurtain.Area.__init__(self, id=id, is_deleted=is_deleted, name=name, AreaEvents=RoomEvents,
-			AreaOptions=RoomOptions
-		)
+		SmartCurtain.Area.__init__(self, _id=_id, name=name, AreaEvents=RoomEvents, AreaOptions=RoomOptions)
 		# STRUCTURE #
 		self.Home: SmartCurtain.Home = Home
 		self.Curtains: list[SmartCurtain.Curtain] = Curtains
@@ -39,21 +38,23 @@ class Room(SmartCurtain.Area):
 
 	@staticmethod
 	def from_dictionary(room_data: dict) -> SmartCurtain.Room:
+		room_data = room_data.copy()
+		if("Homes.id" in room_data):
+			del room_data["Homes.id"]
+
 		events: list[SmartCurtain.AreaEvent[SmartCurtain.Room]] = []
 		for event_data in room_data["RoomsEvents"]:
-			event_data["Option"] = SmartCurtain.Option(**event_data["Option"]) if(event_data["Option"]) else None
 			events.append(SmartCurtain.AreaEvent.from_dictionary[SmartCurtain.Room](event_data))
 
 		options: list = []
 		for option_data in room_data["RoomsOptions"]:
-			option = SmartCurtain.Option(**option_data["Option"])
-			options.append(SmartCurtain.AreaOption[SmartCurtain.Room](**{**option_data, "Option": option}))
+			options.append(SmartCurtain.AreaOption.from_dictionary[SmartCurtain.Room](option_data))
 
 		curtains: list[SmartCurtain.Curtain] = []
 		for curtain_data in room_data["Curtains"]:
 			curtains.append(SmartCurtain.Curtain.from_dictionary(curtain_data))
 
-		return Room(id=room_data["id"], is_deleted=room_data["is_deleted"], name=room_data["name"], RoomEvents=events,
+		return Room(_id=room_data["_id"], is_deleted=room_data["is_deleted"], name=room_data["name"], RoomEvents=events,
 			RoomOptions=options, Curtains=curtains
 		)
 
@@ -111,3 +112,8 @@ class Room(SmartCurtain.Area):
 			raise TypeError(wrong_type_string(self, "Home", SmartCurtain.Home, new_Home))
 
 		self._Home = new_Home
+
+
+	@property
+	def SmartCurtain(self) -> SmartCurtain.SmartCurtain:
+		return self.Home.SmartCurtain
