@@ -57,17 +57,6 @@ class AreaEvent(Generic):
 	@Generic
 	def from_dictionary(__args__: set, area_event_data: dict) -> SmartCurtain.AreaEvent:
 		area_event_data = area_event_data.copy()
-		if("Options.id" in area_event_data):
-			if(area_event_data["Options.id"] is not None):
-				area_event_data["Option"] = SmartCurtain.Option.from_id(area_event_data["Options.id"])
-			del area_event_data["Options.id"]
-
-		elif("Option" in area_event_data):
-			area_event_data["Option"] = SmartCurtain.Option.from_dictionary(area_event_data["Option"])
-
-		else:
-			area_event_data["Option"] = None
-
 		for area in [SmartCurtain.Home, SmartCurtain.Room, SmartCurtain.Curtain]:
 			if(f"{area.__name__}s.id" in area_event_data):
 				del area_event_data[f"{area.__name__}s.id"]
@@ -100,7 +89,6 @@ class AreaEvent(Generic):
 		yield from {
 			"id": self._id,
 			"is_activated": self._is_activated,
-			"is_deleted": self._is_deleted,
 			"percentage": self._percentage,
 			"Option": dict(self._Option) if(self._Option is not None) else None,
 			"time": self._time

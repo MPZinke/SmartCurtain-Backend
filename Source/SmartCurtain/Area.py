@@ -141,15 +141,27 @@ class Area:
 
 	# ———————————————————————————————————————————————————— EVENT  ———————————————————————————————————————————————————— #
 
-	def new_AreaEvent(self, *, is_activated: bool, percentage: int, option_id: Optional[int], time: datetime
+	def new_AreaEvent(self, *, is_activated: bool, percentage: int, option_id: Optional[ObjectId], time: datetime
 	) -> SmartCurtain.AreaEvent:
-		event_data = {f"Areas_id": self._id, "is_activated": is_activated, "Options_id": option_id,
-			"percentage": percentage, "time": time
-		}
+		match(type(self)):
+			case SmartCurtain.Home:
+				areas_collection = DB.SMART_CURTAIN_DATABASE.Homes
+				events_collection = DB.SMART_CURTAIN_DATABASE.HomesEvents
+			case SmartCurtain.Room:
+				areas_collection = DB.SMART_CURTAIN_DATABASE.Rooms
+				events_collection = DB.SMART_CURTAIN_DATABASE.RoomsEvents
+			case SmartCurtain.Curtain:
+				areas_collection = DB.SMART_CURTAIN_DATABASE.Curtains
+				events_collection = DB.SMART_CURTAIN_DATABASE.CurtainsEvents
 
-		new_event_dict: dict = DB.insert_AreasEvents(f"{typename(self)}sEvents", **event_data)
-		options: list[SmartCurtain.Option] = self.SmartCurtain.Options
-		new_event_dict["Option"] = next(filter(lambda option: option == new_event_dict["Options.id"], options), None)
+		event_data = {"is_activated": is_activated, "Option": option_id, "percentage": percentage, "time": time}
+		new_event_id: ObjectId = events_collection.insert_one(event_data).inserted_id
+		new_event_dict = dict(events_collection.find_one({"_id": new_event_id}))
+		areas_collection.update_one({"_id": self.id}, {"$push": {f"{typename(self)}sEvents": new_event_id}})
+
+		if(option_id is not None):
+			options: list[SmartCurtain.Option] = self.SmartCurtain.Options
+			new_event_dict["Option"] = next(filter(lambda option: option == new_event_dict["Options.id"], options))
 		new_event = SmartCurtain.AreaEvent.from_dictionary[type(self)](new_event_dict)
 		new_event.Area = self
 		self._AreaEvents.append(new_event)  # `self._AreaEvents` so that the event is removed from the saved list
