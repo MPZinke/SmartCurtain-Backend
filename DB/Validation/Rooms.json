@@ -1,0 +1,59 @@
+{
+	"$jsonSchema":
+	{
+		"bsonType": "object",
+		"title": "Rooms Object Validation",
+		"required": ["name", "RoomsEvents", "RoomsOptions", "Curtains"],
+		"properties":
+		{
+			"name":
+			{
+				"bsonType": "string"
+			},
+			"RoomsEvents":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "objectId"
+				}
+			},
+			"RoomsOptions":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "object",
+					"required": ["data", "is_enabled", "notes", "Option"],
+					"properties":
+					{
+						"data":
+						{
+							"bsonType": ["null", "array", "object", "bool", "string", "int", "double", "date"]
+						},
+						"is_enabled":
+						{
+							"bsonType": "bool"
+						},
+						"notes":
+						{
+							"bsonType": "string"
+						},
+						"Option":
+						{
+							"bsonType": "objectId"
+						}
+					}
+				}
+			},
+			"Curtains":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "objectId"
+				}
+			}
+		}
+	}
+}

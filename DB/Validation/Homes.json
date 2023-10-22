@@ -1,0 +1,59 @@
+{
+	"$jsonSchema":
+	{
+		"bsonType": "object",
+		"title": "Homes Object Validation",
+		"required": ["name", "HomesEvents", "HomesOptions", "Rooms"],
+		"properties":
+		{
+			"name":
+			{
+				"bsonType": "string"
+			},
+			"HomesEvents":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "objectId"
+				}
+			},
+			"HomesOptions":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "object",
+					"required": ["data", "is_enabled", "notes", "Option"],
+					"properties":
+					{
+						"data":
+						{
+							"bsonType": ["null", "array", "object", "bool", "string", "int", "double", "date"]
+						},
+						"is_enabled":
+						{
+							"bsonType": "bool"
+						},
+						"notes":
+						{
+							"bsonType": "string"
+						},
+						"Option":
+						{
+							"bsonType": "objectId"
+						}
+					}
+				}
+			},
+			"Rooms":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "objectId"
+				}
+			}
+		}
+	}
+}

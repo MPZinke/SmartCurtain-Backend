@@ -1,0 +1,62 @@
+[
+	{
+		"name": "Home",
+		"HomesEvents": [], 
+		"HomesOptions":
+		[
+			{"id": 0, "data": null, "is_enabled": false, "notes": ""},
+			{"id": 1, "data": null, "is_enabled": false, "notes": ""},
+			{"id": 2, "data": {"leniency": "01:00:00"}, "is_enabled": false, "notes": "Value is for clustering leniency"},
+			{"id": 3, "data": {"city": "DALLAS"}, "is_enabled": false, "notes": "Value is for time before/after sunrise that curtain opens"},
+			{"id": 4, "data": {"city": "DALLAS"}, "is_enabled": false, "notes": "Value is for time before/after sunset that curtain closes"},
+			{"id": 5, "data": null, "is_enabled": false, "notes": ""}
+		],
+		"Rooms":
+		[
+			{
+				"name": "Bedroom",
+				"RoomsEvents": [],
+				"RoomsOptions": [],
+				"Curtains":
+				[
+					{
+						"length": null,
+						"name": "Bedroom-Curtain",
+						"CurtainsEvents": [],
+						"CurtainsOptions":
+						[
+							{"id": 0, "data": null, "is_enabled": false, "notes": ""},
+							{"id": 1, "data": null, "is_enabled": false, "notes": ""},
+							{"id": 2, "data": {"leniency": "01:00:00"}, "is_enabled": false, "notes": "Value is for clustering leniency"},
+							{"id": 3, "data": {"city": "DALLAS"}, "is_enabled": false, "notes": "Value is for time before/after sunrise that curtain opens"},
+							{"id": 4, "data": {"city": "DALLAS"}, "is_enabled": false, "notes": "Value is for time before/after sunset that curtain closes"},
+							{"id": 5, "data": null, "is_enabled": false, "notes": ""}
+						]
+					}
+				]
+			},
+			{
+				"name": "Livingroom",
+				"RoomsEvents": [], 
+				"RoomsOptions":
+				[
+					{"id": 0, "data": null, "is_enabled": false, "notes": ""},
+					{"id": 1, "data": null, "is_enabled": false, "notes": ""},
+					{"id": 2, "data": {"leniency": "01:00:00"}, "is_enabled": false, "notes": "Value is for clustering leniency"},
+					{"id": 3, "data": {"city": "DALLAS"}, "is_enabled": false, "notes": "Value is for time before/after sunrise that curtain opens"},
+					{"id": 4, "data": {"city": "DALLAS"}, "is_enabled": false, "notes": "Value is for time before/after sunset that curtain closes"},
+					{"id": 5, "data": null, "is_enabled": false, "notes": ""}
+				],
+				"Curtains":
+				[
+					{
+						"length": null,
+						"name": "Livingroom-Curtain",
+						"CurtainsEvents": [],
+						"CurtainsOptions": []
+					}
+				]
+			}
+		]
+	}
+]

@@ -1,0 +1,29 @@
+{
+	"$jsonSchema":
+	{
+		"bsonType": "object",
+		"title": "HomesEvents Object Validation",
+		"required": ["is_activated", "percentage", "time", "Option"],
+		"properties":
+		{
+			"is_activated":
+			{
+				"bsonType": "bool"
+			},
+			"percentage":
+			{
+				"bsonType": "int",
+				"minimum": 0,
+				"maximum": 100
+			},
+			"time":
+			{
+				"bsonType": "date"
+			},
+			"Option":
+			{
+				"bsonType": ["objectId", "null"]
+			}
+		}
+	}
+}

@@ -1,0 +1,55 @@
+{
+	"$jsonSchema":
+	{
+		"bsonType": "object",
+		"title": "Curtains Object Validation",
+		"required": ["length", "name", "CurtainsEvents", "CurtainsOptions"],
+		"properties":
+		{
+			"length":
+			{
+				"bsonType": ["int", "null"]
+			},
+			"name":
+			{
+				"bsonType": "string"
+			},
+			"CurtainsEvents":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "objectId"
+				}
+			},
+			"CurtainsOptions":
+			{
+				"bsonType": "array",
+				"items":
+				{
+					"bsonType": "object",
+					"required": ["data", "is_enabled", "notes", "Option"],
+					"properties":
+					{
+						"data":
+						{
+							"bsonType": ["null", "array", "object", "bool", "string", "int", "double", "date"]
+						},
+						"is_enabled":
+						{
+							"bsonType": "bool"
+						},
+						"notes":
+						{
+							"bsonType": "string"
+						},
+						"Option":
+						{
+							"bsonType": "objectId"
+						}
+					}
+				}
+			}
+		}
+	}
+}

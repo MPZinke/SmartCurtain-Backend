@@ -1,0 +1,8 @@
+[
+	{"id": 0, "name": "Auto Calibrate", "description": "Curtain calibrates length if it moves full span of rod"},
+	{"id": 1, "name": "Auto Correct", "description": "Curtain corrects its position if unexpected reaches an end point"},
+	{"id": 2, "name": "Event Prediction", "description": "Use previous events to determine future events"},
+	{"id": 3, "name": "Sunrise Open", "description": "Automatically create events for opening the curtain at sunrise"},
+	{"id": 4, "name": "Sunset Close", "description": "Automatically create events for closing the curtain at sunset"},
+	{"id": 5, "name": "Temperature Setting", "description": "Set the curtain based on thermostat temperature of room, outside weather & incoming light"}
+]

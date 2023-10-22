@@ -1,0 +1,19 @@
+{
+	"$jsonSchema":
+	{
+		"bsonType": "object",
+		"title": "Options Object Validation",
+		"required": ["name", "description"],
+		"properties":
+		{
+			"name":
+			{
+				"bsonType": "string"
+			},
+			"description":
+			{
+				"bsonType": "string"
+			}
+		}
+	}
+}
