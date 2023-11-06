@@ -1,3 +1,5 @@
+name: Update Parent's Submodule
+
 on:
   push:
     branches:

@@ -1,0 +1,21 @@
+name: Update Parent Release
+
+on:
+  release:
+    types: 
+      - published
+
+jobs:
+  Update-Parent-Release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Update Parent Version
+        env:
+          SMARTCURTAIN_RW_TOKEN: ${{ secrets.SMARTCURTAIN_RW_TOKEN }}
+        working-directory: .github/workflows/Scripts
+        run: |
+          python3 UpdateParentRelease.py "${{github.run_id}}" "${{github.repository}}" "${{vars.PARENT_REPO}}"

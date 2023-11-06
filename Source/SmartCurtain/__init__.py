@@ -100,7 +100,7 @@ class SmartCurtain:
 
 	@property
 	def Curtains(self) -> list[Room]:
-		return list(self["-"])
+		return list(self["-"]["-"])
 
 
 	@property

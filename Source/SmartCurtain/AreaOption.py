@@ -17,7 +17,7 @@ __author__ = "MPZinke"
 from bson.objectid import ObjectId
 import json
 from mpzinke import Generic
-from typing import Optional
+from typing import Any, Optional
 
 
 import SmartCurtain
@@ -113,15 +113,12 @@ class AreaOption(Generic):
 
 
 	@property
-	def data(self=None) -> Optional[dict|list]:
+	def data(self=None) -> Optional[Any]:
 		return self._data;
 
 
 	@data.setter
-	def data(self, new_data: Optional[dict|list]) -> None:
-		if(not isinstance(new_data, Optional[dict|list])):
-			raise TypeError(wrong_type_string(self, "data", Optional[dict|list], new_data))
-
+	def data(self, new_data: Optional[Any]) -> None:
 		self._data = new_data
 
 
